@@ -1,0 +1,5 @@
+/.vscode
+/.opencode
+/builddir
+.gdb_history
+*.swp
