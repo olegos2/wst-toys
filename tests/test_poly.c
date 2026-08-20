@@ -58,33 +58,38 @@ static void test_poly(void)
 {
     double roots[TOYS_POLY_MAX_DEGREE + 1];
 
-    static const double cubic[] = { -6, 11, -6, 1 };
     static const double cubic_expected[] = { 1, 2, 3 };
-    check_roots(toys_poly_solve(3, cubic, roots, TOYS_POLY_MAX_DEGREE + 1),
+    ToysPoly cubic = { .degree = 3, .coeffs = { -6, 11, -6, 1 } };
+    check_roots(toys_poly_solve(&cubic, roots, TOYS_POLY_MAX_DEGREE + 1),
                 roots, cubic_expected, 3);
 
-    static const double cube1[] = { -1, 0, 0, 1 };
     static const double cube1_expected[] = { 1 };
-    check_roots(toys_poly_solve(3, cube1, roots, TOYS_POLY_MAX_DEGREE + 1),
+    ToysPoly cube1 = { .degree = 3, .coeffs = { -1, 0, 0, 1 } };
+    check_roots(toys_poly_solve(&cube1, roots, TOYS_POLY_MAX_DEGREE + 1),
                 roots, cube1_expected, 1);
 
-    static const double quartic[] = { 4, 0, -5, 0, 1 };
     static const double quartic_expected[] = { -2, -1, 1, 2 };
-    check_roots(toys_poly_solve(4, quartic, roots, TOYS_POLY_MAX_DEGREE + 1),
+    ToysPoly quartic = { .degree = 4, .coeffs = { 4, 0, -5, 0, 1 } };
+    check_roots(toys_poly_solve(&quartic, roots, TOYS_POLY_MAX_DEGREE + 1),
                 roots, quartic_expected, 4);
 
-    static const double pow4[] = { 1, -4, 6, -4, 1 };
     static const double pow4_expected[] = { 1 };
-    check_roots(toys_poly_solve(4, pow4, roots, TOYS_POLY_MAX_DEGREE + 1),
+    ToysPoly pow4 = { .degree = 4, .coeffs = { 1, -4, 6, -4, 1 } };
+    check_roots(toys_poly_solve(&pow4, roots, TOYS_POLY_MAX_DEGREE + 1),
                 roots, pow4_expected, 1);
 
-    static const double pow6[] = { 1, -6, 15, -20, 15, -6, 1 };
     static const double pow6_expected[] = { 1 };
-    check_roots(toys_poly_solve(6, pow6, roots, TOYS_POLY_MAX_DEGREE + 1),
+    ToysPoly pow6 = { .degree = 6, .coeffs = { 1, -6, 15, -20, 15, -6, 1 } };
+    check_roots(toys_poly_solve(&pow6, roots, TOYS_POLY_MAX_DEGREE + 1),
                 roots, pow6_expected, 1);
 
-    static const double allzero[] = { 0, 0, 0, 0, 0, 0 };
-    CHECK(toys_poly_solve(5, allzero, roots, TOYS_POLY_MAX_DEGREE + 1) ==
+    /* trailing zeros are trimmed by the solver */
+    ToysPoly trimmed = { .degree = 6, .coeffs = { -6, 11, -6, 1, 0, 0, 0 } };
+    check_roots(toys_poly_solve(&trimmed, roots, TOYS_POLY_MAX_DEGREE + 1),
+                roots, cubic_expected, 3);
+
+    ToysPoly allzero = { .degree = 5, .coeffs = { 0 } };
+    CHECK(toys_poly_solve(&allzero, roots, TOYS_POLY_MAX_DEGREE + 1) ==
           TOYS_SOLVE_INF, "poly all-zero inf");
 }
 

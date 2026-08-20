@@ -1,10 +1,15 @@
 project('toys', 'c', version: '0.1', meson_version: '>= 1.1.0')
 
+add_project_arguments('-Wall', '-Wextra', language: 'c')
+
 if get_option('debug')
     add_project_arguments('-DTOYS_DEBUG', language: 'c')
 endif
 
-inc = include_directories('include')
+inc = include_directories(
+    'include',
+    'src/include',
+)
 
 cc = meson.get_compiler('c')
 

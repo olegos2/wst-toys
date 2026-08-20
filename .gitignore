@@ -1,5 +1,7 @@
 /.vscode
 /.opencode
 /builddir
+/latex
+/html
 .gdb_history
 *.swp

@@ -8,6 +8,7 @@ toys_poly_lib = static_library(
     'toys_poly',
     sources: files(
         'poly.c',
+        'expr.c',
     ),
     include_directories: [
         inc,
