@@ -11,7 +11,9 @@ cc = meson.get_compiler('c')
 subdir('include')
 subdir('src')
 
-# subdir('tests')
+if get_option('tests')
+    subdir('tests')
+endif
 
 if get_option('examples')
     subdir('examples')

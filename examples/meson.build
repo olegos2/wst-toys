@@ -1,5 +1,5 @@
 toys_solve_deps = [
-    toys_quad_dep,
+    toys_poly_dep,
 ]
 
 executable(

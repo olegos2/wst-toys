@@ -1,1 +1,2 @@
 option('examples', type: 'boolean', value: true, description: 'Build example programs')
+option('tests', type: 'boolean', value: true, description: 'Build test programs')
