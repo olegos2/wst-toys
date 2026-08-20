@@ -8,7 +8,6 @@ endif
 
 inc = include_directories(
     'include',
-    'src/include',
 )
 
 cc = meson.get_compiler('c')

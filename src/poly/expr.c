@@ -1,18 +1,20 @@
 #include "toys/debug.h"
-#include "toys/expr.h"
+#include "toys/solve.h"
 #include "poly_impl.h"
 
 #include <math.h>
+#include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 
 
-/* Every token becomes at most one tree node, so one budget bounds both
- * the lexer and the parser's fixed node pool. */
-#define TOYS_EXPR_MAX_TOKENS 256
+/* Single pass expression parser: the lexer streams tokens into recursive descent and
+ * every production returns its ToysPoly directly. */
 
+/* Nesting cap for '(' and '-' chains, which recurse per character. */
+#define TOYS_EXPR_MAX_DEPTH 256
+
+/** Types of tokens that lexer can parse. */
 typedef enum {
     TOYS_EXPR_NUM,
     TOYS_EXPR_VAR,
@@ -32,90 +34,87 @@ typedef struct {
     };
 } Token;
 
-typedef struct Node {
-    Token token;
-    struct Node *left;
-    struct Node *right;
-} Node;
-
+/** State of the expr parser. */
 typedef struct {
+    /* Input expression string for parser */
+    const char *s;
+    /* Length of s */
+    size_t len;
+    /* Position where parser is stopped now. */
+    size_t pos;
+    /* Depth of expr nesting at current pos. */
+    size_t depth;
+    /* Next token lookahead. */
+    Token lookahead;
+    /* Whether lookahead is already filled. */
+    bool have;
+    /* [out] position in string at which first error happened. */
     size_t *err_pos;
-    const char **err_msg;
-} Err;
+    /* [out] error string. */
+    const char *err_msg;
+} Parser;
 
-/* Only the first error sticks, so later ones can't override a better message. */
-static void err_set(Err *e, size_t pos, const char *msg)
+static void err_set(Parser *p, size_t pos, const char *msg)
 {
-    if (*e->err_msg == NULL) {
-        *e->err_pos = pos;
-        *e->err_msg = msg;
+    /* First error sticks. */
+    if (p->err_msg == NULL) {
+        p->err_msg = msg;
+        *p->err_pos = pos;
     }
 }
 
-
-/* Lexer */
-
-typedef struct {
-    const char *s;
-    size_t len;
-    size_t pos;
-    Token lookahead;
-    int have;
-    int count;
-} Lexer;
-
-/* strtod over the token start; the consumed span must only contain
- * [0-9.eE], so lexemes like "inf" or "nan" are rejected. */
-static int lex_number(Lexer *lx, Token *tok, Err *e)
+/**
+ * Reads a number token with strtod, then checks the consumed span
+ * only holds digits, dot and e/E. Sets parser error on failure.
+ * @param [inout] p parser state
+ * @param [out] tok stores resulting number token on success
+ */
+static bool lex_number(Parser *p, Token *tok)
 {
     char *end = NULL;
-    double val = strtod(lx->s + lx->pos, &end);
-    size_t span = (size_t)(end - (lx->s + lx->pos));
+    double val = strtod(p->s + p->pos, &end);
+    size_t span = (size_t)(end - (p->s + p->pos));
 
     if (span == 0)
-        return 0;
+        return false;
 
     for (size_t i = 0; i < span; i++) {
-        char c = lx->s[lx->pos + i];
+        char c = p->s[p->pos + i];
         if (!((c >= '0' && c <= '9') || c == '.' || c == 'e' || c == 'E')) {
-            err_set(e, lx->pos, "unexpected character");
-            return 0;
+            err_set(p, p->pos, "unexpected character");
+            return false;
         }
     }
 
     tok->type = TOYS_EXPR_NUM;
-    tok->pos = lx->pos;
+    tok->pos = p->pos;
     tok->val = val;
-    lx->pos += span;
-    return 1;
+    p->pos += span;
+    return true;
 }
 
-/* Fills *tok with the next token; returns 0 on an unexpected character. */
-static int lex_next(Lexer *lx, Token *tok, Err *e)
+/* Fills *tok with the next token, returns false on an unexpected character. */
+static bool lex_next(Parser *p, Token *tok)
 {
-    if (lx->have) {
-        *tok = lx->lookahead;
-        lx->have = 0;
-        return 1;
-    }
-
-    while (lx->pos < lx->len) {
-        char c = lx->s[lx->pos];
+    /* Skip whitespace/newlines */
+    while (p->pos < p->len) {
+        char c = p->s[p->pos];
         if (c == ' ' || c == '\t' || c == '\n' || c == '\r')
-            lx->pos++;
+            p->pos++;
         else
             break;
     }
 
-    tok->pos = lx->pos;
-    if (lx->pos >= lx->len) {
+    tok->pos = p->pos;
+    if (p->pos >= p->len) {
         tok->type = TOYS_EXPR_END;
-        return 1;
+        return true;
     }
 
-    char c = lx->s[lx->pos];
+    char c = p->s[p->pos];
+    /* Branch into number parsing early */
     if ((c >= '0' && c <= '9') || c == '.')
-        return lex_number(lx, tok, e);
+        return lex_number(p, tok);
 
     switch (c) {
     case 'x':
@@ -135,342 +134,263 @@ static int lex_next(Lexer *lx, Token *tok, Err *e)
         tok->type = TOYS_EXPR_EQ;
         break;
     default:
-        err_set(e, lx->pos, "unexpected character");
-        return 0;
+        err_set(p, p->pos, "unexpected character");
+        return false;
     }
-    lx->pos++;
-
-    if (++lx->count > TOYS_EXPR_MAX_TOKENS) {
-        err_set(e, tok->pos, "expression too long");
-        return 0;
-    }
-    return 1;
+    p->pos++;
+    return true;
 }
-
-
-/* Parser: recursive descent, nodes come from a fixed pool.
- *
- *   expr  := sum ('=' sum)?
- *   sum   := term (('+'|'-') term)*
- *   term  := unary (('*'|'/') unary)*
- *   unary := ('+'|'-')* power
- *   power := atom ('^' unary)?      right-assoc: x^2^3 = x^(2^3)
- *   atom  := NUM | VAR | '(' expr ')'
- *
- * "=" is only allowed at the top level; the power rule also accepts a
- * unary exponent, so x^-1 and -x^2 (as -(x^2)) parse as expected. */
-
-typedef struct {
-    Lexer lx;
-    Err err;
-    Node pool[TOYS_EXPR_MAX_TOKENS];
-    int npool;
-} Parser;
 
 static void lex_peek(Parser *p, Token *tok)
 {
-    if (!p->lx.have) {
-        if (!lex_next(&p->lx, &p->lx.lookahead, &p->err)) {
-            p->lx.lookahead.type = TOYS_EXPR_END;
-            p->lx.lookahead.pos = p->lx.pos;
+    if (!p->have) {
+        if (!lex_next(p, &p->lookahead)) {
+            /* lex errors surface as END, err_msg is re-checked at the end */
+            p->lookahead.type = TOYS_EXPR_END;
+            p->lookahead.pos = p->pos;
         }
-        p->lx.have = 1;
+        p->have = true;
     }
-    *tok = p->lx.lookahead;
+    *tok = p->lookahead;
 }
 
 static Token lex_take(Parser *p)
 {
     Token tok;
     lex_peek(p, &tok);
-    p->lx.have = 0;
+    p->have = false;
     return tok;
 }
 
-static Node *new_node(Parser *p, Token tok)
+
+/* Parser: recursive descent over the token stream, every production
+ * returns the reduced polynomial directly.
+ *
+ *   expr  := sum ('=' sum)?
+ *   sum   := term (('+'|'-') term)*
+ *   term  := unary (('*'|'/') unary)*
+ *   unary := ('+'|'-')* power
+ *   power := atom ('^' unary)?      right-assoc: x^2^3 = x^(2^3)
+ *   atom  := NUM | VAR | '(' sum ')'
+ *
+ * The equals sign is only allowed at the top level. The power rule
+ * also accepts a unary exponent, so x^-1 and -x^2 (as -(x^2)) parse
+ * as expected. */
+
+static bool parse_sum(Parser *p, ToysPoly *out);
+static bool parse_unary(Parser *p, ToysPoly *out);
+static bool parse_power(Parser *p, ToysPoly *out);
+static bool parse_atom(Parser *p, ToysPoly *out);
+
+static bool parse_unary(Parser *p, ToysPoly *out)
 {
-    if (p->npool >= TOYS_EXPR_MAX_TOKENS) {
-        err_set(&p->err, tok.pos, "expression too long");
-        return NULL;
+    if (p->depth >= TOYS_EXPR_MAX_DEPTH) {
+        err_set(p, p->pos, "expression too long");
+        return false;
     }
+    p->depth++;
 
-    Node *n = &p->pool[p->npool++];
-    n->token = tok;
-    n->left = NULL;
-    n->right = NULL;
-    return n;
-}
-
-static Node *new_unary(Parser *p, Token op, Node *operand)
-{
-    Node *n = new_node(p, op);
-    if (n)
-        n->right = operand;
-    return n;
-}
-
-static Node *new_binary(Parser *p, Token op, Node *left, Node *right)
-{
-    Node *n = new_node(p, op);
-    if (n) {
-        n->left = left;
-        n->right = right;
-    }
-    return n;
-}
-
-static Node *parse_sum(Parser *p);
-static Node *parse_atom(Parser *p);
-static Node *parse_power(Parser *p);
-
-static Node *parse_unary(Parser *p)
-{
     Token tok;
     lex_peek(p, &tok);
+    bool ok = true;
     if (tok.type == TOYS_EXPR_OP && (tok.op == '+' || tok.op == '-')) {
         tok = lex_take(p);
-        Node *n = parse_unary(p);
-        if (!n)
-            return NULL;
-        return new_unary(p, tok, n);
+        ToysPoly inner;
+        if (!parse_unary(p, &inner))
+            ok = false;
+        else
+            *out = (tok.op == '-') ? toys_poly_scale(&inner, -1.0) : inner;
+    } else {
+        ok = parse_power(p, out);
     }
-    return parse_power(p);
+
+    p->depth--;
+    return ok;
 }
 
-static Node *parse_power(Parser *p)
+static bool parse_power(Parser *p, ToysPoly *out)
 {
-    Node *n = parse_atom(p);
-    Token tok;
-    if (n) {
-        lex_peek(p, &tok);
-        if (tok.type == TOYS_EXPR_OP && tok.op == '^') {
-            tok = lex_take(p);
-            Node *exponent = parse_unary(p);
-            if (!exponent)
-                return NULL;
-            n = new_binary(p, tok, n, exponent);
-        }
-    }
-    return n;
-}
+    if (!parse_atom(p, out))
+        return false;
 
-static Node *parse_term(Parser *p)
-{
-    Node *n = parse_unary(p);
     Token tok;
-    while (n) {
-        lex_peek(p, &tok);
-        if (tok.type != TOYS_EXPR_OP || (tok.op != '*' && tok.op != '/'))
-            break;
+    lex_peek(p, &tok);
+    if (tok.type == TOYS_EXPR_OP && tok.op == '^') {
         tok = lex_take(p);
-        Node *rhs = parse_unary(p);
-        if (!rhs)
-            return NULL;
-        n = new_binary(p, tok, n, rhs);
-    }
-    return n;
-}
 
-static Node *parse_sum(Parser *p)
-{
-    Node *n = parse_term(p);
-    Token tok;
-    while (n) {
-        lex_peek(p, &tok);
-        if (tok.type != TOYS_EXPR_OP || (tok.op != '+' && tok.op != '-'))
-            break;
-        tok = lex_take(p);
-        Node *rhs = parse_term(p);
-        if (!rhs)
-            return NULL;
-        n = new_binary(p, tok, n, rhs);
-    }
-    return n;
-}
+        ToysPoly exponent;
+        if (!parse_unary(p, &exponent))
+            return false;
 
-static Node *parse_expr(Parser *p)
-{
-    Node *n = parse_sum(p);
-    Token tok;
-    if (n) {
-        lex_peek(p, &tok);
-        if (tok.type == TOYS_EXPR_EQ) {
-            tok = lex_take(p);
-            Node *rhs = parse_sum(p);
-            if (!rhs)
-                return NULL;
-            n = new_binary(p, tok, n, rhs);
+        double k = exponent.coeffs[0];
+        if (exponent.degree != 0 || k < 0.0 || k != floor(k)) {
+            err_set(p, tok.pos, "exponent must be a non-negative integer constant");
+            return false;
         }
+        if (k > 1048576.0) {
+            err_set(p, tok.pos, "exponent too large");
+            return false;
+        }
+
+        long long n = (long long)k;
+        if (out->degree == 0) {
+            /* constant base, 0^0 = 1 by convention */
+            ToysPoly t = toys_poly_const(pow(out->coeffs[0], (double)n));
+            if (!isfinite(t.coeffs[0])) {
+                err_set(p, tok.pos, "coefficient overflows double");
+                return false;
+            }
+            *out = t;
+            return true;
+        }
+
+        ToysPoly result = toys_poly_const(1.0);
+        for (long long i = 0; i < n; i++) {
+            ToysPoly tmp;
+            if (!toys_poly_mul(&result, out, &tmp)) {
+                err_set(p, tok.pos, "result degree too large");
+                return false;
+            }
+            result = tmp;
+        }
+        *out = result;
     }
-    return n;
+    return true;
 }
 
-static Node *parse_atom(Parser *p)
+static bool parse_atom(Parser *p, ToysPoly *out)
 {
     Token tok;
     lex_peek(p, &tok);
 
     if (tok.type == TOYS_EXPR_NUM || tok.type == TOYS_EXPR_VAR) {
         tok = lex_take(p);
-        return new_node(p, tok);
+        *out = (tok.type == TOYS_EXPR_NUM) ? toys_poly_const(tok.val)
+                                           : toys_poly_x();
+        return true;
     }
 
     if (tok.type == TOYS_EXPR_LPAREN) {
         tok = lex_take(p);
-        Node *inner = parse_sum(p);
-        if (!inner)
-            return NULL;
+        if (!parse_sum(p, out))
+            return false;
         tok = lex_take(p);
         if (tok.type != TOYS_EXPR_RPAREN) {
-            err_set(&p->err, tok.pos, "expected ')'");
-            return NULL;
+            err_set(p, tok.pos, "expected ')'");
+            return false;
         }
-        return inner;
+        return true;
     }
 
-    err_set(&p->err, tok.pos,
+    err_set(p, tok.pos,
             tok.type == TOYS_EXPR_END ? "unexpected end of expression"
                                       : "expected a number, x or '('");
-    return NULL;
+    return false;
 }
 
-
-/* Evaluation */
-
-static int eval_node(const Node *n, ToysPoly *out, Err *e)
+static bool parse_term(Parser *p, ToysPoly *out)
 {
-    switch (n->token.type) {
-    case TOYS_EXPR_NUM:
-        *out = toys_poly_const(n->token.val);
-        return 1;
-    case TOYS_EXPR_VAR:
-        *out = toys_poly_x();
-        return 1;
-    case TOYS_EXPR_EQ: {
-        ToysPoly left, right;
-        if (!eval_node(n->left, &left, e) || !eval_node(n->right, &right, e))
-            return 0;
-        *out = toys_poly_sub(&left, &right);
-        return 1;
-    }
-    case TOYS_EXPR_OP: {
-        if (n->left == NULL) {
-            /* unary operation */
-            if (!eval_node(n->right, out, e))
-                return 0;
-            if (n->token.op == '-')
-                *out = toys_poly_scale(out, -1.0);
-            return 1;
-        }
+    if (!parse_unary(p, out))
+        return false;
 
-        ToysPoly left, right;
-        if (!eval_node(n->left, &left, e) || !eval_node(n->right, &right, e))
-            return 0;
+    Token tok;
+    while (1) {
+        lex_peek(p, &tok);
+        if (tok.type != TOYS_EXPR_OP || (tok.op != '*' && tok.op != '/'))
+            break;
 
-        switch (n->token.op) {
-        case '+':
-            *out = toys_poly_add(&left, &right);
-            return 1;
-        case '-':
-            *out = toys_poly_sub(&left, &right);
-            return 1;
-        case '*':
-            if (!toys_poly_mul(&left, &right, out)) {
-                err_set(e, n->token.pos, "result degree exceeds 64");
-                return 0;
-            }
-            return 1;
-        case '/':
-            if (right.degree != 0) {
-                err_set(e, n->token.pos, "division by x or a polynomial");
-                return 0;
-            }
-            if (right.coeffs[0] == 0.0) {
-                err_set(e, n->token.pos, "division by zero");
-                return 0;
-            }
-            *out = toys_poly_scale(&left, 1.0 / right.coeffs[0]);
-            return 1;
-        case '^': {
-            double exponent = right.coeffs[0];
-            if (right.degree != 0 || exponent < 0.0 || exponent != floor(exponent)) {
-                err_set(e, n->token.pos,
-                        "exponent must be a non-negative integer constant");
-                return 0;
-            }
-            if (exponent > 1048576.0) {
-                err_set(e, n->token.pos, "exponent too large");
-                return 0;
-            }
+        tok = lex_take(p);
+        ToysPoly rhs;
+        if (!parse_unary(p, &rhs))
+            return false;
 
-            long long k = (long long)exponent;
-            if (left.degree == 0) {
-                /* constant base, 0^0 = 1 by convention */
-                *out = toys_poly_const(pow(left.coeffs[0], (double)k));
-                if (!isfinite(out->coeffs[0])) {
-                    err_set(e, n->token.pos, "coefficient overflows double");
-                    return 0;
-                }
-                return 1;
+        if (tok.op == '*') {
+            ToysPoly tmp;
+            if (!toys_poly_mul(out, &rhs, &tmp)) {
+                err_set(p, tok.pos, "result degree too large");
+                return false;
             }
-
-            *out = toys_poly_const(1.0);
-            for (long long i = 0; i < k; i++) {
-                ToysPoly tmp;
-                if (!toys_poly_mul(out, &left, &tmp)) {
-                    err_set(e, n->token.pos, "result degree exceeds 64");
-                    return 0;
-                }
-                *out = tmp;
+            *out = tmp;
+        } else {
+            if (rhs.degree != 0) {
+                err_set(p, tok.pos, "division by x or a polynomial");
+                return false;
             }
-            return 1;
-        }
-        default:
-            err_set(e, n->token.pos, "unsupported operator");
-            return 0;
+            if (rhs.coeffs[0] == 0.0) {
+                err_set(p, tok.pos, "division by zero");
+                return false;
+            }
+            *out = toys_poly_scale(out, 1.0 / rhs.coeffs[0]);
         }
     }
-    case TOYS_EXPR_LPAREN:
-    case TOYS_EXPR_RPAREN:
-    case TOYS_EXPR_END:
-        err_set(e, n->token.pos, "internal parse error");
-        return 0;
-    }
-    return 0;
+    return true;
 }
 
-int toys_expr_to_poly(const char *s, size_t len, ToysPoly *out,
-                      size_t *err_pos, const char **err_msg)
+static bool parse_sum(Parser *p, ToysPoly *out)
+{
+    if (!parse_term(p, out))
+        return false;
+
+    Token tok;
+    while (1) {
+        lex_peek(p, &tok);
+        if (tok.type != TOYS_EXPR_OP || (tok.op != '+' && tok.op != '-'))
+            break;
+
+        tok = lex_take(p);
+        ToysPoly rhs;
+        if (!parse_term(p, &rhs))
+            return false;
+
+        *out = (tok.op == '+') ? toys_poly_add(out, &rhs)
+                               : toys_poly_sub(out, &rhs);
+    }
+    return true;
+}
+
+static bool parse_expr(Parser *p, ToysPoly *out)
+{
+    if (!parse_sum(p, out))
+        return false;
+
+    Token tok;
+    lex_peek(p, &tok);
+    if (tok.type == TOYS_EXPR_EQ) {
+        tok = lex_take(p);
+        ToysPoly rhs;
+        if (!parse_sum(p, &rhs))
+            return false;
+        *out = toys_poly_sub(out, &rhs);
+    }
+    return true;
+}
+
+
+const char *toys_expr_to_poly(const char *s, size_t len, ToysPoly *out,
+                              size_t *err_pos)
 {
     *err_pos = 0;
-    *err_msg = NULL;
 
     Parser p = { 0 };
-    p.lx.s = s;
-    p.lx.len = len;
-    p.err.err_pos = err_pos;
-    p.err.err_msg = err_msg;
+    p.s = s;
+    p.len = len;
+    p.err_pos = err_pos;
 
-    Node *root = parse_expr(&p);
-    if (!root)
-        return 0;
+    if (!parse_expr(&p, out))
+        return p.err_msg;
 
     Token tok;
     lex_peek(&p, &tok);
     if (tok.type != TOYS_EXPR_END) {
-        err_set(&p.err, tok.pos, "unexpected token after expression");
-        return 0;
+        err_set(&p, tok.pos, "unexpected token after expression");
+        return p.err_msg;
     }
 
-    /* A lexing error sets err_msg but lets the parser finish on the END
-     * sentinel, so check it explicitly. */
-    if (*err_msg != NULL)
-        return 0;
-
-    if (!eval_node(root, out, &p.err))
-        return 0;
+    /* Check for error that lex sets. */
+    if (p.err_msg != NULL)
+        return p.err_msg;
 
     toys_poly_trim(out);
     LOG_D("expr reduced to degree %d polynomial", out->degree);
-    return 1;
+    return NULL;
 }

@@ -57,40 +57,56 @@ static void check_roots(int n, const double *roots, const double *expected, int 
 static void test_poly(void)
 {
     double roots[TOYS_POLY_MAX_DEGREE + 1];
+    int count;
 
-    static const double cubic_expected[] = { 1, 2, 3 };
-    ToysPoly cubic = { .degree = 3, .coeffs = { -6, 11, -6, 1 } };
-    check_roots(toys_poly_solve(&cubic, roots, TOYS_POLY_MAX_DEGREE + 1),
-                roots, cubic_expected, 3);
+    /* x^2 - 5x + 6 = 0 */
+    static const double quad_expected[] = { 2, 3 };
+    ToysPoly quad = { .degree = 2, .coeffs = { 6, -5, 1 } };
+    count = toys_poly_solve(&quad, roots, TOYS_POLY_MAX_DEGREE + 1);
+    check_roots(count, roots, quad_expected, 2);
 
-    static const double cube1_expected[] = { 1 };
-    ToysPoly cube1 = { .degree = 3, .coeffs = { -1, 0, 0, 1 } };
-    check_roots(toys_poly_solve(&cube1, roots, TOYS_POLY_MAX_DEGREE + 1),
-                roots, cube1_expected, 1);
+    /* -x^2 + 5x - 6 = 0, negative leading coefficient (x1 <= x2) */
+    ToysPoly neg = { .degree = 2, .coeffs = { -6, 5, -1 } };
+    count = toys_poly_solve(&neg, roots, TOYS_POLY_MAX_DEGREE + 1);
+    check_roots(count, roots, quad_expected, 2);
 
-    static const double quartic_expected[] = { -2, -1, 1, 2 };
-    ToysPoly quartic = { .degree = 4, .coeffs = { 4, 0, -5, 0, 1 } };
-    check_roots(toys_poly_solve(&quartic, roots, TOYS_POLY_MAX_DEGREE + 1),
-                roots, quartic_expected, 4);
+    /* x^2 - 2x + 1 = 0, double root */
+    static const double doubled_expected[] = { 1 };
+    ToysPoly doubled = { .degree = 2, .coeffs = { 1, -2, 1 } };
+    count = toys_poly_solve(&doubled, roots, TOYS_POLY_MAX_DEGREE + 1);
+    check_roots(count, roots, doubled_expected, 1);
 
-    static const double pow4_expected[] = { 1 };
-    ToysPoly pow4 = { .degree = 4, .coeffs = { 1, -4, 6, -4, 1 } };
-    check_roots(toys_poly_solve(&pow4, roots, TOYS_POLY_MAX_DEGREE + 1),
-                roots, pow4_expected, 1);
+    /* x^2 + 1 = 0, no real roots */
+    ToysPoly none = { .degree = 2, .coeffs = { 1, 0, 1 } };
+    count = toys_poly_solve(&none, roots, TOYS_POLY_MAX_DEGREE + 1);
+    CHECK(count == 0, "poly no roots");
 
-    static const double pow6_expected[] = { 1 };
-    ToysPoly pow6 = { .degree = 6, .coeffs = { 1, -6, 15, -20, 15, -6, 1 } };
-    check_roots(toys_poly_solve(&pow6, roots, TOYS_POLY_MAX_DEGREE + 1),
-                roots, pow6_expected, 1);
+    /* 2 - x = 0 */
+    static const double linear_expected[] = { 2 };
+    ToysPoly linear = { .degree = 1, .coeffs = { 2, -1 } };
+    count = toys_poly_solve(&linear, roots, TOYS_POLY_MAX_DEGREE + 1);
+    check_roots(count, roots, linear_expected, 1);
+
+    /* 5 = 0 has no roots */
+    ToysPoly constant = { .degree = 0, .coeffs = { 5 } };
+    count = toys_poly_solve(&constant, roots, TOYS_POLY_MAX_DEGREE + 1);
+    CHECK(count == 0, "poly constant none");
 
     /* trailing zeros are trimmed by the solver */
-    ToysPoly trimmed = { .degree = 6, .coeffs = { -6, 11, -6, 1, 0, 0, 0 } };
-    check_roots(toys_poly_solve(&trimmed, roots, TOYS_POLY_MAX_DEGREE + 1),
-                roots, cubic_expected, 3);
+    static const double trimmed_expected[] = { 1.2 };
+    ToysPoly trimmed = { .degree = 2, .coeffs = { 6, -5, 0 } };
+    count = toys_poly_solve(&trimmed, roots, TOYS_POLY_MAX_DEGREE + 1);
+    check_roots(count, roots, trimmed_expected, 1);
 
-    ToysPoly allzero = { .degree = 5, .coeffs = { 0 } };
+    /* all-zero: every x is a solution */
+    ToysPoly allzero = { .degree = 2, .coeffs = { 0 } };
     CHECK(toys_poly_solve(&allzero, roots, TOYS_POLY_MAX_DEGREE + 1) ==
           TOYS_SOLVE_INF, "poly all-zero inf");
+
+    /* degree above the limit is an error */
+    ToysPoly too_big = { .degree = TOYS_POLY_MAX_DEGREE + 1, .coeffs = { 0 } };
+    CHECK(toys_poly_solve(&too_big, roots, TOYS_POLY_MAX_DEGREE + 1) ==
+          TOYS_SOLVE_ERR, "poly degree too big");
 }
 
 int main(void)

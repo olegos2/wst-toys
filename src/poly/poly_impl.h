@@ -3,14 +3,10 @@
 
 #include "toys/solve.h"
 
+#include <stdbool.h>
 #include <string.h>
 
-
-/* Fixed-capacity polynomial shared by the solver (poly.c) and the
- * expression parser (expr.c). coeffs[i] holds the coefficient of x^i;
- * degree is the highest index the array was filled to, trailing zeroes
- * are allowed and removed by toys_poly_trim. */
-
+/** Returns const polynomial. */
 static inline ToysPoly toys_poly_const(double v)
 {
     ToysPoly p = { 0 };
@@ -18,6 +14,7 @@ static inline ToysPoly toys_poly_const(double v)
     return p;
 }
 
+/** Returns linear 1*x polynomial. */
 static inline ToysPoly toys_poly_x(void)
 {
     ToysPoly p = { 0 };
@@ -26,6 +23,7 @@ static inline ToysPoly toys_poly_x(void)
     return p;
 }
 
+/** Scales all coeffs of polynomial */
 static inline ToysPoly toys_poly_scale(const ToysPoly *a, double s)
 {
     ToysPoly r = *a;
@@ -34,6 +32,7 @@ static inline ToysPoly toys_poly_scale(const ToysPoly *a, double s)
     return r;
 }
 
+/** Sums each coeff of 2 polynomials, result has max degree of inputs. */
 static inline ToysPoly toys_poly_add(const ToysPoly *a, const ToysPoly *b)
 {
     ToysPoly r = *a;
@@ -54,41 +53,23 @@ static inline ToysPoly toys_poly_sub(const ToysPoly *a, const ToysPoly *b)
     return r;
 }
 
-/* Convolution; returns 0 if the result degree would exceed the solver limit. */
-static inline int toys_poly_mul(const ToysPoly *a, const ToysPoly *b, ToysPoly *out)
+/* Multiplies and sums (convolutes) coefficients of polynomials,
+ * returns false if resulting degree would not fit. */
+static inline bool toys_poly_mul(const ToysPoly *a, const ToysPoly *b, ToysPoly *out)
 {
     int degree = a->degree + b->degree;
     if (degree > TOYS_POLY_MAX_DEGREE)
-        return 0;
+        return false;
 
     memset(out, 0, sizeof(*out));
     out->degree = degree;
     for (int i = 0; i <= a->degree; i++)
         for (int j = 0; j <= b->degree; j++)
             out->coeffs[i + j] += a->coeffs[i] * b->coeffs[j];
-    return 1;
+    return true;
 }
 
-/** Horner evaluation of P(x) = coeffs[0] + x (coeffs[1] + ... x coeffs[degree]). */
-static inline double toys_poly_eval(const ToysPoly *p, double x)
-{
-    double v = p->coeffs[p->degree];
-    for (int i = p->degree - 1; i >= 0; i--)
-        v = v * x + p->coeffs[i];
-    return v;
-}
-
-/** Horner evaluation of P'(x) = sum i * coeffs[i] * x^(i-1). */
-static inline double toys_poly_eval_deriv(const ToysPoly *p, double x)
-{
-    double v = p->degree * p->coeffs[p->degree];
-    for (int i = p->degree - 1; i >= 1; i--)
-        v = v * x + i * p->coeffs[i];
-    return v;
-}
-
-/* Drop trailing zero coefficients; all-zero reduces to degree 0 with
- * coeffs[0] = 0, which the solver reports as TOYS_SOLVE_INF. */
+/* Drop trailing zero coeffs. */
 static inline void toys_poly_trim(ToysPoly *p)
 {
     while (p->degree > 0 && p->coeffs[p->degree] == 0.0)
