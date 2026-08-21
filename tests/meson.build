@@ -8,3 +8,23 @@ test_poly = executable(
 )
 
 test('poly', test_poly)
+
+test_argparse = executable(
+    'test_argparse',
+    'test_argparse.c',
+    dependencies: [
+        toys_argparse_dep
+    ]
+)
+
+test('argparse', test_argparse)
+
+test_ds = executable(
+    'test_ds',
+    'test_ds.c',
+    dependencies: [
+        toys_ds_dep
+    ]
+)
+
+test('ds', test_ds)

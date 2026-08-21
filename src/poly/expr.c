@@ -54,33 +54,17 @@ typedef struct {
     const char *err_msg;
 } Parser;
 
-
-ToysPoly toys_poly_const(double v)
+WstPoly wst_poly_scale(const WstPoly *a, double s)
 {
-    ToysPoly p = { 0 };
-    p.coeffs[0] = v;
-    return p;
-}
-
-ToysPoly toys_poly_x(void)
-{
-    ToysPoly p = { 0 };
-    p.degree = 1;
-    p.coeffs[1] = 1.0;
-    return p;
-}
-
-ToysPoly toys_poly_scale(const ToysPoly *a, double s)
-{
-    ToysPoly r = *a;
-    for (int i = 0; i <= a->degree; i++)
+    WstPoly r = *a;
+    for (int i = 0; i <= WST_SOLVE_MAX_DEGREE; i++)
         r.coeffs[i] *= s;
     return r;
 }
 
-ToysPoly toys_poly_add(const ToysPoly *a, const ToysPoly *b)
+WstPoly wst_poly_add(const WstPoly *a, const WstPoly *b)
 {
-    ToysPoly r = *a;
+    WstPoly r = *a;
     int degree = (a->degree > b->degree) ? a->degree : b->degree;
     for (int i = 0; i <= degree; i++)
         r.coeffs[i] = a->coeffs[i] + b->coeffs[i];
@@ -88,9 +72,9 @@ ToysPoly toys_poly_add(const ToysPoly *a, const ToysPoly *b)
     return r;
 }
 
-ToysPoly toys_poly_sub(const ToysPoly *a, const ToysPoly *b)
+WstPoly wst_poly_sub(const WstPoly *a, const WstPoly *b)
 {
-    ToysPoly r = *a;
+    WstPoly r = *a;
     int degree = (a->degree > b->degree) ? a->degree : b->degree;
     for (int i = 0; i <= degree; i++)
         r.coeffs[i] = a->coeffs[i] - b->coeffs[i];
@@ -98,10 +82,10 @@ ToysPoly toys_poly_sub(const ToysPoly *a, const ToysPoly *b)
     return r;
 }
 
-bool toys_poly_mul(const ToysPoly *a, const ToysPoly *b, ToysPoly *out)
+bool wst_poly_mul(const WstPoly *a, const WstPoly *b, WstPoly *out)
 {
     int degree = a->degree + b->degree;
-    if (degree > TOYS_POLY_MAX_DEGREE)
+    if (degree > WST_SOLVE_MAX_DEGREE)
         return false;
 
     memset(out, 0, sizeof(*out));
@@ -220,7 +204,7 @@ static Token lex_take(Parser *p)
     return tok;
 }
 
-const char *toys_expr_to_poly(const char *s, size_t len, ToysPoly *out, size_t *err_pos)
+const char *wst_expr_to_poly(const char *s, size_t len, WstPoly *out, size_t *err_pos)
 {
     LOG_E("No");
     return NULL;

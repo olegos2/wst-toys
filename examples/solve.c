@@ -30,15 +30,15 @@ static bool parse_coeff(const char *str, size_t len, double *out)
     return true;
 }
 
-static void print_solution(const ToysSolution *sol)
+static void print_solution(const WstSolution *sol)
 {
     assert(sol != NULL);
 
-    if (sol->count == TOYS_SOLVE_INF) {
+    if (sol->count == WST_SOLVE_INF) {
         printf("infinite solutions\n");
         return;
     }
-    if (sol->count == TOYS_SOLVE_ERR) {
+    if (sol->count == WST_SOLVE_ERR) {
         printf("solver error\n");
         return;
     }
@@ -67,7 +67,7 @@ static char *token_end(char *s)
 }
 
 /* First pass counts the numbers to enforce the degree cap. */
-static bool parse_line(char *line, ToysPoly *poly)
+static bool parse_line(char *line, WstPoly *poly)
 {
     assert(line != NULL);
 
@@ -76,9 +76,9 @@ static bool parse_line(char *line, ToysPoly *poly)
         n++;
     if (n == 0)
         return false;
-    if (n - 1 > TOYS_POLY_MAX_DEGREE) {
+    if (n - 1 > WST_SOLVE_MAX_DEGREE) {
         fprintf(stderr, "Too many coefficients on one line (max degree %d)\n",
-                TOYS_POLY_MAX_DEGREE);
+                WST_SOLVE_MAX_DEGREE);
         return false;
     }
 
@@ -117,10 +117,10 @@ static void run_interactive(void)
         if (getline(&line, &len, stdin) == -1)
             break;
 
-        ToysPoly poly = { 0 };
+        WstPoly poly = { 0 };
         if (!parse_line(line, &poly))
             continue;
-        ToysSolution sol = toys_poly_solve(&poly);
+        WstSolution sol = wst_solve_poly(&poly);
         print_solution(&sol);
     }
     free(line);
@@ -149,13 +149,13 @@ static void print_help(void)
 /* coeffs command: solve using numeric coefficients from argv. */
 static int run_coeffs(int argc, char *argv[])
 {
-    if (argc - 1 > TOYS_POLY_MAX_DEGREE + 1) {
-        LOG_E("too many coefficients (max degree %d)", TOYS_POLY_MAX_DEGREE);
+    if (argc - 1 > WST_SOLVE_MAX_DEGREE + 1) {
+        LOG_E("too many coefficients (max degree %d)", WST_SOLVE_MAX_DEGREE);
         return 1;
     }
 
     /* Parse coefficients separately, with malformed numbers checks. */
-    ToysPoly poly = { 0 };
+    WstPoly poly = { 0 };
     int count = 0;
     for (int i = 1; i < argc; i++) {
         if (!parse_coeff(argv[i], strlen(argv[i]), &poly.coeffs[count])) {
@@ -166,7 +166,7 @@ static int run_coeffs(int argc, char *argv[])
         count++;
     }
 
-    ToysSolution sol = toys_poly_solve(&poly);
+    WstSolution sol = wst_solve_poly(&poly);
     print_solution(&sol);
     return 0;
 }
@@ -201,9 +201,9 @@ static int run_expr(int argc, char *argv[])
     }
     *dst = '\0';
 
-    ToysPoly poly;
+    WstPoly poly;
     size_t err_pos;
-    const char *err_msg = toys_expr_to_poly(expr, strlen(expr), &poly, &err_pos);
+    const char *err_msg = wst_expr_to_poly(expr, strlen(expr), &poly, &err_pos);
     if (err_msg != NULL) {
         fprintf(stderr, "Expression error at position %zu: %s", err_pos, err_msg);
         free(expr);
@@ -211,7 +211,7 @@ static int run_expr(int argc, char *argv[])
     }
     free(expr);
 
-    ToysSolution sol = toys_poly_solve(&poly);
+    WstSolution sol = wst_solve_poly(&poly);
     print_solution(&sol);
     return 0;
 }

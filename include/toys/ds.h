@@ -1,63 +1,45 @@
 #ifndef TOYS_DS_H
 #define TOYS_DS_H
 
-#include "toys/debug.h"
-
-#include <errno.h>
 #include <stddef.h>
-#include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
 
+
+/** Grown block header, lives right before the exposed array. */
 typedef struct {
     size_t length;
     size_t cap;
 } VecHeader;
 
+/** Grows the vector to hold one more entry and bumps length.
+ * Returns the new base, or NULL on allocation failure with the
+ * vector left untouched. */
+void *vec_reserve(void *arr, size_t entry_sz);
+
 #define vec_header(v) ((VecHeader *)(v) - 1)
-#define vec_base(h) (void *)(h + 1)
-#define vec_len(v) ((v) ? vec_header(v)->length : 0)
-#define vec_cap(v) ((v) ? vec_header(v)->capacity : 0)
-// #define vec_put(vec, val)
+#define vec_base(h)   (void *)((VecHeader *)(h) + 1)
+#define vec_len(v)    ((v) ? vec_header(v)->length : 0)
+#define vec_cap(v)    ((v) ? vec_header(v)->cap : 0)
 
-static inline size_t vec_real_size(size_t cap, size_t entry_sz)
-{
-    return cap * entry_sz + sizeof(VecHeader);
-}
+/**
+ * Appends val to the vector, does nothing on allocation failure.
+ * Entries are read and written with plain indexing, v[i].
+ */
+#define vec_push(v, val) \
+    do { \
+        void *vec_tmp = vec_reserve((v), sizeof(*(v))); \
+        if (vec_tmp != NULL) { \
+            (v) = vec_tmp; \
+            (v)[vec_len(v) - 1] = (val); \
+        } \
+    } while (0)
 
-static void *vec_reserve(void *arr, size_t entry_sz)
-{
-    VecHeader *hdr = (arr != NULL) ? vec_header(arr) : NULL;
-    size_t new_len = 0, new_cap = 0;
-    if (hdr != NULL) {
-        new_len = hdr->length + 1;
-        new_cap = hdr->cap;
-    }
-
-    if (new_len > new_cap) {
-        new_cap = (new_cap == 0) ? 1 : (new_cap * 2);
-        size_t new_sz = vec_real_size(new_cap, entry_sz);
-    
-        hdr = realloc(hdr, new_sz);
-        if (hdr == NULL) return NULL;
-
-        arr = vec_base(hdr);
-        hdr->cap = new_cap;
-    }
-
-    hdr->length = new_len;
-    return arr;
-}
-
-#define vec_put(v, entry) (vec_reserve(v, sizeof(entry)))
-
-static bool vec_put(void **arr, size_t entry_sz, void *val)
-{
-    void *new_arr = vec_reserve(arr, entry_sz);
-    if (new_arr == NULL) {
-        LOG_E("Not enough mem for new cap");
-        return NULL;
-    }
-}
+#define vec_free(v) \
+    do { \
+        if (v) { \
+            free(vec_header(v)); \
+            (v) = NULL; \
+        } \
+    } while (0)
 
 #endif /* TOYS_DS_H */

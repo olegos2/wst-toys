@@ -1,5 +1,7 @@
 toys_hdrs = files(
+    'argparse.h',
     'debug.h',
+    'ds.h',
     'solve.h',
 )
 

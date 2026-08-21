@@ -8,16 +8,16 @@
 
 /* `iszero` uses are questionable? */
 
-void toys_poly_trim(ToysPoly *p)
+void wst_poly_trim(WstPoly *p)
 {
     // /* Clamp bad degree number. */
-    // if (p->degree > TOYS_POLY_MAX_DEGREE)
-    //     p->degree = TOYS_POLY_MAX_DEGREE;
+    // if (p->degree > WST_SOLVE_MAX_DEGREE)
+    //     p->degree = WST_SOLVE_MAX_DEGREE;
     while (p->degree > 0 && iszero(p->coeffs[p->degree]))
         p->degree--;
 }
 
-static int toys_quad_solve(double c, double b, double a, double *x1, double *x2)
+static int wst_quad_solve(double c, double b, double a, double *x1, double *x2)
 {
     double disc = b * b - 4.0 * a * c;
     if (disc < 0.0)
@@ -43,27 +43,27 @@ static int toys_quad_solve(double c, double b, double a, double *x1, double *x2)
     return 2;
 }
 
-ToysSolution toys_poly_solve(ToysPoly *poly)
+WstSolution wst_solve_poly(WstPoly *poly)
 {
     assert(poly != NULL);
-    ToysSolution sol = { 0 };
+    WstSolution sol = { 0 };
 
-    toys_poly_trim(poly);
+    wst_poly_trim(poly);
     switch (poly->degree) {
     case 0:
-        sol.count = iszero(poly->coeffs[0]) ? TOYS_SOLVE_INF : 0;
+        sol.count = iszero(poly->coeffs[0]) ? WST_SOLVE_INF : 0;
         return sol;
     case 1:
         sol.roots[0] = -poly->coeffs[0] / poly->coeffs[1];
         sol.count = 1;
         return sol;
     case 2:
-        sol.count = toys_quad_solve(
+        sol.count = wst_quad_solve(
             poly->coeffs[0], poly->coeffs[1], poly->coeffs[2], &sol.roots[0], &sol.roots[1]);
         return sol;
     default:
         LOG_E("invalid args: degree=%d", poly->degree);
-        sol.count = TOYS_SOLVE_ERR;
+        sol.count = WST_SOLVE_ERR;
         return sol;
     }
 }
