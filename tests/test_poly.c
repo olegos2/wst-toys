@@ -1,117 +1,70 @@
 #include "toys/solve.h"
 
 #include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 
 static int failures = 0;
+static int counter = 0;
 
-#define CHECK(cond, msg) \
-    do { \
-        if (!(cond)) { \
-            fprintf(stderr, "FAIL %s (%s:%d)\n", msg, __FILE__, __LINE__); \
-            failures++; \
-        } \
-    } while (0)
-
-#define CHECK_DBL(a, b, msg) \
-    do { \
-        double __a = (a); \
-        double __b = (b); \
-        if (!(fabs(__a - __b) <= 1e-6)) { \
-            fprintf(stderr, "FAIL %s: got %g want %g (%s:%d)\n", \
-                    msg, __a, __b, __FILE__, __LINE__); \
-            failures++; \
-        } \
-    } while (0)
-
-static void test_quad(void)
+static void check_roots(const ToysPoly *poly, const ToysSolution *s, const ToysSolution *expected)
 {
-    double x1, x2;
+    counter++;
+    bool ok = s->count == expected->count;
+    for (int i = 0; ok && i < s->count; i++)
+        ok = iszero(s->roots[i] - expected->roots[i]);
+    if (ok) return;
 
-    CHECK(toys_quad_solve(1, -5, 6, &x1, &x2) == 2, "quad two roots count");
-    CHECK_DBL(x1, 2.0, "quad x1");
-    CHECK_DBL(x2, 3.0, "quad x2");
+    fprintf(stderr, "\nPolynomial degree %d failed (test %d):\n", poly->degree, counter);
+    for (int i = 0; i < poly->degree; i++)
+        fprintf(stderr, "[%d] = %lg,\n", i, poly->coeffs[i]);
+    fprintf(stderr, "Got sol %d roots:\n", s->count);
+    for (int i = 0; i < s->count; i++)
+        fprintf(stderr, "[%d] = %lg,\n", i, s->roots[i]);
+    fprintf(stderr, "Expected sol %d roots:\n", expected->count);
+    for (int i = 0; i < expected->count; i++)
+        fprintf(stderr, "[%d] = %lg,\n", i, expected->roots[i]);
 
-    CHECK(toys_quad_solve(1, -2, 1, &x1, &x2) == 1, "quad double count");
-    CHECK_DBL(x1, 1.0, "quad double x1");
-
-    CHECK(toys_quad_solve(1, 0, 1, &x1, &x2) == 0, "quad no roots");
-
-    CHECK(toys_quad_solve(0, 2, -4, &x1, &x2) == 1, "linear count");
-    CHECK_DBL(x1, 2.0, "linear x1");
-
-    CHECK(toys_quad_solve(0, 0, 0, &x1, &x2) == TOYS_SOLVE_INF, "quad inf any");
-    CHECK(toys_quad_solve(0, 0, 5, &x1, &x2) == 0, "quad inf none");
+    failures++;
 }
 
-static void check_roots(int n, const double *roots, const double *expected, int count)
+static void check_poly(ToysPoly *poly, const ToysSolution *expected)
 {
-    char msg[64];
-    CHECK(n == count, "poly root count");
-    for (int i = 0; i < n && i < count; i++) {
-        snprintf(msg, sizeof(msg), "poly root[%d]", i);
-        CHECK_DBL(roots[i], expected[i], msg);
-    }
+    ToysSolution sol = toys_poly_solve(poly);
+    check_roots(poly, &sol, expected);
 }
 
 static void test_poly(void)
 {
-    double roots[TOYS_POLY_MAX_DEGREE + 1];
-    int count;
+    check_poly(&(ToysPoly){ .degree = 2, .coeffs = { 6, -5, 1 } },
+        &(ToysSolution){ .count = 2, .roots = { 2, 3 } } );
+    check_poly(&(ToysPoly){ .degree = 2, .coeffs = { -6, 5, -1 } },
+        &(ToysSolution){ .count = 2, .roots = { 2, 3 } } );
 
-    /* x^2 - 5x + 6 = 0 */
-    static const double quad_expected[] = { 2, 3 };
-    ToysPoly quad = { .degree = 2, .coeffs = { 6, -5, 1 } };
-    count = toys_poly_solve(&quad, roots, TOYS_POLY_MAX_DEGREE + 1);
-    check_roots(count, roots, quad_expected, 2);
+    check_poly(&(ToysPoly){ .degree = 2, .coeffs = { 1, -2, 1 } },
+        &(ToysSolution){ .count = 1, .roots = { 1 } } );
+    
+    check_poly(&(ToysPoly){ .degree = 2, .coeffs = { 1, 0, 1 } },
+        &(ToysSolution){ .count = 0 } );
+    
+    check_poly(&(ToysPoly){ .degree = 1, .coeffs = { 2, -1 } },
+        &(ToysSolution){ .count = 1, .roots = { 2 } } );
 
-    /* -x^2 + 5x - 6 = 0, negative leading coefficient (x1 <= x2) */
-    ToysPoly neg = { .degree = 2, .coeffs = { -6, 5, -1 } };
-    count = toys_poly_solve(&neg, roots, TOYS_POLY_MAX_DEGREE + 1);
-    check_roots(count, roots, quad_expected, 2);
+    check_poly(&(ToysPoly){ .degree = 0, .coeffs = { 5 } },
+        &(ToysSolution){ .count = 0 } );
 
-    /* x^2 - 2x + 1 = 0, double root */
-    static const double doubled_expected[] = { 1 };
-    ToysPoly doubled = { .degree = 2, .coeffs = { 1, -2, 1 } };
-    count = toys_poly_solve(&doubled, roots, TOYS_POLY_MAX_DEGREE + 1);
-    check_roots(count, roots, doubled_expected, 1);
+    check_poly(&(ToysPoly){ .degree = 2, .coeffs = { 6, -5, 0 } },
+        &(ToysSolution){ .count = 1, .roots = { 1.2 } } );
 
-    /* x^2 + 1 = 0, no real roots */
-    ToysPoly none = { .degree = 2, .coeffs = { 1, 0, 1 } };
-    count = toys_poly_solve(&none, roots, TOYS_POLY_MAX_DEGREE + 1);
-    CHECK(count == 0, "poly no roots");
+    check_poly(&(ToysPoly){ .degree = 2, .coeffs = { 0 } },
+        &(ToysSolution){ .count = TOYS_SOLVE_INF } );
 
-    /* 2 - x = 0 */
-    static const double linear_expected[] = { 2 };
-    ToysPoly linear = { .degree = 1, .coeffs = { 2, -1 } };
-    count = toys_poly_solve(&linear, roots, TOYS_POLY_MAX_DEGREE + 1);
-    check_roots(count, roots, linear_expected, 1);
-
-    /* 5 = 0 has no roots */
-    ToysPoly constant = { .degree = 0, .coeffs = { 5 } };
-    count = toys_poly_solve(&constant, roots, TOYS_POLY_MAX_DEGREE + 1);
-    CHECK(count == 0, "poly constant none");
-
-    /* trailing zeros are trimmed by the solver */
-    static const double trimmed_expected[] = { 1.2 };
-    ToysPoly trimmed = { .degree = 2, .coeffs = { 6, -5, 0 } };
-    count = toys_poly_solve(&trimmed, roots, TOYS_POLY_MAX_DEGREE + 1);
-    check_roots(count, roots, trimmed_expected, 1);
-
-    /* all-zero: every x is a solution */
-    ToysPoly allzero = { .degree = 2, .coeffs = { 0 } };
-    CHECK(toys_poly_solve(&allzero, roots, TOYS_POLY_MAX_DEGREE + 1) ==
-          TOYS_SOLVE_INF, "poly all-zero inf");
-
-    /* degree above the limit is an error */
-    ToysPoly too_big = { .degree = TOYS_POLY_MAX_DEGREE + 1, .coeffs = { 0 } };
-    CHECK(toys_poly_solve(&too_big, roots, TOYS_POLY_MAX_DEGREE + 1) ==
-          TOYS_SOLVE_ERR, "poly degree too big");
+    check_poly(&(ToysPoly){ .degree = TOYS_POLY_MAX_DEGREE + 1, .coeffs = { 0 } },
+        &(ToysSolution){ .count = TOYS_SOLVE_ERR } );
 }
 
 int main(void)
 {
-    test_quad();
     test_poly();
     if (failures == 0) {
         printf("all tests passed\n");

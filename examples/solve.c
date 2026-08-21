@@ -1,6 +1,7 @@
 #include "toys/debug.h"
 #include "toys/solve.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -8,10 +9,19 @@
 #include <string.h>
 #include <unistd.h>
 
+#if defined(_MSC_VER) || defined(_WIN32)
+#  include <io.h>
+#  define isatty _isatty
+#  define fileno _fileno
+#else
+#  include <unistd.h>
+#endif
 
 /* strtod must consume the whole string as one number. */
 static bool parse_coeff(const char *str, size_t len, double *out)
 {
+    assert(out != NULL);
+
     char *end = NULL;
     double val = strtod(str, &end);
     if (end == str || end != str + len)
@@ -20,24 +30,26 @@ static bool parse_coeff(const char *str, size_t len, double *out)
     return true;
 }
 
-static void print_solution(int count, const double *roots)
+static void print_solution(const ToysSolution *sol)
 {
-    if (count == TOYS_SOLVE_INF) {
+    assert(sol != NULL);
+
+    if (sol->count == TOYS_SOLVE_INF) {
         printf("infinite solutions\n");
         return;
     }
-    if (count == TOYS_SOLVE_ERR) {
+    if (sol->count == TOYS_SOLVE_ERR) {
         printf("solver error\n");
         return;
     }
-    if (count == 0) {
+    if (sol->count == 0) {
         printf("no real roots\n");
         return;
     }
 
-    printf("%d roots:\n", count);
-    for (int i = 0; i < count; i++)
-        printf("x%d = %g\n", i + 1, roots[i]);
+    printf("%d roots:\n", sol->count);
+    for (int i = 0; i < sol->count; i++)
+        printf("x%d = %lg\n", i + 1, sol->roots[i] + 0.0); // workaround to avoid printing -0
 }
 
 static char *skip_seps(char *s)
@@ -57,14 +69,16 @@ static char *token_end(char *s)
 /* First pass counts the numbers to enforce the degree cap. */
 static bool parse_line(char *line, ToysPoly *poly)
 {
+    assert(line != NULL);
+
     int n = 0;
     for (char *p = skip_seps(line); *p != '\0'; p = skip_seps(token_end(p)))
         n++;
     if (n == 0)
         return false;
     if (n - 1 > TOYS_POLY_MAX_DEGREE) {
-        LOG_E("too many coefficients on one line (max degree %d)",
-              TOYS_POLY_MAX_DEGREE);
+        fprintf(stderr, "Too many coefficients on one line (max degree %d)\n",
+                TOYS_POLY_MAX_DEGREE);
         return false;
     }
 
@@ -72,7 +86,7 @@ static bool parse_line(char *line, ToysPoly *poly)
     for (char *p = skip_seps(line); *p != '\0';) {
         char *end = token_end(p);
         if (!parse_coeff(p, (size_t)(end - p), &poly->coeffs[i])) {
-            LOG_E("invalid number %.*s", (int)(end - p), p);
+            fprintf(stderr, "Invalid number %.*s\n", (int)(end - p), p);
             return false;
         }
         poly->degree = i;
@@ -80,15 +94,6 @@ static bool parse_line(char *line, ToysPoly *poly)
         p = skip_seps(end);
     }
     return true;
-}
-
-static void solve_and_print(const ToysPoly *poly, const char *source)
-{
-    LOG_D("solving degree %d %s", poly->degree, source);
-
-    double roots[TOYS_POLY_MAX_DEGREE + 1];
-    int count = toys_poly_solve(poly, roots, TOYS_POLY_MAX_DEGREE + 1);
-    print_solution(count, roots);
 }
 
 /* Reads coefficient lines from stdin until EOF and prints results. */
@@ -115,7 +120,8 @@ static void run_interactive(void)
         ToysPoly poly = { 0 };
         if (!parse_line(line, &poly))
             continue;
-        solve_and_print(&poly, "from stdin");
+        ToysSolution sol = toys_poly_solve(&poly);
+        print_solution(&sol);
     }
     free(line);
 }
@@ -160,7 +166,8 @@ static int run_coeffs(int argc, char *argv[])
         count++;
     }
 
-    solve_and_print(&poly, "from argv");
+    ToysSolution sol = toys_poly_solve(&poly);
+    print_solution(&sol);
     return 0;
 }
 
@@ -168,7 +175,7 @@ static int run_coeffs(int argc, char *argv[])
 static int run_expr(int argc, char *argv[])
 {
     if (argc <= 1) {
-        LOG_E("no expression given, run 'toys_solve --help' for usage");
+        fprintf(stderr, "No expression given, run 'toys_solve --help' for usage\n");
         return 1;
     }
 
@@ -198,13 +205,14 @@ static int run_expr(int argc, char *argv[])
     size_t err_pos;
     const char *err_msg = toys_expr_to_poly(expr, strlen(expr), &poly, &err_pos);
     if (err_msg != NULL) {
-        fprintf(stderr, "expr error at position %zu: %s\n", err_pos, err_msg);
+        fprintf(stderr, "Expression error at position %zu: %s", err_pos, err_msg);
         free(expr);
         return 1;
     }
     free(expr);
 
-    solve_and_print(&poly, "from expr");
+    ToysSolution sol = toys_poly_solve(&poly);
+    print_solution(&sol);
     return 0;
 }
 
@@ -229,6 +237,6 @@ int main(int argc, char *argv[])
     if (strcmp(command, "expr") == 0)
         return run_expr(argc - 1, argv + 1);
 
-    LOG_E("unknown command '%s', run 'toys_solve --help' for usage", command);
+    fprintf(stderr, "Unknown command '%s', run 'toys_solve --help' for usage\n", command);
     return 1;
 }

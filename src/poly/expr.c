@@ -1,11 +1,11 @@
 #include "toys/debug.h"
 #include "toys/solve.h"
-#include "poly_impl.h"
 
 #include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 /* Single pass expression parser: the lexer streams tokens into recursive descent and
@@ -53,6 +53,64 @@ typedef struct {
     /* [out] error string. */
     const char *err_msg;
 } Parser;
+
+
+ToysPoly toys_poly_const(double v)
+{
+    ToysPoly p = { 0 };
+    p.coeffs[0] = v;
+    return p;
+}
+
+ToysPoly toys_poly_x(void)
+{
+    ToysPoly p = { 0 };
+    p.degree = 1;
+    p.coeffs[1] = 1.0;
+    return p;
+}
+
+ToysPoly toys_poly_scale(const ToysPoly *a, double s)
+{
+    ToysPoly r = *a;
+    for (int i = 0; i <= a->degree; i++)
+        r.coeffs[i] *= s;
+    return r;
+}
+
+ToysPoly toys_poly_add(const ToysPoly *a, const ToysPoly *b)
+{
+    ToysPoly r = *a;
+    int degree = (a->degree > b->degree) ? a->degree : b->degree;
+    for (int i = 0; i <= degree; i++)
+        r.coeffs[i] = a->coeffs[i] + b->coeffs[i];
+    r.degree = degree;
+    return r;
+}
+
+ToysPoly toys_poly_sub(const ToysPoly *a, const ToysPoly *b)
+{
+    ToysPoly r = *a;
+    int degree = (a->degree > b->degree) ? a->degree : b->degree;
+    for (int i = 0; i <= degree; i++)
+        r.coeffs[i] = a->coeffs[i] - b->coeffs[i];
+    r.degree = degree;
+    return r;
+}
+
+bool toys_poly_mul(const ToysPoly *a, const ToysPoly *b, ToysPoly *out)
+{
+    int degree = a->degree + b->degree;
+    if (degree > TOYS_POLY_MAX_DEGREE)
+        return false;
+
+    memset(out, 0, sizeof(*out));
+    out->degree = degree;
+    for (int i = 0; i <= a->degree; i++)
+        for (int j = 0; j <= b->degree; j++)
+            out->coeffs[i + j] += a->coeffs[i] * b->coeffs[j];
+    return true;
+}
 
 static void err_set(Parser *p, size_t pos, const char *msg)
 {
@@ -162,235 +220,8 @@ static Token lex_take(Parser *p)
     return tok;
 }
 
-
-/* Parser: recursive descent over the token stream, every production
- * returns the reduced polynomial directly.
- *
- *   expr  := sum ('=' sum)?
- *   sum   := term (('+'|'-') term)*
- *   term  := unary (('*'|'/') unary)*
- *   unary := ('+'|'-')* power
- *   power := atom ('^' unary)?      right-assoc: x^2^3 = x^(2^3)
- *   atom  := NUM | VAR | '(' sum ')'
- *
- * The equals sign is only allowed at the top level. The power rule
- * also accepts a unary exponent, so x^-1 and -x^2 (as -(x^2)) parse
- * as expected. */
-
-static bool parse_sum(Parser *p, ToysPoly *out);
-static bool parse_unary(Parser *p, ToysPoly *out);
-static bool parse_power(Parser *p, ToysPoly *out);
-static bool parse_atom(Parser *p, ToysPoly *out);
-
-static bool parse_unary(Parser *p, ToysPoly *out)
+const char *toys_expr_to_poly(const char *s, size_t len, ToysPoly *out, size_t *err_pos)
 {
-    if (p->depth >= TOYS_EXPR_MAX_DEPTH) {
-        err_set(p, p->pos, "expression too long");
-        return false;
-    }
-    p->depth++;
-
-    Token tok;
-    lex_peek(p, &tok);
-    bool ok = true;
-    if (tok.type == TOYS_EXPR_OP && (tok.op == '+' || tok.op == '-')) {
-        tok = lex_take(p);
-        ToysPoly inner;
-        if (!parse_unary(p, &inner))
-            ok = false;
-        else
-            *out = (tok.op == '-') ? toys_poly_scale(&inner, -1.0) : inner;
-    } else {
-        ok = parse_power(p, out);
-    }
-
-    p->depth--;
-    return ok;
-}
-
-static bool parse_power(Parser *p, ToysPoly *out)
-{
-    if (!parse_atom(p, out))
-        return false;
-
-    Token tok;
-    lex_peek(p, &tok);
-    if (tok.type == TOYS_EXPR_OP && tok.op == '^') {
-        tok = lex_take(p);
-
-        ToysPoly exponent;
-        if (!parse_unary(p, &exponent))
-            return false;
-
-        double k = exponent.coeffs[0];
-        if (exponent.degree != 0 || k < 0.0 || k != floor(k)) {
-            err_set(p, tok.pos, "exponent must be a non-negative integer constant");
-            return false;
-        }
-        if (k > 1048576.0) {
-            err_set(p, tok.pos, "exponent too large");
-            return false;
-        }
-
-        long long n = (long long)k;
-        if (out->degree == 0) {
-            /* constant base, 0^0 = 1 by convention */
-            ToysPoly t = toys_poly_const(pow(out->coeffs[0], (double)n));
-            if (!isfinite(t.coeffs[0])) {
-                err_set(p, tok.pos, "coefficient overflows double");
-                return false;
-            }
-            *out = t;
-            return true;
-        }
-
-        ToysPoly result = toys_poly_const(1.0);
-        for (long long i = 0; i < n; i++) {
-            ToysPoly tmp;
-            if (!toys_poly_mul(&result, out, &tmp)) {
-                err_set(p, tok.pos, "result degree too large");
-                return false;
-            }
-            result = tmp;
-        }
-        *out = result;
-    }
-    return true;
-}
-
-static bool parse_atom(Parser *p, ToysPoly *out)
-{
-    Token tok;
-    lex_peek(p, &tok);
-
-    if (tok.type == TOYS_EXPR_NUM || tok.type == TOYS_EXPR_VAR) {
-        tok = lex_take(p);
-        *out = (tok.type == TOYS_EXPR_NUM) ? toys_poly_const(tok.val)
-                                           : toys_poly_x();
-        return true;
-    }
-
-    if (tok.type == TOYS_EXPR_LPAREN) {
-        tok = lex_take(p);
-        if (!parse_sum(p, out))
-            return false;
-        tok = lex_take(p);
-        if (tok.type != TOYS_EXPR_RPAREN) {
-            err_set(p, tok.pos, "expected ')'");
-            return false;
-        }
-        return true;
-    }
-
-    err_set(p, tok.pos,
-            tok.type == TOYS_EXPR_END ? "unexpected end of expression"
-                                      : "expected a number, x or '('");
-    return false;
-}
-
-static bool parse_term(Parser *p, ToysPoly *out)
-{
-    if (!parse_unary(p, out))
-        return false;
-
-    Token tok;
-    while (1) {
-        lex_peek(p, &tok);
-        if (tok.type != TOYS_EXPR_OP || (tok.op != '*' && tok.op != '/'))
-            break;
-
-        tok = lex_take(p);
-        ToysPoly rhs;
-        if (!parse_unary(p, &rhs))
-            return false;
-
-        if (tok.op == '*') {
-            ToysPoly tmp;
-            if (!toys_poly_mul(out, &rhs, &tmp)) {
-                err_set(p, tok.pos, "result degree too large");
-                return false;
-            }
-            *out = tmp;
-        } else {
-            if (rhs.degree != 0) {
-                err_set(p, tok.pos, "division by x or a polynomial");
-                return false;
-            }
-            if (rhs.coeffs[0] == 0.0) {
-                err_set(p, tok.pos, "division by zero");
-                return false;
-            }
-            *out = toys_poly_scale(out, 1.0 / rhs.coeffs[0]);
-        }
-    }
-    return true;
-}
-
-static bool parse_sum(Parser *p, ToysPoly *out)
-{
-    if (!parse_term(p, out))
-        return false;
-
-    Token tok;
-    while (1) {
-        lex_peek(p, &tok);
-        if (tok.type != TOYS_EXPR_OP || (tok.op != '+' && tok.op != '-'))
-            break;
-
-        tok = lex_take(p);
-        ToysPoly rhs;
-        if (!parse_term(p, &rhs))
-            return false;
-
-        *out = (tok.op == '+') ? toys_poly_add(out, &rhs)
-                               : toys_poly_sub(out, &rhs);
-    }
-    return true;
-}
-
-static bool parse_expr(Parser *p, ToysPoly *out)
-{
-    if (!parse_sum(p, out))
-        return false;
-
-    Token tok;
-    lex_peek(p, &tok);
-    if (tok.type == TOYS_EXPR_EQ) {
-        tok = lex_take(p);
-        ToysPoly rhs;
-        if (!parse_sum(p, &rhs))
-            return false;
-        *out = toys_poly_sub(out, &rhs);
-    }
-    return true;
-}
-
-
-const char *toys_expr_to_poly(const char *s, size_t len, ToysPoly *out,
-                              size_t *err_pos)
-{
-    *err_pos = 0;
-
-    Parser p = { 0 };
-    p.s = s;
-    p.len = len;
-    p.err_pos = err_pos;
-
-    if (!parse_expr(&p, out))
-        return p.err_msg;
-
-    Token tok;
-    lex_peek(&p, &tok);
-    if (tok.type != TOYS_EXPR_END) {
-        err_set(&p, tok.pos, "unexpected token after expression");
-        return p.err_msg;
-    }
-
-    /* Check for error that lex sets. */
-    if (p.err_msg != NULL)
-        return p.err_msg;
-
-    toys_poly_trim(out);
-    LOG_D("expr reduced to degree %d polynomial", out->degree);
+    LOG_E("No");
     return NULL;
 }
