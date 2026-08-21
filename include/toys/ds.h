@@ -11,9 +11,10 @@ typedef struct {
     size_t cap;
 } VecHeader;
 
-/** Grows the vector to hold one more entry and bumps length.
- * Returns the new base, or NULL on allocation failure with the
- * vector left untouched. */
+/**
+ * Increments length of vector and allocates enough space for it.
+ * Returns the new base, or NULL on allocation failure.
+ */
 void *vec_reserve(void *arr, size_t entry_sz);
 
 #define vec_header(v) ((VecHeader *)(v) - 1)
@@ -23,6 +24,7 @@ void *vec_reserve(void *arr, size_t entry_sz);
 
 /**
  * Appends val to the vector, does nothing on allocation failure.
+ * TODO: better error handling
  * Entries are read and written with plain indexing, v[i].
  */
 #define vec_push(v, val) \

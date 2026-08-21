@@ -1,3 +1,4 @@
+#include "toys/argparse.h"
 #include "toys/debug.h"
 #include "toys/solve.h"
 
@@ -127,29 +128,22 @@ static void run_interactive(void)
 }
 
 
-static void print_help(void)
+static void print_help_commands(void)
 {
     printf(
-        "Usage: toys_solve [options] <command> [args...]\n"
-        "\n"
-        "Solve a polynomial equation for its real roots.\n"
-        "\n"
         "Commands:\n"
         "  coeffs c0 c1 ... cn  solve c0 + c1 x + ... + cn x^n = 0 with the\n"
         "                       given numeric coefficients\n"
         "  expr expression      solve a mathematical expression set equal to\n"
         "                       zero, e.g. x^2 - 4 = 0 or 2 - x^2 = 0\n"
         "  (none)               interactive mode, reads coefficient lines from\n"
-        "                       stdin\n"
-        "\n"
-        "Options:\n"
-        "  -h, --help  print this help and exit\n");
+        "                       stdin\n");
 }
 
-/* coeffs command: solve using numeric coefficients from argv. */
+/* coeffs command: solve using numeric coefficients from argv starting from argv[0]. */
 static int run_coeffs(int argc, char *argv[])
 {
-    if (argc - 1 > WST_SOLVE_MAX_DEGREE + 1) {
+    if (argc > WST_SOLVE_MAX_DEGREE + 1) {
         LOG_E("too many coefficients (max degree %d)", WST_SOLVE_MAX_DEGREE);
         return 1;
     }
@@ -157,7 +151,7 @@ static int run_coeffs(int argc, char *argv[])
     /* Parse coefficients separately, with malformed numbers checks. */
     WstPoly poly = { 0 };
     int count = 0;
-    for (int i = 1; i < argc; i++) {
+    for (int i = 0; i < argc; i++) {
         if (!parse_coeff(argv[i], strlen(argv[i]), &poly.coeffs[count])) {
             LOG_E("invalid coefficient %s", argv[i]);
             return 1;
@@ -171,7 +165,7 @@ static int run_coeffs(int argc, char *argv[])
     return 0;
 }
 
-/* expr command */
+/* TODO: expr command */
 static int run_expr(int argc, char *argv[])
 {
     if (argc <= 1) {
@@ -218,24 +212,47 @@ static int run_expr(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    if (argc == 1) {
+    ArgParser parser;
+    argparse_init(&parser, argv[0]);
+    bool help = false;
+    const char *command = NULL;
+
+    argparse_add(&parser, &(ArgOption){
+        .type = ARG_SWITCH,
+        .dest = &help,
+        .short_name = "-h",
+        .long_name = "--help",
+        .description = "print this help and exit",
+    });
+
+    argparse_add(&parser, &(ArgOption){
+        .type = ARG_POSITIONAL,
+        .dest = &command,
+        .long_name = "command",
+        .description = "One of subcommands described below",
+    });
+
+    /* Capture subcommand args */
+    parser.capture_rest = true;
+
+    if (!argparse_parse(&parser, argc, argv)) {
+        fprintf(stderr, "%s, run 'toys_solve --help' for usage\n", parser.error);
+        return 1;
+    }
+    if (help) {
+        argparse_print_help(&parser);
+        print_help_commands();
+        return 0;
+    }
+    if (command == NULL) {
         run_interactive();
         return 0;
     }
 
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
-            print_help();
-            return 0;
-        }
-    }
-
-    /* Split program into 2 commands. */
-    const char *command = argv[1];
     if (strcmp(command, "coeffs") == 0)
-        return run_coeffs(argc - 1, argv + 1);
+        return run_coeffs(parser.nrest, parser.rest);
     if (strcmp(command, "expr") == 0)
-        return run_expr(argc - 1, argv + 1);
+        return run_expr(parser.nrest, parser.rest);
 
     fprintf(stderr, "Unknown command '%s', run 'toys_solve --help' for usage\n", command);
     return 1;

@@ -9,11 +9,11 @@
 
 /** Type of argument/option for parser. */
 typedef enum {
-    /** flag, dest is `bool *`, set true when present */
+    /** Flag, dest is `bool *`, set true when present */
     ARG_SWITCH,
-    /** option with a value, dest is `int *` */
+    /** Option with a value, dest is `int *` */
     ARG_INT,
-    /** operand without dashes, dest is `const char **` */
+    /** Operand without dashes, dest is `const char **` */
     ARG_POSITIONAL,
 } ArgType;
 
@@ -33,16 +33,26 @@ typedef struct {
 /**
  * Parser of command line arguments,
  * Uses single dash for short option names, double dash for long names,
- * Option can have extra value next to it with `=` or whitespace.
+ * Valid syntax for named options is -o 1, -o=1, --opt 1 and --opt=1,
  * Named options can be finished with `--`, positional args are parsed without conversion.
+ * Dest variables are filled with zeros before parsing.
+ * `capture_rest` can be set to parse all unexpected args into `rest` array.
  */
 typedef struct {
     /** Name of the program that parser will use when showing help */
     const char *prog;
+    // /** A string describing how rest of args will be parsed (if enabled) */
+    // const char *rest_template;
     ArgOption opts[ARG_MAX_OPTIONS];
     int nopts;
     /** Empty unless the last parse failed */
     char error[128];
+    /** Gather leftover args into rest instead of failing */
+    bool capture_rest;
+    /** Args from the first leftover on, filled when capture_rest is set */
+    char **rest;
+    /** Length of rest args array. */
+    int nrest;
 } ArgParser;
 
 /** Resets parser and records prog for usage output. */
@@ -52,11 +62,8 @@ void argparse_init(ArgParser *p, const char *prog);
 void argparse_add(ArgParser *p, const ArgOption *opt);
 
 /**
- * Parses argv[0..argc) against the registered options and fills their
- * dest variables. Value forms are -o 1, -o=1, --opt 1 and --opt=1,
- * a bare "--" ends option parsing, positionals fill in declaration
- * order. All dest variables are reset before parsing.
- *
+ * Parses argv and fills their dest variables.
+ * Ints and bools are parsed, string pointers are set (strings not dup'ed).
  * Returns true on success, otherwise sets p->error and returns false.
  */
 bool argparse_parse(ArgParser *p, int argc, char **argv);

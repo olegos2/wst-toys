@@ -57,8 +57,7 @@ static bool parse_int(ArgParser *p, const ArgOption *o, const char *val)
     char *end = NULL;
     errno = 0;
     long v = strtol(val, &end, 10);
-    if (errno != 0 || end == val || *end != '\0' ||
-        v < INT_MIN || v > INT_MAX) {
+    if (errno != 0 || end == val || *end != '\0' || v < INT_MIN || v > INT_MAX) {
         err_set(p, "value of %s must be an integer", opt_name(o));
         return false;
     }
@@ -69,10 +68,12 @@ static bool parse_int(ArgParser *p, const ArgOption *o, const char *val)
 bool argparse_parse(ArgParser *p, int argc, char **argv)
 {
     p->error[0] = '\0';
+    p->rest = NULL;
+    p->nrest = 0;
 
     bool seen[ARG_MAX_OPTIONS] = { false };
 
-    /* reset dests so repeated parses start clean */
+    /* reset dests to zeros so repeated parses start clean */
     for (int i = 0; i < p->nopts; i++) {
         ArgOption *o = &p->opts[i];
         if (o->type == ARG_SWITCH)
@@ -83,25 +84,31 @@ bool argparse_parse(ArgParser *p, int argc, char **argv)
             *(const char **)o->dest = NULL;
     }
 
+    /* whether named options were all parsed */
     bool opts_done = false;
+
     for (int i = 1; i < argc; i++) {
         char *arg = argv[i];
 
+        /* check for `--` that ends named options */
         if (!opts_done && strcmp(arg, "--") == 0) {
             opts_done = true;
             continue;
         }
 
         if (!opts_done && arg[0] == '-' && arg[1] != '\0') {
+            /* handle `-o=v` syntax, or expect `-o v` otherwise. */
             const char *eq = strchr(arg, '=');
             size_t name_len = eq ? (size_t)(eq - arg) : strlen(arg);
 
+            /* try to find option by name. */
             ArgOption *o = find_opt(p, arg, name_len);
             if (o == NULL) {
                 err_set(p, "unknown option %s", arg);
                 return false;
             }
 
+            /* handle currently available named option types and parse into dest. */
             if (o->type == ARG_SWITCH) {
                 *(bool *)o->dest = true;
             } else {
@@ -130,6 +137,12 @@ bool argparse_parse(ArgParser *p, int argc, char **argv)
             }
         }
         if (o == NULL) {
+            if (p->capture_rest) {
+                /* subcommand tail, hand it over uninterpreted */
+                p->rest = &argv[i];
+                p->nrest = argc - i;
+                break;
+            }
             err_set(p, "unexpected argument %s", arg);
             return false;
         }

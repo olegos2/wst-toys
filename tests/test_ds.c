@@ -1,6 +1,7 @@
 #include "toys/ds.h"
 
 #include <stdio.h>
+#include <stdbool.h>
 
 static int failures = 0;
 
