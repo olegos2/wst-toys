@@ -45,6 +45,7 @@ static void test_parse(void)
         .description = "input file",
     });
 
+    // TODO: use file
     char *argv1[] = { "prog", "-v", "--num=42", "--mode=test", "in.txt" };
     CHECK(argparse_parse(&p, sizeof(argv1) / sizeof(*argv1), argv1), "attached forms parse");
     CHECK(verbose, "switch set");
@@ -106,10 +107,55 @@ static void test_errors(void)
     CHECK(!argparse_parse(&p, 3, argv5), "extra positional fails");
 }
 
+static void test_rest(void)
+{
+    ArgParser p;
+    argparse_init(&p, "prog");
+    bool help = false;
+    argparse_add(&p, &(ArgOption){
+        .type = ARG_SWITCH, .dest = &help,
+        .short_name = "-h", .long_name = "--help",
+        .description = "help",
+    });
+
+    /* capture off by default, extras still fail */
+    char *argv1[] = { "prog", "a", "b" };
+    CHECK(!argparse_parse(&p, sizeof(argv1) / sizeof(*argv1), argv1), "no capture by default");
+
+    p.capture_rest = true;
+    char *argv2[] = { "prog", "-h", "cmd", "-x", "y" };
+    CHECK(argparse_parse(&p, sizeof(argv2) / sizeof(*argv2), argv2), "rest capture");
+    CHECK(help, "switch before command");
+    CHECK(p.nrest == 3, "rest count");
+    CHECK(strcmp(p.rest[0], "cmd") == 0, "rest head");
+    CHECK(strcmp(p.rest[1], "-x") == 0, "raw dash token in rest");
+}
+
+static void test_subcommand_tail(void)
+{
+    /* with a declared positional, dash tokens after it stay raw */
+    ArgParser p;
+    argparse_init(&p, "prog");
+    const char *cmd = NULL;
+    argparse_add(&p, &(ArgOption){
+        .type = ARG_POSITIONAL, .dest = &cmd,
+        .long_name = "command",
+        .description = "sub",
+    });
+    p.capture_rest = true;
+    char *argv1[] = { "prog", "coeffs", "-6", "5" };
+    CHECK(argparse_parse(&p, sizeof(argv1) / sizeof(*argv1), argv1), "dash tokens go raw after positional");
+    CHECK(cmd != NULL && strcmp(cmd, "coeffs") == 0, "command captured");
+    CHECK(p.nrest == 2, "raw tail length");
+    CHECK(strcmp(p.rest[0], "-6") == 0, "negative number stays raw");
+}
+
 int main(void)
 {
     test_parse();
     test_errors();
+    test_rest();
+    test_subcommand_tail();
     if (failures == 0) {
         printf("all tests passed\n");
         return 0;

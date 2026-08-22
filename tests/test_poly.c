@@ -1,17 +1,22 @@
 #include "toys/solve.h"
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 
+#define ARR_LEN(arr) (sizeof(arr) / sizeof(*arr))
+
 static int failures = 0;
-static int counter = 0;
 
 static void check_roots(const WstPoly *poly, const WstSolution *s, const WstSolution *expected)
 {
+    static int counter = 0;
     counter++;
     bool ok = s->count == expected->count;
-    for (int i = 0; ok && i < s->count; i++)
+    for (int i = 0; i < s->count; i++) {
+        if (!ok) break;
         ok = iszero(s->roots[i] - expected->roots[i]);
+    }
     if (ok) return;
 
     fprintf(stderr, "\nPolynomial degree %d failed (test %d):\n", poly->degree, counter);
@@ -35,31 +40,34 @@ static void check_poly(WstPoly *poly, const WstSolution *expected)
 
 static void test_poly(void)
 {
-    check_poly(&(WstPoly){ .degree = 2, .coeffs = { 6, -5, 1 } },
-        &(WstSolution){ .count = 2, .roots = { 2, 3 } } );
-    check_poly(&(WstPoly){ .degree = 2, .coeffs = { -6, 5, -1 } },
-        &(WstSolution){ .count = 2, .roots = { 2, 3 } } );
+    static WstPoly test_inputs[] = {
+        { .degree = 2, .coeffs = { 6, -5, 1 } },
+        { .degree = 2, .coeffs = { -6, 5, -1 } },
+        { .degree = 2, .coeffs = { 1, -2, 1 } },
+        { .degree = 2, .coeffs = { 1, 0, 1 } },
+        { .degree = 1, .coeffs = { 2, -1 } },
+        { .degree = 0, .coeffs = { 5 } },
+        { .degree = 2, .coeffs = { 6, -5, 0 } },
+        { .degree = 2, .coeffs = { 0 } },
+        { .degree = WST_SOLVE_MAX_DEGREE + 1, .coeffs = { 0 } },
+    };
+    static const WstSolution test_outputs[] = {
+        { .count = 2, .roots = { 2, 3 } },
+        { .count = 2, .roots = { 2, 3 } },
+        { .count = 1, .roots = { 1 } },
+        { .count = 0 },
+        { .count = 1, .roots = { 2 } },
+        { .count = 0 },
+        { .count = 1, .roots = { 1.2 } },
+        { .count = WST_SOLVE_INF },
+        { .count = WST_SOLVE_ERR },
+    };
 
-    check_poly(&(WstPoly){ .degree = 2, .coeffs = { 1, -2, 1 } },
-        &(WstSolution){ .count = 1, .roots = { 1 } } );
-    
-    check_poly(&(WstPoly){ .degree = 2, .coeffs = { 1, 0, 1 } },
-        &(WstSolution){ .count = 0 } );
-    
-    check_poly(&(WstPoly){ .degree = 1, .coeffs = { 2, -1 } },
-        &(WstSolution){ .count = 1, .roots = { 2 } } );
+    assert(ARR_LEN(test_inputs) == ARR_LEN(test_outputs));
 
-    check_poly(&(WstPoly){ .degree = 0, .coeffs = { 5 } },
-        &(WstSolution){ .count = 0 } );
-
-    check_poly(&(WstPoly){ .degree = 2, .coeffs = { 6, -5, 0 } },
-        &(WstSolution){ .count = 1, .roots = { 1.2 } } );
-
-    check_poly(&(WstPoly){ .degree = 2, .coeffs = { 0 } },
-        &(WstSolution){ .count = WST_SOLVE_INF } );
-
-    check_poly(&(WstPoly){ .degree = WST_SOLVE_MAX_DEGREE + 1, .coeffs = { 0 } },
-        &(WstSolution){ .count = WST_SOLVE_ERR } );
+    for (size_t i = 0; i < ARR_LEN(test_inputs); i++) {
+        check_poly(&test_inputs[i], &test_outputs[i]);
+    }
 }
 
 int main(void)

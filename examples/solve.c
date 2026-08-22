@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,9 +32,24 @@ static bool parse_coeff(const char *str, size_t len, double *out)
     return true;
 }
 
-static void print_solution(const WstSolution *sol)
+static void print_solution(const WstSolution *sol, bool pretty)
 {
     assert(sol != NULL);
+
+    if (!pretty) {
+        /* machine readable, everything on one line */
+        if (sol->count == WST_SOLVE_INF)
+            printf("inf\n");
+        else if (sol->count == WST_SOLVE_ERR)
+            printf("error\n");
+        else if (sol->count == 0)
+            printf("none\n");
+        else
+            for (int i = 0; i < sol->count; i++)
+                printf("%lg%c", sol->roots[i] + 0.0,
+                       i < sol->count - 1 ? ' ' : '\n');
+        return;
+    }
 
     if (sol->count == WST_SOLVE_INF) {
         printf("infinite solutions\n");
@@ -51,6 +67,36 @@ static void print_solution(const WstSolution *sol)
     printf("%d roots:\n", sol->count);
     for (int i = 0; i < sol->count; i++)
         printf("x%d = %lg\n", i + 1, sol->roots[i] + 0.0); // workaround to avoid printing -0
+}
+
+/* Renders coeffs as a polynomial, highest power first, e.g. x^2 - 3 x + 2 */
+static void print_poly(const char *name, const double *coeffs, int degree)
+{
+    printf("%s(x) = ", name);
+
+    bool first = true;
+    for (int i = degree; i >= 0; i--) {
+        double c = coeffs[i] + 0.0;
+        if (iszero(c))
+            continue;
+
+        if (!first)
+            printf(c < 0.0 ? " - " : " + ");
+        else if (c < 0.0)
+            printf("-");
+
+        double a = fabs(c);
+        if (i == 0 || !iszero(a - 1.0))
+            printf("%lg", a);
+        if (i > 0)
+            printf(" x");
+        if (i > 1)
+            printf("^%d", i);
+        first = false;
+    }
+    if (first)
+        printf("0");
+    printf("\n");
 }
 
 static char *skip_seps(char *s)
@@ -122,7 +168,7 @@ static void run_interactive(void)
         if (!parse_line(line, &poly))
             continue;
         WstSolution sol = wst_solve_poly(&poly);
-        print_solution(&sol);
+        print_solution(&sol, true);
     }
     free(line);
 }
@@ -132,16 +178,17 @@ static void print_help_commands(void)
 {
     printf(
         "Commands:\n"
-        "  coeffs c0 c1 ... cn  solve c0 + c1 x + ... + cn x^n = 0 with the\n"
+        "  coeffs c0 c1 ... cn  Solve c0 + c1 x + ... + cn x^n = 0 with the\n"
         "                       given numeric coefficients\n"
-        "  expr expression      solve a mathematical expression set equal to\n"
+        "  expr expression      Solve a mathematical expression set equal to\n"
         "                       zero, e.g. x^2 - 4 = 0 or 2 - x^2 = 0\n"
+        "  deriv c0 c1 ... cn   Get coefficients of derivative of polynomial\n"
         "  (none)               interactive mode, reads coefficient lines from\n"
         "                       stdin\n");
 }
 
 /* coeffs command: solve using numeric coefficients from argv starting from argv[0]. */
-static int run_coeffs(int argc, char *argv[])
+static int run_coeffs(int argc, char *argv[], bool pretty)
 {
     if (argc > WST_SOLVE_MAX_DEGREE + 1) {
         LOG_E("too many coefficients (max degree %d)", WST_SOLVE_MAX_DEGREE);
@@ -161,7 +208,47 @@ static int run_coeffs(int argc, char *argv[])
     }
 
     WstSolution sol = wst_solve_poly(&poly);
-    print_solution(&sol);
+    print_solution(&sol, pretty);
+    return 0;
+}
+
+/* deriv command: print derivative polynomial coefficients, constant term first. */
+static int run_deriv(int argc, char *argv[], bool pretty)
+{
+    if (argc > WST_SOLVE_MAX_DEGREE + 1) {
+        LOG_E("too many coefficients (max degree %d)", WST_SOLVE_MAX_DEGREE);
+        return 1;
+    }
+    if (argc < 1) {
+        LOG_E("no coefficients given, run 'toys_solve --help' for usage");
+        return 1;
+    }
+
+    WstPoly poly = { 0 };
+    int count = 0;
+    for (int i = 0; i < argc; i++) {
+        if (!parse_coeff(argv[i], strlen(argv[i]), &poly.coeffs[count])) {
+            LOG_E("invalid coefficient %s", argv[i]);
+            return 1;
+        }
+        poly.degree = count;
+        count++;
+    }
+
+    /* d_i = (i + 1) * c_{i+1}, degree drops by one */
+    double deriv[WST_SOLVE_MAX_DEGREE + 1];
+    int ddegree = poly.degree - 1;
+    for (int i = 0; i <= ddegree; i++)
+        deriv[i] = (i + 1) * poly.coeffs[i + 1];
+
+    if (pretty) {
+        print_poly("P'", deriv, ddegree);
+        return 0;
+    }
+    if (ddegree < 0)
+        printf("0\n");
+    for (int i = 0; i <= ddegree; i++)
+        printf("%lg%c", deriv[i], i < ddegree ? ' ' : '\n');
     return 0;
 }
 
@@ -206,7 +293,7 @@ static int run_expr(int argc, char *argv[])
     free(expr);
 
     WstSolution sol = wst_solve_poly(&poly);
-    print_solution(&sol);
+    print_solution(&sol, true);
     return 0;
 }
 
@@ -216,6 +303,7 @@ int main(int argc, char *argv[])
     argparse_init(&parser, argv[0]);
     bool help = false;
     bool verbose = false;
+    bool pretty = false;
     const char *command = NULL;
     const char *debug_filename = NULL;
 
@@ -243,6 +331,14 @@ int main(int argc, char *argv[])
         .short_name = "-l",
         .long_name = "--logfile",
         .description = "redirect log prints to a file path",
+    });
+
+    argparse_add(&parser, &(ArgOption){
+        .type = ARG_SWITCH,
+        .dest = &pretty,
+        .short_name = "-p",
+        .long_name = "--pretty",
+        .description = "print output in human friendly format",
     });
 
     argparse_add(&parser, &(ArgOption){
@@ -278,9 +374,11 @@ int main(int argc, char *argv[])
     }
 
     if (strcmp(command, "coeffs") == 0)
-        return run_coeffs(parser.nrest, parser.rest);
+        return run_coeffs(parser.nrest, parser.rest, pretty);
     if (strcmp(command, "expr") == 0)
         return run_expr(parser.nrest, parser.rest);
+    if (strcmp(command, "deriv") == 0)
+        return run_deriv(parser.nrest, parser.rest, pretty);
 
     fprintf(stderr, "Unknown command '%s', run '%s --help' for usage\n", command, argv[0]);
     return 1;

@@ -147,16 +147,28 @@ bool argparse_parse(ArgParser *p, int argc, char **argv)
     /* whether named options were all parsed */
     bool opts_done = false;
 
+    /* with capture_rest the tail after the last positional stays raw,
+     * so subcommand args like -6 never read as options */
+    int npos_total = 0;
+    int npos_filled = 0;
+    for (int j = 0; j < p->nopts; j++)
+        if (p->opts[j].type == ARG_POSITIONAL)
+            npos_total++;
+
     for (int i = 1; i < argc; i++) {
         char *arg = argv[i];
 
+        bool raw = opts_done ||
+                   (p->capture_rest && npos_total > 0 &&
+                    npos_filled == npos_total);
+
         /* check for `--` that ends named options */
-        if (!opts_done && strcmp(arg, "--") == 0) {
+        if (!raw && strcmp(arg, "--") == 0) {
             opts_done = true;
             continue;
         }
 
-        if (!opts_done && arg[0] == '-' && arg[1] != '\0') {
+        if (!raw && arg[0] == '-' && arg[1] != '\0') {
             ArgOption *opt;
             int ret = parse_named_option(p, argc - i, argv + i, &opt);
             if (!ret) return false;
@@ -186,6 +198,7 @@ bool argparse_parse(ArgParser *p, int argc, char **argv)
         }
         *(const char **)o->dest = arg;
         seen[o - p->opts] = true;
+        npos_filled++;
     }
 
     for (int i = 0; i < p->nopts; i++) {
