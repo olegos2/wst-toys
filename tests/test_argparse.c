@@ -22,6 +22,8 @@ static void test_parse(void)
     bool verbose = false;
     int num = 0;
     const char *file = NULL;
+    const char *mode = NULL;
+
     argparse_add(&p, &(ArgOption){
         .type = ARG_SWITCH, .dest = &verbose,
         .short_name = "-v", .long_name = "--verbose",
@@ -33,26 +35,33 @@ static void test_parse(void)
         .description = "a number",
     });
     argparse_add(&p, &(ArgOption){
+        .type = ARG_STRING, .dest = &mode,
+        .short_name = "-m", .long_name = "--mode",
+        .description = "some mode",
+    });
+    argparse_add(&p, &(ArgOption){
         .type = ARG_POSITIONAL, .dest = &file, .required = true,
         .long_name = "file",
         .description = "input file",
     });
 
-    char *argv1[] = { "prog", "-v", "--num=42", "in.txt" };
-    CHECK(argparse_parse(&p, 4, argv1), "attached forms parse");
+    char *argv1[] = { "prog", "-v", "--num=42", "--mode=test", "in.txt" };
+    CHECK(argparse_parse(&p, sizeof(argv1) / sizeof(*argv1), argv1), "attached forms parse");
     CHECK(verbose, "switch set");
     CHECK(num == 42, "int attached form");
+    CHECK(strncmp(mode, "test", 4) == 0, "string attached form");
     CHECK(file != NULL && strcmp(file, "in.txt") == 0, "positional filled");
 
-    char *argv2[] = { "prog", "--num", "-7", "--", "-x" };
-    CHECK(argparse_parse(&p, 5, argv2), "separate value and -- parse");
+    char *argv2[] = { "prog", "--num", "-7", "--mode", "", "--", "-x" };
+    CHECK(argparse_parse(&p, sizeof(argv2) / sizeof(*argv2), argv2), "separate value and -- parse");
     CHECK(num == -7, "negative int");
+    CHECK(*mode == '\0', "empty string");
     CHECK(strcmp(file, "-x") == 0, "-- ends option parsing");
 
     /* dests are reset between parses */
     char *argv3[] = { "prog", "in.txt" };
-    CHECK(argparse_parse(&p, 2, argv3), "plain parse");
-    CHECK(!verbose && num == 0, "dests reset");
+    CHECK(argparse_parse(&p, sizeof(argv3) / sizeof(*argv3), argv3), "plain parse");
+    CHECK(!verbose && num == 0 && mode == NULL, "dests reset");
 }
 
 static void test_errors(void)

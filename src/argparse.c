@@ -218,6 +218,7 @@ void argparse_print_help(const ArgParser *p)
             printf(" %s", p->opts[i].long_name);
     printf("\n\nOptions:\n");
 
+    // TODO: pass label by user so no magic number
     char labels[ARG_MAX_OPTIONS][32];
     int width = 0;
     for (int i = 0; i < p->nopts; i++) {

@@ -30,6 +30,7 @@ DEFAULT_LDFLAGS=""
 export CC=${CC:=gcc}
 export CXX=${CXX:=g++}
 export LD=${LD:=gcc}
+export AR=${AR:=ar}
 
 print_eval() {
     echo "$@"
@@ -48,21 +49,23 @@ my_ld() {
     print_eval "$LD" ${LDFLAGS:="$DEFAULT_LDFLAGS"} "$@"
 }
 
-build_poly() {
-    my_cc -c "$HOME_DIR/src/poly/expr.c" -o toys_expr.o &&
-    my_cc -c "$HOME_DIR/src/poly/poly.c" -o toys_poly.o
+build_common() {
+    my_cc -c "$HOME_DIR/src/argparse.c" -o toys_argparse.o &&
+    my_cc -c "$HOME_DIR/src/debug.c" -o toys_debug.o &&
+    my_cc -c "$HOME_DIR/src/ds.c" -o toys_ds.o &&
+    "$AR" rcs libtoys_common.a toys_argparse.o toys_debug.o toys_ds.o
 }
 
-build_argparse() {
-    my_cc -c "$HOME_DIR/src/argparse.c" -o toys_argparse.o
+build_poly() {
+    my_cc -c "$HOME_DIR/src/poly/expr.c" -o toys_expr.o &&
+    my_cc -c "$HOME_DIR/src/poly/poly.c" -o toys_poly.o &&
+    "$AR" rcs libtoys_poly.a toys_expr.o toys_poly.o
 }
 
 build_solve() {
     declare -a solve_deps=(
-        toys_argparse.o
-        toys_expr.o
-        toys_poly.o
-        toys_solve.o
+        libtoys_poly.a
+        libtoys_common.a
     )
     declare -a solve_libs=(
         m
@@ -73,18 +76,30 @@ build_solve() {
     done
 
     my_cc -c "$HOME_DIR/examples/solve.c" -o toys_solve.o &&
-    my_ld "${solve_deps[@]}" -o toys_solve
+    my_ld toys_solve.o "${solve_deps[@]}" -o toys_solve
 }
 
-# build_test_poly() {
-#     declare -a test_poly_src=(
-#         tests/test_poly.c
-#     )
-# }
+build_test_poly() {
+    my_cc -c "$HOME_DIR/tests/test_poly.c" -o test_poly.o &&
+    my_ld test_poly.o libtoys_poly.a libtoys_common.a -lm -o test_poly
+}
+
+build_test_ds() {
+    my_cc -c "$HOME_DIR/tests/test_ds.c" -o test_ds.o &&
+    my_ld test_ds.o libtoys_common.a -o test_ds
+}
+
+build_test_argparse() {
+    my_cc -c "$HOME_DIR/tests/test_argparse.c" -o test_argparse.o &&
+    my_ld test_argparse.o libtoys_common.a -o test_argparse
+}
 
 pushd "$BUILD_DIR" &&
+build_common &&
 build_poly &&
-build_argparse &&
 build_solve &&
+build_test_argparse &&
+build_test_ds &&
+build_test_poly &&
 popd
-
+echo "Build finished"
