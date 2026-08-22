@@ -6,7 +6,7 @@
 #include <float.h>
 
 /** Max polynomial degree the solver accepts. */
-#define WST_SOLVE_MAX_DEGREE 2
+#define WST_SOLVE_MAX_DEGREE 8
 
 enum {
     /** Returned when any real x solves the equation. */
@@ -73,6 +73,10 @@ WstPoly wst_poly_sub(const WstPoly *a, const WstPoly *b);
  * returns false if resulting degree would not fit.
  */
 bool wst_poly_mul(const WstPoly *a, const WstPoly *b, WstPoly *out);
+
+/** Returns derivative polynomial with degree lowered by one,
+ * derivative of a constant is the zero polynomial. */
+WstPoly wst_poly_deriv(const WstPoly *poly);
 
 /** Check if `double` is in `-DBL_EPSILON..DBL_EPSILON` range. */
 static inline bool iszero(double a)

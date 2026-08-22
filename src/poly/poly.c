@@ -17,6 +17,20 @@ void wst_poly_trim(WstPoly *p)
         p->degree--;
 }
 
+WstPoly wst_poly_deriv(const WstPoly *poly)
+{
+    assert(poly != NULL);
+    WstPoly out = { 0 };
+
+    if (poly->degree <= 0)
+        return out;
+
+    out.degree = poly->degree - 1;
+    for (int i = 0; i <= out.degree; i++)
+        out.coeffs[i] = poly->coeffs[i + 1] * (double)(i + 1);
+    return out;
+}
+
 static int wst_quad_solve(double c, double b, double a, double *x1, double *x2)
 {
     double disc = b * b - 4.0 * a * c;

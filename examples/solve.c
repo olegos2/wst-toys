@@ -235,20 +235,14 @@ static int run_deriv(int argc, char *argv[], bool pretty)
         count++;
     }
 
-    /* d_i = (i + 1) * c_{i+1}, degree drops by one */
-    double deriv[WST_SOLVE_MAX_DEGREE + 1];
-    int ddegree = poly.degree - 1;
-    for (int i = 0; i <= ddegree; i++)
-        deriv[i] = (i + 1) * poly.coeffs[i + 1];
+    WstPoly d = wst_poly_deriv(&poly);
 
     if (pretty) {
-        print_poly("P'", deriv, ddegree);
+        print_poly("P'", d.coeffs, d.degree);
         return 0;
     }
-    if (ddegree < 0)
-        printf("0\n");
-    for (int i = 0; i <= ddegree; i++)
-        printf("%lg%c", deriv[i], i < ddegree ? ' ' : '\n');
+    for (int i = 0; i <= d.degree; i++)
+        printf("%lg%c", d.coeffs[i], i < d.degree ? ' ' : '\n');
     return 0;
 }
 
