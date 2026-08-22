@@ -40,8 +40,8 @@ void wst_poly_trim(WstPoly *p);
  * Solves sum_{i=0..degree} coeffs[i] * x^i = 0 for real roots.
  *
  * Only constant, linear and quadratic equations are accepted. Trailing zero
- * coefficients are ignored. An all-zero polynomial yields TOYS_SOLVE_INF.
- * A degree above WST_SOLVE_MAX_DEGREE yields TOYS_SOLVE_ERR.
+ * coefficients are ignored. An all-zero polynomial yields WST_SOLVE_INF.
+ * A degree above WST_SOLVE_MAX_DEGREE yields WST_SOLVE_ERR.
  *
  * @param [in] poly polynomial to solve
  */
@@ -54,6 +54,7 @@ WstSolution wst_solve_poly(WstPoly *poly);
  *
  * Returns NULL on success and fills in *out. On failure returns a
  * static error message and stores its byte offset in *err_pos.
+ * TODO: THAT SHI AINT IMPLEMENTED
  */
 const char *wst_expr_to_poly(const char *s, size_t len, WstPoly *out,
                               size_t *err_pos);

@@ -1,6 +1,6 @@
 toys_solve_deps = [
     toys_poly_dep,
-    toys_argparse_dep,
+    toys_common_dep,
 ]
 
 executable(

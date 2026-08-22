@@ -206,6 +206,5 @@ static Token lex_take(Parser *p)
 
 const char *wst_expr_to_poly(const char *s, size_t len, WstPoly *out, size_t *err_pos)
 {
-    LOG_E("No");
-    return NULL;
+    return "Not implemented";
 }

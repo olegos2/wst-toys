@@ -13,6 +13,8 @@ typedef enum {
     ARG_SWITCH,
     /** Option with a value, dest is `int *` */
     ARG_INT,
+    /** Option with string value, dest is `const char **` */
+    ARG_STRING,
     /** Operand without dashes, dest is `const char **` */
     ARG_POSITIONAL,
 } ArgType;

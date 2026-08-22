@@ -31,7 +31,7 @@ static const char *opt_name(const ArgOption *o)
  * Find named option in parser
  *
  * @param [in] name Name of option to look for
- * @param [in] len Length of name buffer
+ * @param [in] len Length of name (in case it's followed with `=`)
  */
 static ArgOption *find_opt(ArgParser *p, const char *name, size_t len)
 {
@@ -63,6 +63,66 @@ static bool parse_int(ArgParser *p, const ArgOption *o, const char *val)
     }
     *(int *)o->dest = (int)v;
     return true;
+}
+
+/**
+ * Parses option in beginning of argv and sets its dest field.
+ * @param [in] argc number of args starting from current option arg
+ * @param [in] argv array of args where argv[0] is current option name
+ * @param [out] opt set to found option by name if any, or kept unchanged
+ * @return number of args consumed, where zero means error
+ */
+static int parse_named_option(ArgParser *p, int argc, char **argv, ArgOption **opt)
+{
+    assert(argv != NULL);
+
+    /* handle `-o=v` syntax, or expect `-o v` otherwise. */
+    const char *eq = strchr(argv[0], '=');
+    size_t name_len = eq ? (size_t)(eq - argv[0]) : strlen(argv[0]);
+
+    /* try to find option by name. */
+    ArgOption *o = find_opt(p, argv[0], name_len);
+    if (o == NULL) {
+        err_set(p, "unknown option %s", argv[0]);
+        return 0;
+    }
+    *opt = o;
+
+    int ret = 1;
+
+    const char *val = NULL;
+    switch (o->type) {
+    /* Check for options that don't require value first */
+    case ARG_SWITCH:
+        *(bool *)o->dest = true;
+        return ret;
+    default:
+        /* Parse value following option name (with `=` or in next arg) */
+        if (eq != NULL)
+            val = eq + 1;
+        else if (argc >= 2) {
+            val = argv[1];
+            ret = 2;
+        } else {
+            err_set(p, "missing value for %s", opt_name(o));
+            return 0;
+        }
+        break;
+    }
+
+    switch (o->type) {
+    case ARG_INT:
+        if (!parse_int(p, o, val))
+            return 0;
+        break;
+    case ARG_STRING:
+        *(const char **)o->dest = val;
+        break;
+    default:
+        assert(false);
+    }
+
+    return ret;
 }
 
 bool argparse_parse(ArgParser *p, int argc, char **argv)
@@ -97,34 +157,12 @@ bool argparse_parse(ArgParser *p, int argc, char **argv)
         }
 
         if (!opts_done && arg[0] == '-' && arg[1] != '\0') {
-            /* handle `-o=v` syntax, or expect `-o v` otherwise. */
-            const char *eq = strchr(arg, '=');
-            size_t name_len = eq ? (size_t)(eq - arg) : strlen(arg);
-
-            /* try to find option by name. */
-            ArgOption *o = find_opt(p, arg, name_len);
-            if (o == NULL) {
-                err_set(p, "unknown option %s", arg);
-                return false;
-            }
-
-            /* handle currently available named option types and parse into dest. */
-            if (o->type == ARG_SWITCH) {
-                *(bool *)o->dest = true;
-            } else {
-                const char *val = NULL;
-                if (eq != NULL) {
-                    val = eq + 1;
-                } else if (i + 1 < argc) {
-                    val = argv[++i];
-                } else {
-                    err_set(p, "missing value for %s", opt_name(o));
-                    return false;
-                }
-                if (!parse_int(p, o, val))
-                    return false;
-            }
-            seen[o - p->opts] = true;
+            ArgOption *opt;
+            int ret = parse_named_option(p, argc - i, argv + i, &opt);
+            if (!ret) return false;
+            /* Skip one extra arg for option of format `-o v`. */
+            i += ret - 1;
+            seen[opt - p->opts] = true;
             continue;
         }
 

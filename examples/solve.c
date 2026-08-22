@@ -168,14 +168,14 @@ static int run_coeffs(int argc, char *argv[])
 /* TODO: expr command */
 static int run_expr(int argc, char *argv[])
 {
-    if (argc <= 1) {
-        fprintf(stderr, "No expression given, run 'toys_solve --help' for usage\n");
+    if (argc < 1) {
+        fprintf(stderr, "No expression given, run '%s --help' for usage\n", argv[0]);
         return 1;
     }
 
     /* Count space needed for remaining args to join in one string. */
     size_t total = 1;
-    for (int i = 1; i < argc; i++)
+    for (int i = 0; i < argc; i++)
         total += strlen(argv[i]) + 1;
 
     char *expr = malloc(total);
@@ -186,7 +186,7 @@ static int run_expr(int argc, char *argv[])
 
     /* Copy args into one string */
     char *dst = expr;
-    for (int i = 1; i < argc; i++) {
+    for (int i = 0; i < argc; i++) {
         if (i > 1)
             *dst++ = ' ';
         size_t n = strlen(argv[i]);
@@ -215,7 +215,9 @@ int main(int argc, char *argv[])
     ArgParser parser;
     argparse_init(&parser, argv[0]);
     bool help = false;
+    bool verbose = false;
     const char *command = NULL;
+    const char *debug_filename = NULL;
 
     argparse_add(&parser, &(ArgOption){
         .type = ARG_SWITCH,
@@ -223,6 +225,24 @@ int main(int argc, char *argv[])
         .short_name = "-h",
         .long_name = "--help",
         .description = "print this help and exit",
+    });
+
+#ifdef WST_DEBUG
+    argparse_add(&parser, &(ArgOption){
+        .type = ARG_SWITCH,
+        .dest = &verbose,
+        .short_name = "-v",
+        .long_name = "--verbose",
+        .description = "enable verbose logging messages",
+    });
+#endif
+
+    argparse_add(&parser, &(ArgOption){
+        .type = ARG_STRING,
+        .dest = &debug_filename,
+        .short_name = "-l",
+        .long_name = "--logfile",
+        .description = "redirect log prints to a file path",
     });
 
     argparse_add(&parser, &(ArgOption){
@@ -236,7 +256,7 @@ int main(int argc, char *argv[])
     parser.capture_rest = true;
 
     if (!argparse_parse(&parser, argc, argv)) {
-        fprintf(stderr, "%s, run 'toys_solve --help' for usage\n", parser.error);
+        fprintf(stderr, "%s, run '%s --help' for usage\n", parser.error, argv[0]);
         return 1;
     }
     if (help) {
@@ -244,6 +264,14 @@ int main(int argc, char *argv[])
         print_help_commands();
         return 0;
     }
+
+    if (verbose)
+        toys_log_set_max_prio(WST_LOG_VERBOSE);
+
+    if (!toys_log_open(debug_filename))
+        LOG_W("Failed to open log file for writing");
+    LOG_D("Started logger");
+
     if (command == NULL) {
         run_interactive();
         return 0;
@@ -254,6 +282,6 @@ int main(int argc, char *argv[])
     if (strcmp(command, "expr") == 0)
         return run_expr(parser.nrest, parser.rest);
 
-    fprintf(stderr, "Unknown command '%s', run 'toys_solve --help' for usage\n", command);
+    fprintf(stderr, "Unknown command '%s', run '%s --help' for usage\n", command, argv[0]);
     return 1;
 }

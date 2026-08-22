@@ -13,7 +13,7 @@ test_argparse = executable(
     'test_argparse',
     'test_argparse.c',
     dependencies: [
-        toys_argparse_dep
+        toys_common_dep
     ]
 )
 
@@ -23,7 +23,7 @@ test_ds = executable(
     'test_ds',
     'test_ds.c',
     dependencies: [
-        toys_ds_dep
+        toys_common_dep
     ]
 )
 

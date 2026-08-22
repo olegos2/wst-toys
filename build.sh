@@ -5,10 +5,10 @@ set -uo pipefail
 HOME_DIR=$(dirname "$(realpath "$0")")
 BUILD_DIR="$HOME_DIR/builddir"
 
-if [[ -d $BUILD_DIR ]]; then
-    echo "$BUILD_DIR already exists"
-    exit 1
-fi
+# if [[ -d $BUILD_DIR ]]; then
+#     echo "$BUILD_DIR already exists"
+#     exit 1
+# fi
 
 mkdir -p "$BUILD_DIR"
 
@@ -25,6 +25,7 @@ declare -a common_inc=(
 )
 
 DEFAULT_CFLAGS="-Wall -Wextra -Wconversion -Wfloat-equal"
+DEFAULT_CPPFLAGS="-DWST_DEBUG"
 DEFAULT_LDFLAGS=""
 export CC=${CC:=gcc}
 export CXX=${CXX:=g++}
@@ -36,7 +37,7 @@ print_eval() {
 }
 
 my_cc() {
-    declare -a args=(${CFLAGS:="$DEFAULT_CFLAGS"})
+    declare -a args=(${CFLAGS:="$DEFAULT_CFLAGS"} ${CPPFLAGS:="$DEFAULT_CPPFLAGS"})
     for i in "${common_inc[@]}"; do
         args+=(-I"$i")
     done
@@ -48,8 +49,8 @@ my_ld() {
 }
 
 build_poly() {
-    my_cc -c "$HOME_DIR/src/poly/expr.c -o toys_expr.o &&
-    my_cc -c "$HOME_DIR/src/poly/poly.c -o toys_poly.o
+    my_cc -c "$HOME_DIR/src/poly/expr.c" -o toys_expr.o &&
+    my_cc -c "$HOME_DIR/src/poly/poly.c" -o toys_poly.o
 }
 
 build_argparse() {

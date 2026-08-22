@@ -1,48 +1,76 @@
-#ifndef TOYS_DEBUG_H
-#define TOYS_DEBUG_H
+#ifndef WST_DEBUG_H
+#define WST_DEBUG_H
 
-#include <stdio.h>
+#include <stdbool.h>
 
-#define __TOYS_LOG(prio, fmt, ...) \
-    fprintf(stderr, "%s: " fmt "\n", #prio, ## __VA_ARGS__)
+#define __WST_LOG(prio, fmt, ...) \
+    toys_log_print(WST_LOG_ ## prio, "%s: " fmt "\n", #prio, ## __VA_ARGS__)
+    // fprintf(stderr, "%s: " fmt "\n", #prio, ## __VA_ARGS__)
 
-#define __TOYS_LOG_FILE(prio, fmt, ...) \
-    __TOYS_LOG(prio, "%s: " fmt, __FILE_NAME__, ## __VA_ARGS__)
+#define __WST_LOG_FILE(prio, fmt, ...) \
+    __WST_LOG(prio, "%s: " fmt, __FILE_NAME__, ## __VA_ARGS__)
 
-#define __TOYS_LOG_FUNC(prio, fmt, ...) \
-    __TOYS_LOG(prio, "%s:%s: " fmt, __FILE_NAME__, __func__, ## __VA_ARGS__)
+#define __WST_LOG_FUNC(prio, fmt, ...) \
+    __WST_LOG(prio, "%s:%s: " fmt, __FILE_NAME__, __func__, ## __VA_ARGS__)
 
-#define __TOYS_LOG_LINE(prio, fmt, ...) \
-    __TOYS_LOG(prio, "%s:%s:%d: " fmt, __FILE_NAME__, __func__, __LINE__, ## __VA_ARGS__)
+#define __WST_LOG_LINE(prio, fmt, ...) \
+    __WST_LOG(prio, "%s:%s:%d: " fmt, __FILE_NAME__, __func__, __LINE__, ## __VA_ARGS__)
 
 
-#ifdef TOYS_DEBUG
+#ifdef WST_DEBUG
 
 /** Formatted verbose msg with file name, function, line num */
 #define LOG_V(...) \
-    __TOYS_LOG_LINE(VERBOSE, __VA_ARGS__)
+    __WST_LOG_LINE(VERBOSE, __VA_ARGS__)
 
 /** Formatted debug msg with file name, function, line num */
 #define LOG_D(...) \
-    __TOYS_LOG_LINE(DEBUG, __VA_ARGS__)
+    __WST_LOG_LINE(DEBUG, __VA_ARGS__)
 
-#else /* !TOYS_DEBUG */
+#else /* !WST_DEBUG */
 
 #define LOG_V(...) 0
 #define LOG_D(...) 0
 
-#endif /* TOYS_DEBUG */
+#endif /* WST_DEBUG */
 
 /** Formatted warning with file name, function name */
 #define LOG_W(...) \
-    __TOYS_LOG_FUNC(WARN, __VA_ARGS__)
+    __WST_LOG_FUNC(WARN, __VA_ARGS__)
 
 /** Formatted error with file name, function name */
 #define LOG_E(...) \
-    __TOYS_LOG_FUNC(ERROR, __VA_ARGS__)
+    __WST_LOG_FUNC(ERROR, __VA_ARGS__)
 
 /** Formatted info with file name. */
 #define LOG_I(...) \
-    __TOYS_LOG_FILE(INFO, __VA_ARGS__)
+    __WST_LOG_FILE(INFO, __VA_ARGS__)
 
-#endif /* TOYS_DEBUG_H */
+typedef enum {
+    WST_LOG_ERROR = 0,
+    WST_LOG_WARN,
+    WST_LOG_INFO,
+    WST_LOG_DEBUG,
+    WST_LOG_VERBOSE,
+} ToysLogPrio;
+
+/**
+ * Open a file and redirect all following logs to it.
+ * When `filename` is NULL, prints to stderr.
+ * By default logs are printed to stderr.
+ */
+bool toys_log_open(const char *filename);
+
+/**
+ * Print a log line to current stream. Filters by priority.
+ *
+ * @return Number of bytes written to stream.
+ */
+int toys_log_print(ToysLogPrio prio, const char *fmt, ...);
+
+/**
+ * Sets max priority messages of which will be printed.
+ */
+void toys_log_set_max_prio(ToysLogPrio prio);
+
+#endif /* WST_DEBUG_H */

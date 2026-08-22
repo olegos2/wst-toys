@@ -1,7 +1,8 @@
 m_dep = cc.find_library('m', required: false)
 
 toys_poly_deps = [
-    m_dep
+    m_dep,
+    toys_common_dep,
 ]
 
 toys_poly_lib = static_library(

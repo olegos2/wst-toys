@@ -1,29 +1,18 @@
-subdir('poly')
 
-toys_argparse_lib = static_library(
-    'toys_argparse',
+toys_common_lib = static_library(
+    'toys_common',
     sources: files(
         'argparse.c',
-    ),
-    include_directories: inc,
-    install: false,
-)
-
-toys_argparse_dep = declare_dependency(
-    link_with: toys_argparse_lib,
-    include_directories: inc,
-)
-
-toys_ds_lib = static_library(
-    'toys_ds',
-    sources: files(
         'ds.c',
+            'debug.c',
     ),
     include_directories: inc,
     install: false,
 )
 
-toys_ds_dep = declare_dependency(
-    link_with: toys_ds_lib,
+toys_common_dep = declare_dependency(
+    link_with: toys_common_lib,
     include_directories: inc,
 )
+
+subdir('poly')
