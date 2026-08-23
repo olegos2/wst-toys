@@ -1,4 +1,5 @@
 #include "toys/solve.h"
+#include "toys/math.h"
 
 #include <assert.h>
 #include <stdbool.h>

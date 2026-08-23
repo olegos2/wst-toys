@@ -1,11 +1,8 @@
 #ifndef TOYS_SOLVE_H
 #define TOYS_SOLVE_H
 
-#include <assert.h>
-#include <stddef.h>
 #include <stdbool.h>
-#include <stdint.h>
-#include <float.h>
+#include <stddef.h>
 
 /** Max polynomial degree the solver accepts. */
 #define WST_SOLVE_MAX_DEGREE 8
@@ -79,36 +76,5 @@ bool wst_poly_mul(const WstPoly *a, const WstPoly *b, WstPoly *out);
 /** Returns derivative polynomial with degree lowered by one,
  * derivative of a constant is the zero polynomial. */
 WstPoly wst_poly_deriv(const WstPoly *poly);
-
-/** Check if `double` is in `-DBL_EPSILON..DBL_EPSILON` range. */
-static inline bool iszero(double a)
-{
-    return a > -DBL_EPSILON && a < DBL_EPSILON;
-}
-
-typedef union {
-    double val;
-    struct {
-        uint64_t sign : 1;
-        uint64_t exp : 11;
-        uint64_t significand : 52;
-    };
-} double_repr;
-
-/** Replacements for macros for no reason */
-static inline bool my_isnan(double a)
-{
-    assert(sizeof(double) == 8);
-    double_repr repr = (double_repr)a;
-    return repr.sign == 0 && repr.exp == 0x7FF && (
-        repr.significand == 1 || repr.significand == ((1ull << 51) | 1) || repr.significand == ((1ull << 52) - 1));
-}
-
-static inline bool my_isinf(double a)
-{
-    assert(sizeof(double) == 8);
-    double_repr repr = (double_repr)a;
-    return repr.exp == 0x7FF && repr.significand == 0;
-}
 
 #endif /* TOYS_SOLVE_H */

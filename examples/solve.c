@@ -1,6 +1,7 @@
 #include "toys/argparse.h"
 #include "toys/debug.h"
 #include "toys/solve.h"
+#include "toys/math.h"
 
 #include <assert.h>
 #include <errno.h>
