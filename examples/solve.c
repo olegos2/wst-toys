@@ -12,6 +12,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <raylib.h>
+#include <raymath.h>
+
 #if defined(_MSC_VER) || defined(_WIN32)
 #  include <io.h>
 #  define isatty _isatty
@@ -71,33 +74,52 @@ static void print_solution(const WstSolution *sol, bool pretty)
 }
 
 /* Renders coeffs as a polynomial, highest power first, e.g. x^2 - 3 x + 2 */
-static void print_poly(const char *name, const double *coeffs, int degree)
+static void print_poly(char *buf, size_t nbuf, const char *name, const WstPoly *poly)
 {
-    printf("%s(x) = ", name);
+    char *cur = buf;
+    size_t rem = nbuf;
+    int written;
+
+#define ADD(fmt, ...) \
+    do { \
+        written = snprintf(cur, rem, fmt, ##__VA_ARGS__); \
+        if (written > 0) { \
+            size_t u_written = (size_t)written; \
+            if (u_written >= rem) { \
+                cur += (rem - 1); \
+                rem = 1; \
+            } else { \
+                cur += u_written; \
+                rem -= u_written; \
+            } \
+        } \
+    } while (0)
+
+    ADD("%s(x) = ", name);
 
     bool first = true;
-    for (int i = degree; i >= 0; i--) {
-        double c = coeffs[i] + 0.0;
+    for (int i = poly->degree; i >= 0; i--) {
+        double c = poly->coeffs[i] + 0.0;
         if (iszero(c))
             continue;
 
         if (!first)
-            printf(c < 0.0 ? " - " : " + ");
+            ADD(c < 0.0 ? " - " : " + ");
         else if (c < 0.0)
-            printf("-");
+            ADD("-");
 
         double a = fabs(c);
         if (i == 0 || !iszero(a - 1.0))
-            printf("%lg", a);
+            ADD("%lg", a);
         if (i > 0)
-            printf(" x");
+            ADD("x");
         if (i > 1)
-            printf("^%d", i);
+            ADD("^%d", i);
         first = false;
     }
-    if (first)
-        printf("0");
-    printf("\n");
+    ADD(first ? "0\n" : "\n");
+
+#undef ADD
 }
 
 static char *skip_seps(char *s)
@@ -184,30 +206,40 @@ static void print_help_commands(void)
         "  expr expression      Solve a mathematical expression set equal to\n"
         "                       zero, e.g. x^2 - 4 = 0 or 2 - x^2 = 0\n"
         "  deriv c0 c1 ... cn   Get coefficients of derivative of polynomial\n"
+        "  plot c0 c1 ... cn    Plot a polynomial\n"
         "  (none)               interactive mode, reads coefficient lines from\n"
         "                       stdin\n");
+}
+
+static bool parse_poly(int argc, char *argv[], WstPoly *poly)
+{
+    if (argc > WST_SOLVE_MAX_DEGREE + 1) {
+        LOG_E("too many coefficients (max degree %d)", WST_SOLVE_MAX_DEGREE);
+        return false;
+    }
+    if (argc < 1) {
+        LOG_E("no coefficients given, run 'toys_solve --help' for usage");
+        return false;
+    }
+
+    int count = 0;
+    for (int i = 0; i < argc; i++) {
+        if (!parse_coeff(argv[i], strlen(argv[i]), &poly->coeffs[count])) {
+            LOG_E("invalid coefficient %s", argv[i]);
+            return false;
+        }
+        poly->degree = count;
+        count++;
+    }
+    return true;
 }
 
 /* coeffs command: solve using numeric coefficients from argv starting from argv[0]. */
 static int run_coeffs(int argc, char *argv[], bool pretty)
 {
-    if (argc > WST_SOLVE_MAX_DEGREE + 1) {
-        LOG_E("too many coefficients (max degree %d)", WST_SOLVE_MAX_DEGREE);
-        return 1;
-    }
-
-    /* Parse coefficients separately, with malformed numbers checks. */
     WstPoly poly = { 0 };
-    int count = 0;
-    for (int i = 0; i < argc; i++) {
-        if (!parse_coeff(argv[i], strlen(argv[i]), &poly.coeffs[count])) {
-            LOG_E("invalid coefficient %s", argv[i]);
-            return 1;
-        }
-        poly.degree = count;
-        count++;
-    }
-
+    if (!parse_poly(argc, argv, &poly))
+        return 1;
     WstSolution sol = wst_solve_poly(&poly);
     print_solution(&sol, pretty);
     return 0;
@@ -216,30 +248,16 @@ static int run_coeffs(int argc, char *argv[], bool pretty)
 /* deriv command: print derivative polynomial coefficients, constant term first. */
 static int run_deriv(int argc, char *argv[], bool pretty)
 {
-    if (argc > WST_SOLVE_MAX_DEGREE + 1) {
-        LOG_E("too many coefficients (max degree %d)", WST_SOLVE_MAX_DEGREE);
-        return 1;
-    }
-    if (argc < 1) {
-        LOG_E("no coefficients given, run 'toys_solve --help' for usage");
-        return 1;
-    }
 
     WstPoly poly = { 0 };
-    int count = 0;
-    for (int i = 0; i < argc; i++) {
-        if (!parse_coeff(argv[i], strlen(argv[i]), &poly.coeffs[count])) {
-            LOG_E("invalid coefficient %s", argv[i]);
-            return 1;
-        }
-        poly.degree = count;
-        count++;
-    }
-
+    if (!parse_poly(argc, argv, &poly))
+        return 1;
     WstPoly d = wst_poly_deriv(&poly);
 
     if (pretty) {
-        print_poly("P'", d.coeffs, d.degree);
+        char buf[256];
+        print_poly(buf, sizeof(buf), "P'", &d);
+        printf("%s", buf);
         return 0;
     }
     for (int i = 0; i <= d.degree; i++)
@@ -289,6 +307,135 @@ static int run_expr(int argc, char *argv[])
 
     WstSolution sol = wst_solve_poly(&poly);
     print_solution(&sol, true);
+    return 0;
+}
+
+static int run_plot(int argc, char *argv[0])
+{
+    WstPoly poly = { 0 };
+    if (!parse_poly(argc, argv, &poly))
+        return 1;
+
+    char poly_pretty[256];
+    print_poly(poly_pretty, sizeof(poly_pretty), "y", &poly);
+
+    WstSolution sol = wst_solve_poly(&poly);
+    print_solution(&sol, true);
+
+    SetTargetFPS(60);
+
+    const int win_width = 800, win_height = 600;
+    const int grid_size = 40;
+
+    const int center_x = win_width / 2, center_y = win_height / 2;
+    int len_x = win_width / grid_size;
+    int len_y = win_height / grid_size;
+    InitWindow(win_width, win_height, "Polynomial plot");
+
+    int grid_start_x = -len_x / 2;
+    int grid_end_x = grid_start_x + len_x;
+    int grid_start_y = -len_y / 2;
+    int grid_end_y = grid_start_y + len_y;
+
+    const int font_size = 22;
+    const int label_size = 16;
+
+    double x_step = 2.0 / (double)grid_size;
+
+    while (!WindowShouldClose()) {
+        // TODO: comments
+        const char *text = NULL;
+        int text_width = 0;
+
+        BeginDrawing();
+            ClearBackground(BLACK);
+
+            // Draw background grid
+            for (int i = grid_start_x * grid_size; i <= grid_end_x * grid_size; i += grid_size) {
+                DrawLineEx((Vector2){ .x = (float)(center_x + i), .y = 0 },
+                            (Vector2){ .x = (float)(center_x + i), .y = (float)win_height },
+                            1.0, DARKGRAY);
+            }
+            for (int i = grid_start_y * grid_size; i <= grid_end_y * grid_size; i += grid_size) {
+                DrawLineEx((Vector2){ .x = 0, .y = (float)(center_y + i) },
+                            (Vector2){ .x = (float)win_width, .y = (float)(center_y + i) },
+                            1.0, DARKGRAY);
+            }
+
+            // Draw axes
+            DrawLineEx((Vector2){ .x = (float)center_x, .y = 0 },
+                        (Vector2){ .x = (float)center_x, .y = (float)win_height },
+                        1.0, GRAY);
+            DrawLineEx((Vector2){ .x = 0, .y = (float)center_y },
+                        (Vector2){ .x = (float)win_width, .y = (float)center_y },
+                        1.0, GRAY);
+            
+            // Draw axis x number line (except 0)
+            for (int i = grid_start_x; i <= grid_end_x; i++) {
+                if (i == 0) continue;
+                text = TextFormat("%d", i);
+                text_width = MeasureText(text, label_size);
+                DrawText(text, center_x + i * grid_size - text_width / 2,
+                            center_y - 4 - label_size, label_size, WHITE);
+            }
+            // Draw axis y number line (except 0)
+            for (int i = grid_start_y; i <= grid_end_y; i++) {
+                if (i == 0) continue;
+                /* Flip vertically */
+                DrawText(TextFormat("%d", i), center_x + 4, center_y - i * grid_size - label_size / 2,
+                         label_size, WHITE);
+            }
+            // Draw zero
+            DrawText("0", center_x + 4, center_y - label_size - 4,
+                     label_size, WHITE);
+
+            // Draw axis x label
+            text = "x";
+            text_width = MeasureText(text, font_size);
+            DrawText(text, center_x + grid_end_x * grid_size - text_width - 4,
+                     center_y + 2, font_size, GREEN);
+
+            // Draw axis y label
+            text = "y";
+            text_width = MeasureText(text, font_size);
+            DrawText(text, center_x - text_width - 2, 4, font_size, GREEN);
+            
+            // Get first polynomial point on very left
+            double saved_i = grid_start_x;
+            double saved_j = wst_poly_eval(&poly, grid_start_x);
+
+            for (double i = grid_start_x + x_step; i <= grid_end_x; i += x_step) {
+                // Draw polynomial
+                double j = wst_poly_eval(&poly, i);
+                DrawLineEx(
+                    (Vector2){
+                        .x = (float)center_x + (float)saved_i * (float)grid_size,
+                        .y = (float)center_y - (float)saved_j * (float)grid_size
+                    },
+                    (Vector2){
+                        .x = (float)center_x + (float)i * (float)grid_size,
+                        .y = (float)center_y - (float)j * (float)grid_size
+                    },
+                    2.0, ORANGE
+                );
+                saved_i = i;
+                saved_j = j;
+            }
+
+            for (int i = 0; i < sol.count; i++) {
+                // Draw roots on x axis
+                int root_x = center_x + (int)(sol.roots[i] * grid_size);
+                DrawCircle(root_x, center_y, 4.0, ORANGE);
+                DrawText(TextFormat("%.2lg", sol.roots[i]), root_x, center_y + 2, font_size, GREEN);
+            }
+
+            // Draw polynomial expression
+            DrawText(TextFormat("%s", poly_pretty), 10, 10, font_size, YELLOW);
+        EndDrawing();
+    }
+
+    CloseWindow();
+
     return 0;
 }
 
@@ -375,6 +522,8 @@ int main(int argc, char *argv[])
         return run_expr(parser.nrest, parser.rest);
     if (strcmp(command, "deriv") == 0)
         return run_deriv(parser.nrest, parser.rest, pretty);
+    if (strcmp(command, "plot") == 0)
+        return run_plot(parser.nrest, parser.rest);
 
     fprintf(stderr, "Unknown command '%s', run '%s --help' for usage\n", command, argv[0]);
     return 1;

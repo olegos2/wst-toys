@@ -33,6 +33,21 @@ WstPoly wst_poly_deriv(const WstPoly *poly)
     return out;
 }
 
+double wst_poly_eval(const WstPoly *poly, double x)
+{
+    assert(poly != NULL);
+
+    double ret = 0;
+
+    double s = 1;
+    for (int i = 0; i <= poly->degree; i++) {
+        ret += poly->coeffs[i] * s;
+        s *= x;
+    }
+
+    return ret;
+}
+
 /**
  * @return number of roots
  */

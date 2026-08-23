@@ -1,8 +1,10 @@
 #include "toys/argparse.h"
+#include "toys/debug.h"
 
 #include <assert.h>
 #include <errno.h>
 #include <limits.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,17 +29,20 @@ static ArgOption *find_opt(ArgParser *p, const char *name, size_t len)
     for (int i = 0; i < p->nopts; i++) {
         const char *s = p->opts[i].short_name;
         const char *l = p->opts[i].long_name;
-        if ((s && strncmp(s, name, len + 1) == 0) ||
-            (l && strncmp(l, name, len + 1) == 0))
+        if ((s && strlen(s) == len && strncmp(s, name, len) == 0) ||
+            (l && strlen(l) == len && strncmp(l, name, len) == 0))
             return &p->opts[i];
     }
     return NULL;
 }
 
 /* Single-insertion error messages, arg may be NULL */
-static void err_set(ArgParser *p, const char *fmt, const char *arg)
+static void err_set(ArgParser *p, const char *fmt, ...)
 {
-    snprintf(p->error, sizeof(p->error), fmt, arg ? arg : "");
+    va_list args = { 0 };
+    va_start(args, fmt);
+    vsnprintf(p->error, sizeof(p->error), fmt, args);
+    va_end(args);
 }
 
 /* strtol over the whole value, rejects trailing garbage and overflow */
@@ -122,6 +127,7 @@ bool argparse_parse(ArgParser *p, int argc, char **argv)
     /* reset dests to zeros so repeated parses start clean */
     for (int i = 0; i < p->nopts; i++) {
         ArgOption *o = &p->opts[i];
+        o->seen = false;
         if (o->type == ARG_SWITCH)
             *(bool *)o->dest = false;
         else if (o->type == ARG_INT)
@@ -181,6 +187,7 @@ bool argparse_parse(ArgParser *p, int argc, char **argv)
             err_set(p, "unexpected argument %s", arg);
             return false;
         }
+        LOG_D("Got positional arg %s", arg);
         *(const char **)o->dest = arg;
         o->seen = true;
         npos_filled++;
@@ -195,17 +202,25 @@ bool argparse_parse(ArgParser *p, int argc, char **argv)
     return true;
 }
 
+static size_t label_len(const ArgOption *o)
+{
+    if (o->type == ARG_POSITIONAL)
+        return strlen(o->long_name) + 2;
+    else if (o->short_name && o->long_name)
+        return strlen(o->short_name) + strlen(o->long_name) + 2;
+    else
+        return strlen(opt_name(o));
+}
 
 /* Option column label, positionals show as <name> */
 static void format_label(const ArgOption *o, char *buf, size_t size)
 {
-    if (o->type == ARG_POSITIONAL) {
+    if (o->type == ARG_POSITIONAL)
         snprintf(buf, size, "<%s>", o->long_name);
-    } else if (o->short_name && o->long_name) {
+    else if (o->short_name && o->long_name)
         snprintf(buf, size, "%s, %s", o->short_name, o->long_name);
-    } else {
+    else
         snprintf(buf, size, "%s", opt_name(o));
-    }
 }
 
 void argparse_print_help(const ArgParser *p)
@@ -218,16 +233,26 @@ void argparse_print_help(const ArgParser *p)
             printf(" %s", p->opts[i].long_name);
     printf("\n\nOptions:\n");
 
-    // TODO: pass label by user so no magic number, or calc then alloc
-    char *labels[OPT_LABEL_LEN];
-    int width = 0;
+    char **labels;
+    labels = calloc((size_t)p->nopts, sizeof(char *));
+    if (labels == NULL) {
+        LOG_E("calloc: %s", strerror(errno));
+        printf("Failed to alloc option labels\n");
+        return;
+    }
+    size_t width = 0;
     for (int i = 0; i < p->nopts; i++) {
-        format_label(&p->opts[i], labels[i], sizeof(labels[i]));
-        int len = (int)strlen(labels[i]);
+        size_t len = label_len(&p->opts[i]);
+        labels[i] = calloc(len + 1, sizeof(char));
+        format_label(&p->opts[i], labels[i], len + 1);
         if (len > width)
             width = len;
     }
 
     for (int i = 0; i < p->nopts; i++)
-        printf("  %-*s  %s\n", width, labels[i], p->opts[i].description);
+        printf("  %-*s  %s\n", (int)width, labels[i], p->opts[i].description);
+
+    for (int i = 0; i < p->nopts; i++)
+        free(labels[i]);
+    free(labels);
 }

@@ -69,6 +69,7 @@ build_solve() {
     )
     declare -a solve_libs=(
         m
+        raylib
     )
 
     for i in "${solve_libs[@]}"; do

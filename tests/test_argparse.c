@@ -15,6 +15,18 @@ static int failures = 0;
 
 #define ARR_LEN(arr) (sizeof(arr) / sizeof(*arr))
 
+static bool try_parse(ArgParser *p, int argc, char *argv[], const char *msg, const char *file, int line)
+{
+    if (!argparse_parse(p, argc, argv)) {
+        fprintf(stderr, "FAIL %s: %s (%s:%d)\n", msg, p->error, file, line);
+        failures++;
+        return false;
+    }
+    return true;
+}
+
+#define CHECK_PARSE(p, argc, argv, msg) \
+    try_parse(p, argc, argv, msg, __FILE__, __LINE__)
 
 static void test_parse(void)
 {
@@ -52,24 +64,26 @@ static void test_parse(void)
         .nopts = ARR_LEN(opts),
     };
 
-    // TODO: use file
     char *argv1[] = { "prog", "-v", "--num=42", "--mode=test", "in.txt" };
-    CHECK(argparse_parse(&p, sizeof(argv1) / sizeof(*argv1), argv1), "attached forms parse");
-    CHECK(verbose, "switch set");
-    CHECK(num == 42, "int attached form");
-    CHECK(strncmp(mode, "test", 4) == 0, "string attached form");
-    CHECK(file != NULL && strcmp(file, "in.txt") == 0, "positional filled");
+    if (CHECK_PARSE(&p, ARR_LEN(argv1), argv1, "attached forms parse")) {
+        CHECK(verbose, "switch set");
+        CHECK(num == 42, "int attached form");
+        CHECK(strncmp(mode, "test", 4) == 0, "string attached form");
+        CHECK(file != NULL && strcmp(file, "in.txt") == 0, "positional filled");
+    }
 
     char *argv2[] = { "prog", "--num", "-7", "--mode", "", "--", "-x" };
-    CHECK(argparse_parse(&p, sizeof(argv2) / sizeof(*argv2), argv2), "separate value and -- parse");
-    CHECK(num == -7, "negative int");
-    CHECK(*mode == '\0', "empty string");
-    CHECK(strcmp(file, "-x") == 0, "-- ends option parsing");
+    if (CHECK_PARSE(&p, ARR_LEN(argv2), argv2, "separate value and -- parse")) {
+        CHECK(num == -7, "negative int");
+        CHECK(*mode == '\0', "empty string");
+        CHECK(file != NULL && strcmp(file, "-x") == 0, "-- ends option parsing");
+    }
 
     /* dests are reset between parses */
     char *argv3[] = { "prog", "in.txt" };
-    CHECK(argparse_parse(&p, sizeof(argv3) / sizeof(*argv3), argv3), "plain parse");
-    CHECK(!verbose && num == 0 && mode == NULL, "dests reset");
+    if (CHECK_PARSE(&p, ARR_LEN(argv3), argv3, "plain parse")) {
+        CHECK(!verbose && num == 0 && mode == NULL, "dests reset");
+    }
 }
 
 static void test_errors(void)
@@ -103,21 +117,21 @@ static void test_errors(void)
     };
 
     char *argv1[] = { "prog", "--nope" };
-    CHECK(!argparse_parse(&p, 2, argv1), "unknown option fails");
+    CHECK(!argparse_parse(&p, ARR_LEN(argv1), argv1), "unknown option fails");
     CHECK(strcmp(p.error, "unknown option --nope") == 0, "unknown option message");
 
     char *argv2[] = { "prog" };
-    CHECK(!argparse_parse(&p, 1, argv2), "missing required fails");
+    CHECK(!argparse_parse(&p, ARR_LEN(argv2), argv2), "missing required fails");
     CHECK(strcmp(p.error, "missing required file") == 0, "required message");
 
     char *argv3[] = { "prog", "-n" };
-    CHECK(!argparse_parse(&p, 2, argv3), "missing value fails");
+    CHECK(!argparse_parse(&p, ARR_LEN(argv3), argv3), "missing value fails");
 
     char *argv4[] = { "prog", "-n=abc", "f" };
-    CHECK(!argparse_parse(&p, 3, argv4), "bad int fails");
+    CHECK(!argparse_parse(&p, ARR_LEN(argv4), argv4), "bad int fails");
 
     char *argv5[] = { "prog", "a", "b" };
-    CHECK(!argparse_parse(&p, 3, argv5), "extra positional fails");
+    CHECK(!argparse_parse(&p, ARR_LEN(argv5), argv5), "extra positional fails");
 }
 
 static void test_rest(void)
@@ -139,15 +153,16 @@ static void test_rest(void)
 
     /* capture off by default, extras still fail */
     char *argv1[] = { "prog", "a", "b" };
-    CHECK(!argparse_parse(&p, sizeof(argv1) / sizeof(*argv1), argv1), "no capture by default");
+    CHECK(!argparse_parse(&p, ARR_LEN(argv1), argv1), "no capture by default");
 
     p.capture_rest = true;
     char *argv2[] = { "prog", "-h", "cmd", "-x", "y" };
-    CHECK(argparse_parse(&p, sizeof(argv2) / sizeof(*argv2), argv2), "rest capture");
-    CHECK(help, "switch before command");
-    CHECK(p.nrest == 3, "rest count");
-    CHECK(strcmp(p.rest[0], "cmd") == 0, "rest head");
-    CHECK(strcmp(p.rest[1], "-x") == 0, "raw dash token in rest");
+    if (CHECK_PARSE(&p, ARR_LEN(argv2), argv2, "rest capture")) {
+        CHECK(help, "switch before command");
+        CHECK(p.nrest == 3, "rest count");
+        CHECK(strcmp(p.rest[0], "cmd") == 0, "rest head");
+        CHECK(strcmp(p.rest[1], "-x") == 0, "raw dash token in rest");
+    }
 }
 
 static void test_subcommand_tail(void)
@@ -170,7 +185,7 @@ static void test_subcommand_tail(void)
     };
 
     char *argv1[] = { "prog", "coeffs", "-6", "5" };
-    CHECK(argparse_parse(&p, sizeof(argv1) / sizeof(*argv1), argv1), "dash tokens go raw after positional");
+    CHECK(argparse_parse(&p, ARR_LEN(argv1), argv1), "dash tokens go raw after positional");
     CHECK(cmd != NULL && strcmp(cmd, "coeffs") == 0, "command captured");
     CHECK(p.nrest == 2, "raw tail length");
     CHECK(strcmp(p.rest[0], "-6") == 0, "negative number stays raw");

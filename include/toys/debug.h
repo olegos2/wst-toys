@@ -73,4 +73,12 @@ int toys_log_print(ToysLogPrio prio, const char *fmt, ...);
  */
 void toys_log_set_max_prio(ToysLogPrio prio);
 
+void toys_assert(bool expression, const char *expression_src, const char *file, int line, const char *func);
+
+/**
+ * Custom assert impl that may be more verbose.
+ * Aborts program when expression is false.
+ */
+#define my_assert(expr) toys_assert(expr, #expr, __FILE__, __LINE__, __func__)
+
 #endif /* WST_DEBUG_H */

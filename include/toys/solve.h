@@ -77,4 +77,7 @@ bool wst_poly_mul(const WstPoly *a, const WstPoly *b, WstPoly *out);
  * derivative of a constant is the zero polynomial. */
 WstPoly wst_poly_deriv(const WstPoly *poly);
 
+/** Evaluate polynomial at a point x. */
+double wst_poly_eval(const WstPoly *poly, double x);
+
 #endif /* TOYS_SOLVE_H */

@@ -1,14 +1,22 @@
 #include "toys/debug.h"
 
+#include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <execinfo.h>
+#include <string.h>
 
 /** Currently saved file stream to use for printing logs to. */
 static FILE *debug_file = NULL;
+
+#ifdef WST_DEBUG
+static ToysLogPrio debug_level = WST_LOG_DEBUG;
+#else /* !WST_DEBUG */
 static ToysLogPrio debug_level = WST_LOG_INFO;
+#endif /* WST_DEBUG */
 
 static void toys_log_close(void)
 {
@@ -66,4 +74,31 @@ int toys_log_print(ToysLogPrio prio, const char *fmt, ...)
 void toys_log_set_max_prio(ToysLogPrio prio)
 {
     debug_level = prio;
+}
+
+static void print_stack_trace(void)
+{
+    static const int stack_len = 100;
+    void *buffer[stack_len];
+    int cur_len = backtrace(buffer, stack_len);
+    char **syms = backtrace_symbols(buffer, cur_len);
+    if (syms == NULL) {
+        LOG_E("backtrace_symbols: %s", strerror(errno));
+        // perror("backtrace_symbols");
+        return;
+    }
+    fprintf(stderr, "Stack trace:\n");
+    for (int i = 0; i < cur_len; i++) {
+        fprintf(stderr, "%s\n", syms[i]);
+    }
+    free(syms);
+}
+
+void toys_assert(bool expression, const char *expression_src, const char *file, int line, const char *func)
+{
+    if (expression) return;
+
+    fprintf(stderr, "%s:%d: %s: Assertion `%s` failed.\n", file, line, func, expression_src);
+    print_stack_trace();
+    abort();
 }
