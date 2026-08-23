@@ -3,9 +3,7 @@
 
 #include <stdbool.h>
 
-
-/** Max options, including positionals, one parser accepts. */
-#define ARG_MAX_OPTIONS 16
+#define PARSER_ERR_LEN 128
 
 /** Type of argument/option for parser. */
 typedef enum {
@@ -23,6 +21,8 @@ typedef struct {
     ArgType type;
     /** Whether this option must be present in program args. */
     bool required;
+    /** Runtime field for tracking whether flag appeared in argv */
+    bool seen;
     /** Variable filled by parse, its type follows ArgType */
     void *dest;
     /** Token forms including dashes, either may be NULL */
@@ -45,10 +45,10 @@ typedef struct {
     const char *prog;
     // /** A string describing how rest of args will be parsed (if enabled) */
     // const char *rest_template;
-    ArgOption opts[ARG_MAX_OPTIONS];
+    ArgOption *opts;
     int nopts;
     /** Empty unless the last parse failed */
-    char error[128];
+    char error[PARSER_ERR_LEN];
     /** Gather leftover args into rest instead of failing */
     bool capture_rest;
     /** Args from the first leftover on, filled when capture_rest is set */
@@ -56,12 +56,6 @@ typedef struct {
     /** Length of rest args array. */
     int nrest;
 } ArgParser;
-
-/** Resets parser and records prog for usage output. */
-void argparse_init(ArgParser *p, const char *prog);
-
-/** Copies opt into the parser, aborts on overflow. */
-void argparse_add(ArgParser *p, const ArgOption *opt);
 
 /**
  * Parses argv and fills their dest variables.

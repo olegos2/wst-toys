@@ -10,6 +10,7 @@
 
 void wst_poly_trim(WstPoly *p)
 {
+    assert(p != NULL);
     // /* Clamp bad degree number. */
     // if (p->degree > WST_SOLVE_MAX_DEGREE)
     //     p->degree = WST_SOLVE_MAX_DEGREE;
@@ -31,8 +32,15 @@ WstPoly wst_poly_deriv(const WstPoly *poly)
     return out;
 }
 
+/**
+ * @return number of roots
+ */
 static int wst_quad_solve(double c, double b, double a, double *x1, double *x2)
 {
+    assert(x1 != NULL);
+    assert(x2 != NULL);
+    assert(x1 != x2);
+
     double disc = b * b - 4.0 * a * c;
     if (disc < 0.0)
         return 0;

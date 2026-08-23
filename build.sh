@@ -1,105 +1,42 @@
 #!/usr/bin/env bash
 
-set -uo pipefail
-
 HOME_DIR=$(dirname "$(realpath "$0")")
 BUILD_DIR="$HOME_DIR/builddir"
 
-# if [[ -d $BUILD_DIR ]]; then
-#     echo "$BUILD_DIR already exists"
-#     exit 1
-# fi
+export CC="${CC:=gcc}"
 
-mkdir -p "$BUILD_DIR"
-
-# # files_list dir file..
-# files_list() {
-#     for i in "${@:2}"; do
-#         echo "$1/$i"
-#     done
-# }
-
-declare -a common_inc=(
-    "$HOME_DIR/include"
-    "$HOME_DIR/src/include"
+declare -a common_src=(
+    "$HOME_DIR/src/poly/expr.c"
+    "$HOME_DIR/src/poly/poly.c"
+    "$HOME_DIR/src/argparse.c"
+    "$HOME_DIR/src/debug.c"
+    "$HOME_DIR/src/ds.c"
 )
 
-DEFAULT_CFLAGS="-Wall -Wextra -Wconversion -Wfloat-equal"
-DEFAULT_CPPFLAGS="-DWST_DEBUG"
-DEFAULT_LDFLAGS=""
-export CC=${CC:=gcc}
-export CXX=${CXX:=g++}
-export LD=${LD:=gcc}
-export AR=${AR:=ar}
+# коллективный разум закреп
+declare -a common_flags=(
+    -lm -I"$HOME_DIR/include" -I"$HOME_DIR/src/inculde"
+    ${CFLAGS:="-Wall -Wextra -Wconversion -Wfloat-equal -O2 -g"}
+    -DWST_DEBUG
+)
 
-print_eval() {
-    echo "$@"
-    eval "$@"
-}
-
-my_cc() {
-    declare -a args=(${CFLAGS:="$DEFAULT_CFLAGS"} ${CPPFLAGS:="$DEFAULT_CPPFLAGS"})
-    for i in "${common_inc[@]}"; do
-        args+=(-I"$i")
-    done
-    print_eval "$CC" "${args[@]}" "$@"
-}
-
-my_ld() {
-    print_eval "$LD" ${LDFLAGS:="$DEFAULT_LDFLAGS"} "$@"
-}
-
-build_common() {
-    my_cc -c "$HOME_DIR/src/argparse.c" -o toys_argparse.o &&
-    my_cc -c "$HOME_DIR/src/debug.c" -o toys_debug.o &&
-    my_cc -c "$HOME_DIR/src/ds.c" -o toys_ds.o &&
-    "$AR" rcs libtoys_common.a toys_argparse.o toys_debug.o toys_ds.o
-}
-
-build_poly() {
-    my_cc -c "$HOME_DIR/src/poly/expr.c" -o toys_expr.o &&
-    my_cc -c "$HOME_DIR/src/poly/poly.c" -o toys_poly.o &&
-    "$AR" rcs libtoys_poly.a toys_expr.o toys_poly.o
-}
-
-build_solve() {
-    declare -a solve_deps=(
-        libtoys_poly.a
-        libtoys_common.a
-    )
-    declare -a solve_libs=(
-        m
-    )
-
-    for i in "${solve_libs[@]}"; do
-        solve_deps+=(-l"$i")
-    done
-
-    my_cc -c "$HOME_DIR/examples/solve.c" -o toys_solve.o &&
-    my_ld toys_solve.o "${solve_deps[@]}" -o toys_solve
-}
-
-build_test_poly() {
-    my_cc -c "$HOME_DIR/tests/test_poly.c" -o test_poly.o &&
-    my_ld test_poly.o libtoys_poly.a libtoys_common.a -lm -o test_poly
-}
-
-build_test_ds() {
-    my_cc -c "$HOME_DIR/tests/test_ds.c" -o test_ds.o &&
-    my_ld test_ds.o libtoys_common.a -o test_ds
-}
-
-build_test_argparse() {
-    my_cc -c "$HOME_DIR/tests/test_argparse.c" -o test_argparse.o &&
-    my_ld test_argparse.o libtoys_common.a -o test_argparse
-}
-
+mkdir -p "$BUILD_DIR" &&
 pushd "$BUILD_DIR" &&
-build_common &&
-build_poly &&
-build_solve &&
-build_test_argparse &&
-build_test_ds &&
-build_test_poly &&
-popd
-echo "Build finished"
+"$CC" \
+    "${common_src[@]}" \
+    "$HOME_DIR/examples/solve.c" \
+    "${common_flags[@]}" -o toys_solve &&
+"$CC" \
+    "${common_src[@]}" \
+    "$HOME_DIR/tests/test_argparse.c" \
+    "${common_flags[@]}" -o test_argparse &&
+"$CC" \
+    "${common_src[@]}" \
+    "$HOME_DIR/tests/test_ds.c" \
+    "${common_flags[@]}" -o test_ds &&
+"$CC" \
+    "${common_src[@]}" \
+    "$HOME_DIR/tests/test_poly.c" \
+    "${common_flags[@]}" -o test_poly &&
+popd &&
+echo "Finished"

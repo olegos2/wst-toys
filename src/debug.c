@@ -7,13 +7,12 @@
 #include <stdlib.h>
 
 /** Currently saved file stream to use for printing logs to. */
-static FILE *debug_file;
+static FILE *debug_file = NULL;
 static ToysLogPrio debug_level = WST_LOG_INFO;
 
 static void toys_log_close(void)
 {
     if (debug_file != NULL) {
-        fflush(debug_file);
         fclose(debug_file);
         debug_file = NULL;
     }
@@ -46,20 +45,20 @@ int toys_log_print(ToysLogPrio prio, const char *fmt, ...)
 {
     if (prio > debug_level)
         return 0;
-    va_list args;
+    va_list args = { 0 };
     va_start(args, fmt);
     FILE *s = debug_file ?: stderr;
     int ret = vfprintf(s, fmt, args);
     va_end(args);
     if (ret < 0) {
-        fprintf(stderr, "Failed to print log to stream (fd %d), switching to stderr\n", fileno(s));
+        fprintf(stderr, "Failed to print log to stream (fd %d), "
+                "switching to stderr\n", fileno(s));
         toys_log_close();
         va_start(args, fmt);
-        FILE *s = debug_file ?: stderr;
-        ret = vfprintf(s, fmt, args);
+        ret = vfprintf(stderr, fmt, args);
         va_end(args);
     }
-    /* Just flushing on exit isn't enough when program is terminated/killed */
+
     if (s != stderr) fflush(s);
     return ret;
 }

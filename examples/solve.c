@@ -293,57 +293,58 @@ static int run_expr(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    ArgParser parser;
-    argparse_init(&parser, argv[0]);
     bool help = false;
     bool verbose = false;
     bool pretty = false;
     const char *command = NULL;
     const char *debug_filename = NULL;
 
-    argparse_add(&parser, &(ArgOption){
-        .type = ARG_SWITCH,
-        .dest = &help,
-        .short_name = "-h",
-        .long_name = "--help",
-        .description = "print this help and exit",
-    });
-
+    ArgOption opts[] = {
+        {
+            .type = ARG_SWITCH,
+            .dest = &help,
+            .short_name = "-h",
+            .long_name = "--help",
+            .description = "print this help and exit",
+        },
 #ifdef WST_DEBUG
-    argparse_add(&parser, &(ArgOption){
-        .type = ARG_SWITCH,
-        .dest = &verbose,
-        .short_name = "-v",
-        .long_name = "--verbose",
-        .description = "enable verbose logging messages",
-    });
+        {
+            .type = ARG_SWITCH,
+            .dest = &verbose,
+            .short_name = "-v",
+            .long_name = "--verbose",
+            .description = "enable verbose logging messages",
+        },
 #endif
+        {
+            .type = ARG_STRING,
+            .dest = &debug_filename,
+            .short_name = "-l",
+            .long_name = "--logfile",
+            .description = "redirect log prints to a file path",
+        },
+        {
+            .type = ARG_SWITCH,
+            .dest = &pretty,
+            .short_name = "-p",
+            .long_name = "--pretty",
+            .description = "print output in human friendly format",
+        },
+        {
+            .type = ARG_POSITIONAL,
+            .dest = &command,
+            .long_name = "command",
+            .description = "One of subcommands described below",
+        },
+    };
 
-    argparse_add(&parser, &(ArgOption){
-        .type = ARG_STRING,
-        .dest = &debug_filename,
-        .short_name = "-l",
-        .long_name = "--logfile",
-        .description = "redirect log prints to a file path",
-    });
-
-    argparse_add(&parser, &(ArgOption){
-        .type = ARG_SWITCH,
-        .dest = &pretty,
-        .short_name = "-p",
-        .long_name = "--pretty",
-        .description = "print output in human friendly format",
-    });
-
-    argparse_add(&parser, &(ArgOption){
-        .type = ARG_POSITIONAL,
-        .dest = &command,
-        .long_name = "command",
-        .description = "One of subcommands described below",
-    });
-
-    /* Capture subcommand args */
-    parser.capture_rest = true;
+    ArgParser parser = {
+        .prog = argv[0],
+        .opts = opts,
+        .nopts = sizeof(opts) / sizeof(*opts),
+        /* Capture subcommand args */
+        .capture_rest = true,
+    };
 
     if (!argparse_parse(&parser, argc, argv)) {
         fprintf(stderr, "%s, run '%s --help' for usage\n", parser.error, argv[0]);

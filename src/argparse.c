@@ -7,18 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-void argparse_init(ArgParser *p, const char *prog)
-{
-    memset(p, 0, sizeof(*p));
-    p->prog = prog;
-}
-
-void argparse_add(ArgParser *p, const ArgOption *opt)
-{
-    assert(p->nopts < ARG_MAX_OPTIONS);
-    p->opts[p->nopts++] = *opt;
-}
+#define OPT_LABEL_LEN 128
 
 
 /* Name to show in messages, prefers the long form. */
@@ -38,8 +27,8 @@ static ArgOption *find_opt(ArgParser *p, const char *name, size_t len)
     for (int i = 0; i < p->nopts; i++) {
         const char *s = p->opts[i].short_name;
         const char *l = p->opts[i].long_name;
-        if ((s && strlen(s) == len && strncmp(s, name, len) == 0) ||
-            (l && strlen(l) == len && strncmp(l, name, len) == 0))
+        if ((s && strncmp(s, name, len + 1) == 0) ||
+            (l && strncmp(l, name, len + 1) == 0))
             return &p->opts[i];
     }
     return NULL;
@@ -91,23 +80,20 @@ static int parse_named_option(ArgParser *p, int argc, char **argv, ArgOption **o
     int ret = 1;
 
     const char *val = NULL;
-    switch (o->type) {
-    /* Check for options that don't require value first */
-    case ARG_SWITCH:
+    if (o->type == ARG_SWITCH) {
         *(bool *)o->dest = true;
         return ret;
-    default:
-        /* Parse value following option name (with `=` or in next arg) */
-        if (eq != NULL)
-            val = eq + 1;
-        else if (argc >= 2) {
-            val = argv[1];
-            ret = 2;
-        } else {
-            err_set(p, "missing value for %s", opt_name(o));
-            return 0;
-        }
-        break;
+    }
+
+    /* Parse value following option name (with `=` or in next arg) */
+    if (eq != NULL)
+        val = eq + 1;
+    else if (argc >= 2) {
+        val = argv[1];
+        ret = 2;
+    } else {
+        err_set(p, "missing value for %s", opt_name(o));
+        return 0;
     }
 
     switch (o->type) {
@@ -119,7 +105,7 @@ static int parse_named_option(ArgParser *p, int argc, char **argv, ArgOption **o
         *(const char **)o->dest = val;
         break;
     default:
-        assert(false);
+        assert(0 && "Unreachable/bad option type");
     }
 
     return ret;
@@ -127,11 +113,11 @@ static int parse_named_option(ArgParser *p, int argc, char **argv, ArgOption **o
 
 bool argparse_parse(ArgParser *p, int argc, char **argv)
 {
+    assert(p != NULL);
+
     p->error[0] = '\0';
     p->rest = NULL;
     p->nrest = 0;
-
-    bool seen[ARG_MAX_OPTIONS] = { false };
 
     /* reset dests to zeros so repeated parses start clean */
     for (int i = 0; i < p->nopts; i++) {
@@ -162,7 +148,6 @@ bool argparse_parse(ArgParser *p, int argc, char **argv)
                    (p->capture_rest && npos_total > 0 &&
                     npos_filled == npos_total);
 
-        /* check for `--` that ends named options */
         if (!raw && strcmp(arg, "--") == 0) {
             opts_done = true;
             continue;
@@ -174,14 +159,14 @@ bool argparse_parse(ArgParser *p, int argc, char **argv)
             if (!ret) return false;
             /* Skip one extra arg for option of format `-o v`. */
             i += ret - 1;
-            seen[opt - p->opts] = true;
+            opt->seen = true;
             continue;
         }
 
         /* first unfilled positional in declaration order */
         ArgOption *o = NULL;
         for (int j = 0; j < p->nopts; j++) {
-            if (p->opts[j].type == ARG_POSITIONAL && !seen[j]) {
+            if (p->opts[j].type == ARG_POSITIONAL && !p->opts[j].seen) {
                 o = &p->opts[j];
                 break;
             }
@@ -197,12 +182,12 @@ bool argparse_parse(ArgParser *p, int argc, char **argv)
             return false;
         }
         *(const char **)o->dest = arg;
-        seen[o - p->opts] = true;
+        o->seen = true;
         npos_filled++;
     }
 
     for (int i = 0; i < p->nopts; i++) {
-        if (p->opts[i].required && !seen[i]) {
+        if (p->opts[i].required && !p->opts[i].seen) {
             err_set(p, "missing required %s", opt_name(&p->opts[i]));
             return false;
         }
@@ -225,14 +210,16 @@ static void format_label(const ArgOption *o, char *buf, size_t size)
 
 void argparse_print_help(const ArgParser *p)
 {
+    assert(p != NULL);
+
     printf("Usage: %s [options]", p->prog);
     for (int i = 0; i < p->nopts; i++)
         if (p->opts[i].type == ARG_POSITIONAL)
             printf(" %s", p->opts[i].long_name);
     printf("\n\nOptions:\n");
 
-    // TODO: pass label by user so no magic number
-    char labels[ARG_MAX_OPTIONS][32];
+    // TODO: pass label by user so no magic number, or calc then alloc
+    char *labels[OPT_LABEL_LEN];
     int width = 0;
     for (int i = 0; i < p->nopts; i++) {
         format_label(&p->opts[i], labels[i], sizeof(labels[i]));
