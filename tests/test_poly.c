@@ -16,7 +16,7 @@ static void check_roots(const WstPoly *poly, const WstSolution *s, const WstSolu
     bool ok = s->count == expected->count;
     for (int i = 0; i < s->count; i++) {
         if (!ok) break;
-        ok = iszero(s->roots[i] - expected->roots[i]);
+        ok = my_iszero(s->roots[i] - expected->roots[i]);
     }
     if (ok) return;
 

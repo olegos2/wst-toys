@@ -4,7 +4,9 @@
 #include "toys/math.h"
 
 #include <assert.h>
+#include <ctype.h>
 #include <errno.h>
+#include <float.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -23,6 +25,8 @@
 #  include <unistd.h>
 #endif
 
+#define POLY_BUF_LEN 256
+
 /* strtod must consume the whole string as one number. */
 static bool parse_coeff(const char *str, size_t len, double *out)
 {
@@ -34,6 +38,11 @@ static bool parse_coeff(const char *str, size_t len, double *out)
         return false;
     *out = val;
     return true;
+}
+
+static double round_to_zero(double a)
+{
+    return my_iszero(a) ? 0.0 : a;
 }
 
 static void print_solution(const WstSolution *sol, bool pretty)
@@ -50,7 +59,7 @@ static void print_solution(const WstSolution *sol, bool pretty)
             printf("none\n");
         else
             for (int i = 0; i < sol->count; i++)
-                printf("%lg%c", sol->roots[i] + 0.0,
+                printf("%lg%c", sol->roots[i],
                        i < sol->count - 1 ? ' ' : '\n');
         return;
     }
@@ -69,12 +78,13 @@ static void print_solution(const WstSolution *sol, bool pretty)
     }
 
     printf("%d roots:\n", sol->count);
-    for (int i = 0; i < sol->count; i++)
-        printf("x%d = %lg\n", i + 1, sol->roots[i] + 0.0); // workaround to avoid printing -0
+    for (int i = 0; i < sol->count; i++) {
+        printf("x%d = %lg\n", i + 1, round_to_zero(sol->roots[i]));
+    }
 }
 
 /* Renders coeffs as a polynomial, highest power first, e.g. x^2 - 3 x + 2 */
-static void print_poly(char *buf, size_t nbuf, const char *name, const WstPoly *poly)
+static void print_poly(char *buf, size_t nbuf, const char *name, const WstPoly *poly, bool pretty)
 {
     char *cur = buf;
     size_t rem = nbuf;
@@ -94,22 +104,26 @@ static void print_poly(char *buf, size_t nbuf, const char *name, const WstPoly *
             } \
         } \
     } while (0)
+    
+    if (!pretty) {
+        for (int i = 0; i <= poly->degree; i++)
+            ADD("%lg ", poly->coeffs[i]);
+        return;
+    }
 
     ADD("%s(x) = ", name);
 
     bool first = true;
     for (int i = poly->degree; i >= 0; i--) {
-        double c = poly->coeffs[i] + 0.0;
-        if (iszero(c))
-            continue;
+        if (my_iszero(poly->coeffs[i])) continue;
 
         if (!first)
-            ADD(c < 0.0 ? " - " : " + ");
-        else if (c < 0.0)
+            ADD(poly->coeffs[i] < 0.0 ? " - " : " + ");
+        else if (poly->coeffs[i] < 0.0)
             ADD("-");
 
-        double a = fabs(c);
-        if (i == 0 || !iszero(a - 1.0))
+        double a = fabs(poly->coeffs[i]);
+        if (i == 0 || !my_iszero(a - 1.0))
             ADD("%lg", a);
         if (i > 0)
             ADD("x");
@@ -117,21 +131,22 @@ static void print_poly(char *buf, size_t nbuf, const char *name, const WstPoly *
             ADD("^%d", i);
         first = false;
     }
-    ADD(first ? "0\n" : "\n");
+    if (first)
+        ADD("0");
 
 #undef ADD
 }
 
 static char *skip_seps(char *s)
 {
-    while (*s == ' ' || *s == '\t' || *s == '\n')
+    while (isspace(*s))
         s++;
     return s;
 }
 
 static char *token_end(char *s)
 {
-    while (*s != ' ' && *s != '\t' && *s != '\n' && *s != '\0')
+    while (!isspace(*s) && *s != '\0')
         s++;
     return s;
 }
@@ -202,10 +217,10 @@ static void print_help_commands(void)
     printf(
         "Commands:\n"
         "  coeffs c0 c1 ... cn  Solve c0 + c1 x + ... + cn x^n = 0 with the\n"
-        "                       given numeric coefficients\n"
+        "                       given numeric coefficients, find deriv and integrate\n"
         "  expr expression      Solve a mathematical expression set equal to\n"
-        "                       zero, e.g. x^2 - 4 = 0 or 2 - x^2 = 0\n"
-        "  deriv c0 c1 ... cn   Get coefficients of derivative of polynomial\n"
+        "                       zero, e.g. x^2 - 4 or 2 - x^2\n"
+        // "  deriv c0 c1 ... cn   Get coefficients of derivative of polynomial\n"
         "  plot c0 c1 ... cn    Plot a polynomial\n"
         "  (none)               interactive mode, reads coefficient lines from\n"
         "                       stdin\n");
@@ -240,36 +255,49 @@ static int run_coeffs(int argc, char *argv[], bool pretty)
     WstPoly poly = { 0 };
     if (!parse_poly(argc, argv, &poly))
         return 1;
+
+    char buf[POLY_BUF_LEN];
+    print_poly(buf, sizeof(buf), "P", &poly, pretty);
+    printf("%s\n", buf);
+
     WstSolution sol = wst_solve_poly(&poly);
     print_solution(&sol, pretty);
+
+    WstPoly deriv = wst_poly_deriv(&poly);
+    print_poly(buf, sizeof(buf), "P'", &deriv, pretty);
+    printf("%s\n", buf);
+
+    WstPoly integ = { 0 };
+    if (wst_poly_integ(&poly, &integ)) {
+        print_poly(buf, sizeof(buf), "\\int P", &integ, pretty);
+        printf("%s\n", buf);
+    }
+    
     return 0;
 }
 
 /* deriv command: print derivative polynomial coefficients, constant term first. */
 static int run_deriv(int argc, char *argv[], bool pretty)
 {
-
     WstPoly poly = { 0 };
     if (!parse_poly(argc, argv, &poly))
         return 1;
     WstPoly d = wst_poly_deriv(&poly);
-
+    char buf[POLY_BUF_LEN];
     if (pretty) {
-        char buf[256];
-        print_poly(buf, sizeof(buf), "P'", &d);
-        printf("%s", buf);
-        return 0;
+        print_poly(buf, sizeof(buf), "P", &poly, true);
+        printf("%s\n", buf);
     }
-    for (int i = 0; i <= d.degree; i++)
-        printf("%lg%c", d.coeffs[i], i < d.degree ? ' ' : '\n');
+    print_poly(buf, sizeof(buf), "P'", &d, pretty);
+    printf("%s\n", buf);
     return 0;
 }
 
 /* TODO: expr command */
-static int run_expr(int argc, char *argv[])
+static int run_expr(int argc, char *argv[], bool pretty)
 {
     if (argc < 1) {
-        fprintf(stderr, "No expression given, run '%s --help' for usage\n", argv[0]);
+        fprintf(stderr, "No expression given, use --help for usage\n");
         return 1;
     }
 
@@ -287,7 +315,7 @@ static int run_expr(int argc, char *argv[])
     /* Copy args into one string */
     char *dst = expr;
     for (int i = 0; i < argc; i++) {
-        if (i > 1)
+        if (i > 0)
             *dst++ = ' ';
         size_t n = strlen(argv[i]);
         memcpy(dst, argv[i], n);
@@ -305,8 +333,11 @@ static int run_expr(int argc, char *argv[])
     }
     free(expr);
 
+    char buf[POLY_BUF_LEN];
+    print_poly(buf, sizeof(buf), "P", &poly, pretty);
+    printf("%s\n", buf);
     WstSolution sol = wst_solve_poly(&poly);
-    print_solution(&sol, true);
+    print_solution(&sol, pretty);
     return 0;
 }
 
@@ -316,8 +347,8 @@ static int run_plot(int argc, char *argv[0])
     if (!parse_poly(argc, argv, &poly))
         return 1;
 
-    char poly_pretty[256];
-    print_poly(poly_pretty, sizeof(poly_pretty), "y", &poly);
+    char poly_pretty[POLY_BUF_LEN];
+    print_poly(poly_pretty, sizeof(poly_pretty), "y", &poly, true);
 
     WstSolution sol = wst_solve_poly(&poly);
     print_solution(&sol, true);
@@ -519,9 +550,10 @@ int main(int argc, char *argv[])
     if (strcmp(command, "coeffs") == 0)
         return run_coeffs(parser.nrest, parser.rest, pretty);
     if (strcmp(command, "expr") == 0)
-        return run_expr(parser.nrest, parser.rest);
-    if (strcmp(command, "deriv") == 0)
-        return run_deriv(parser.nrest, parser.rest, pretty);
+        return run_expr(parser.nrest, parser.rest, pretty);
+    // if (strcmp(command, "deriv") == 0)
+    //     return run_deriv(parser.nrest, parser.rest, pretty);
+
     if (strcmp(command, "plot") == 0)
         return run_plot(parser.nrest, parser.rest);
 

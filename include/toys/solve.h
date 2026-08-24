@@ -53,29 +53,31 @@ WstSolution wst_solve_poly(WstPoly *poly);
  *
  * Returns NULL on success and fills in *out. On failure returns a
  * static error message and stores its byte offset in *err_pos.
- * TODO: THAT SHI AINT IMPLEMENTED
  */
 const char *wst_expr_to_poly(const char *s, size_t len, WstPoly *out,
-                              size_t *err_pos);
+                             size_t *err_pos);
 
 /** Scales all coeffs of polynomial */
-WstPoly wst_poly_scale(const WstPoly *a, double s);
+void wst_poly_scale(WstPoly *a, double s);
 
-/** Sums each coeff of 2 polynomials, result has correct degree set. */
-WstPoly wst_poly_add(const WstPoly *a, const WstPoly *b);
+/** Adds matching coeffs of `b` to `a` and updates degree. */
+void wst_poly_add(WstPoly *a, const WstPoly *b);
 
 /** Subtracts matching coeffs of polynomial `b` from `a`. */
-WstPoly wst_poly_sub(const WstPoly *a, const WstPoly *b);
+void wst_poly_sub(WstPoly *a, const WstPoly *b);
 
 /**
  * Multiplies and sums (convolutes) coefficients of polynomials,
  * returns false if resulting degree would not fit.
  */
-bool wst_poly_mul(const WstPoly *a, const WstPoly *b, WstPoly *out);
+bool wst_poly_mul(WstPoly *a, const WstPoly *b);
 
 /** Returns derivative polynomial with degree lowered by one,
  * derivative of a constant is the zero polynomial. */
 WstPoly wst_poly_deriv(const WstPoly *poly);
+
+/** Integrate polynomial, returns `false` on error. */
+bool wst_poly_integ(const WstPoly *poly, WstPoly *out);
 
 /** Evaluate polynomial at a point x. */
 double wst_poly_eval(const WstPoly *poly, double x);

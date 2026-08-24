@@ -58,6 +58,7 @@ int toys_log_print(ToysLogPrio prio, const char *fmt, ...)
     FILE *s = debug_file ?: stderr;
     int ret = vfprintf(s, fmt, args);
     va_end(args);
+
     if (ret < 0) {
         fprintf(stderr, "Failed to print log to stream (fd %d), "
                 "switching to stderr\n", fileno(s));
@@ -79,6 +80,7 @@ void toys_log_set_max_prio(ToysLogPrio prio)
 static void print_stack_trace(void)
 {
     static const int stack_len = 100;
+    // TODO: use define
     void *buffer[stack_len];
     int cur_len = backtrace(buffer, stack_len);
     char **syms = backtrace_symbols(buffer, cur_len);
