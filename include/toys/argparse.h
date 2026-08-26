@@ -17,6 +17,7 @@ typedef enum {
     ARG_POSITIONAL,
 } ArgType;
 
+/** A single option that parser is looking for. */
 typedef struct {
     ArgType type;
     /** Whether this option must be present in program args. */

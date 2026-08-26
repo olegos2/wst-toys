@@ -7,16 +7,7 @@
 /** Max polynomial degree the solver accepts. */
 #define WST_SOLVE_MAX_DEGREE 8
 
-enum {
-    /** Returned when any real x solves the equation. */
-    WST_SOLVE_INF = -1,
-    /** Returned on invalid args or other error. */
-    WST_SOLVE_ERR = -2,
-};
-
-/**
- * Polynomial with fixed capacity.
- */
+/** Polynomial with fixed capacity. */
 typedef struct {
     /** Coefficients of polynomial ascending power, coeffs[i] matches x^i coeff. */
     double coeffs[WST_SOLVE_MAX_DEGREE + 1];
@@ -31,6 +22,27 @@ typedef struct {
     /** Number of distinct values roots array holds. */
     int count;
 } WstSolution;
+
+/** Error that parser may return. */
+typedef enum {
+    WST_EXPR_NO_ERR = 0,
+    WST_EXPR_FAILED_TO_PARSE_NUMBER,
+    WST_EXPR_UNEXPECTED_CHAR_IN_NUM,
+    WST_EXPR_UNEXPECTED_CHAR_IN_EXPR,
+    WST_EXPR_UNEXPECTED_END_OF_EXPR,
+    WST_EXPR_UNEXPECTED_ATOM,
+    WST_EXPR_NON_INTEGER_POWER,
+    WST_EXPR_DEGREE_EXCEEDED,
+    WST_EXPR_DIV_ERR,
+    WST_EXPR_MISSING_RPAREN,
+} WstParserErr;
+
+enum {
+    /** Returned when any real x solves the equation. */
+    WST_SOLVE_INF = -1,
+    /** Returned on invalid args or other error. */
+    WST_SOLVE_ERR = -2,
+};
 
 /** Drop trailing zero coeffs if any (never increases degree). */
 void wst_poly_trim(WstPoly *p);
@@ -47,39 +59,53 @@ void wst_poly_trim(WstPoly *p);
 WstSolution wst_solve_poly(WstPoly *poly);
 
 /**
- * Parses the expression in s of length len and reduces it to a
+ * When `expr_mode` is `true`:
+ * parses the expression in s of length len and reduces it to a
  * polynomial, with + - * / ( ) = ^ as operators. A top-level '='
  * turns a = b into a - b = 0.
  *
- * Returns NULL on success and fills in *out. On failure returns a
- * static error message and stores its byte offset in *err_pos.
+ * When `expr_mode` is `false`:
+ * parses raw coeff numbers in ascending order separated by spaces from string.
+ *
+ * Returns `WST_EXPR_NO_ERR` on success and fills in *out. On failure returns an
+ * error message that can be converted to string and stores error offset
+ * in string in `*err_pos`.
  */
-const char *wst_expr_to_poly(const char *s, size_t len, WstPoly *out,
-                             size_t *err_pos);
+WstParserErr wst_expr_to_poly(const char *s, WstPoly *out, size_t *err_pos, bool expr_mode);
 
-/** Scales all coeffs of polynomial */
+/** Get error string for parser error number. */
+const char *wst_expr_err_string(WstParserErr err);
+
+/** Scale all coeffs of polynomial by number. */
 void wst_poly_scale(WstPoly *a, double s);
 
-/** Adds matching coeffs of `b` to `a` and updates degree. */
+/** Add matching coeffs of `b` to `a` and updates degree. */
 void wst_poly_add(WstPoly *a, const WstPoly *b);
 
-/** Subtracts matching coeffs of polynomial `b` from `a`. */
+/** Subtract matching coeffs of polynomial `b` from `a`. */
 void wst_poly_sub(WstPoly *a, const WstPoly *b);
 
-/**
- * Multiplies and sums (convolutes) coefficients of polynomials,
- * returns false if resulting degree would not fit.
- */
+/** Compare two polynomials equal: degree, then every coefficient. */
+bool wst_poly_cmp(const WstPoly *a, const WstPoly *b);
+
+/** Convolute (multiply) `a` by `b`, returns `false` on error. */
 bool wst_poly_mul(WstPoly *a, const WstPoly *b);
 
-/** Returns derivative polynomial with degree lowered by one,
- * derivative of a constant is the zero polynomial. */
+/** Get derivative of polynomial. */
 WstPoly wst_poly_deriv(const WstPoly *poly);
 
-/** Integrate polynomial, returns `false` on error. */
+/** Get indefinite integral of polynomial, returns `false` on error. */
 bool wst_poly_integ(const WstPoly *poly, WstPoly *out);
 
 /** Evaluate polynomial at a point x. */
 double wst_poly_eval(const WstPoly *poly, double x);
+
+/**
+ * Print a polynomial into buffer of length `nbuf`.
+ * @param [in] name name for polynomial (e.g. `P` or `y`) in pretty format.
+ * @param [in] pretty whether to use pretty formatting or just raw coeffs separated by spaces.
+ */
+void wst_poly_print(char *buf, size_t nbuf, const char *name,
+                    const WstPoly *poly, bool pretty);
 
 #endif /* TOYS_SOLVE_H */

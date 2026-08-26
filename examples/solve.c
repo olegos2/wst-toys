@@ -4,10 +4,8 @@
 #include "toys/math.h"
 
 #include <assert.h>
-#include <ctype.h>
 #include <errno.h>
 #include <float.h>
-#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,18 +25,11 @@
 
 #define POLY_BUF_LEN 256
 
-/* strtod must consume the whole string as one number. */
-static bool parse_coeff(const char *str, size_t len, double *out)
-{
-    assert(out != NULL);
-
-    char *end = NULL;
-    double val = strtod(str, &end);
-    if (end == str || end != str + len)
-        return false;
-    *out = val;
-    return true;
-}
+typedef struct {
+    bool verbose;
+    bool pretty;
+    bool expr_mode;
+} SolveConfig;
 
 static double round_to_zero(double a)
 {
@@ -50,7 +41,6 @@ static void print_solution(const WstSolution *sol, bool pretty)
     assert(sol != NULL);
 
     if (!pretty) {
-        /* machine readable, everything on one line */
         if (sol->count == WST_SOLVE_INF)
             printf("inf\n");
         else if (sol->count == WST_SOLVE_ERR)
@@ -83,224 +73,45 @@ static void print_solution(const WstSolution *sol, bool pretty)
     }
 }
 
-/* Renders coeffs as a polynomial, highest power first, e.g. x^2 - 3 x + 2 */
-static void print_poly(char *buf, size_t nbuf, const char *name, const WstPoly *poly, bool pretty)
+/** Does not free `expr` if it was dynamically allocated. */
+static bool analyze_expr(const char *expr, SolveConfig *cfg)
 {
-    char *cur = buf;
-    size_t rem = nbuf;
-    int written;
-
-#define ADD(fmt, ...) \
-    do { \
-        written = snprintf(cur, rem, fmt, ##__VA_ARGS__); \
-        if (written > 0) { \
-            size_t u_written = (size_t)written; \
-            if (u_written >= rem) { \
-                cur += (rem - 1); \
-                rem = 1; \
-            } else { \
-                cur += u_written; \
-                rem -= u_written; \
-            } \
-        } \
-    } while (0)
-    
-    if (!pretty) {
-        for (int i = 0; i <= poly->degree; i++)
-            ADD("%lg ", poly->coeffs[i]);
-        return;
-    }
-
-    ADD("%s(x) = ", name);
-
-    bool first = true;
-    for (int i = poly->degree; i >= 0; i--) {
-        if (my_iszero(poly->coeffs[i])) continue;
-
-        if (!first)
-            ADD(poly->coeffs[i] < 0.0 ? " - " : " + ");
-        else if (poly->coeffs[i] < 0.0)
-            ADD("-");
-
-        double a = fabs(poly->coeffs[i]);
-        if (i == 0 || !my_iszero(a - 1.0))
-            ADD("%lg", a);
-        if (i > 0)
-            ADD("x");
-        if (i > 1)
-            ADD("^%d", i);
-        first = false;
-    }
-    if (first)
-        ADD("0");
-
-#undef ADD
-}
-
-static char *skip_seps(char *s)
-{
-    while (isspace(*s))
-        s++;
-    return s;
-}
-
-static char *token_end(char *s)
-{
-    while (!isspace(*s) && *s != '\0')
-        s++;
-    return s;
-}
-
-/* First pass counts the numbers to enforce the degree cap. */
-static bool parse_line(char *line, WstPoly *poly)
-{
-    assert(line != NULL);
-
-    int n = 0;
-    for (char *p = skip_seps(line); *p != '\0'; p = skip_seps(token_end(p)))
-        n++;
-    if (n == 0)
-        return false;
-    if (n - 1 > WST_SOLVE_MAX_DEGREE) {
-        fprintf(stderr, "Too many coefficients on one line (max degree %d)\n",
-                WST_SOLVE_MAX_DEGREE);
+    WstPoly poly;
+    size_t err_pos;
+    WstParserErr err_msg = wst_expr_to_poly(expr, &poly, &err_pos, cfg->expr_mode);
+    if (err_msg != WST_EXPR_NO_ERR) {
+        /* TODO: add more visual error position pointing. */
+        fprintf(stderr, "Expression error at position %zu: %s",
+                err_pos, wst_expr_err_string(err_msg));
         return false;
     }
-
-    int i = 0;
-    for (char *p = skip_seps(line); *p != '\0';) {
-        char *end = token_end(p);
-        if (!parse_coeff(p, (size_t)(end - p), &poly->coeffs[i])) {
-            fprintf(stderr, "Invalid number %.*s\n", (int)(end - p), p);
-            return false;
-        }
-        poly->degree = i;
-        i++;
-        p = skip_seps(end);
-    }
-    return true;
-}
-
-/* Reads coefficient lines from stdin until EOF and prints results. */
-static void run_interactive(void)
-{
-    if (isatty(fileno(stdin))) {
-        printf("Polynomial equation solver for real roots.\n");
-        printf("Type the coefficients from the constant term up to the highest power of x,\n");
-        printf("separated by spaces, then press Enter.\n");
-        printf("  example:  2 -3 1   solves  x^2 - 3 x + 2 = 0\n");
-        printf("An empty line is skipped; Ctrl-D exits.\n");
-    }
-
-    char *line = NULL;
-    size_t len = 0;
-    while (1) {
-        if (isatty(fileno(stdin))) {
-            printf("> ");
-            fflush(stdout);
-        }
-        if (getline(&line, &len, stdin) == -1)
-            break;
-
-        WstPoly poly = { 0 };
-        if (!parse_line(line, &poly))
-            continue;
-        WstSolution sol = wst_solve_poly(&poly);
-        print_solution(&sol, true);
-    }
-    free(line);
-}
-
-
-static void print_help_commands(void)
-{
-    printf(
-        "Commands:\n"
-        "  coeffs c0 c1 ... cn  Solve c0 + c1 x + ... + cn x^n = 0 with the\n"
-        "                       given numeric coefficients, find deriv and integrate\n"
-        "  expr expression      Solve a mathematical expression set equal to\n"
-        "                       zero, e.g. x^2 - 4 or 2 - x^2\n"
-        // "  deriv c0 c1 ... cn   Get coefficients of derivative of polynomial\n"
-        "  plot c0 c1 ... cn    Plot a polynomial\n"
-        "  (none)               interactive mode, reads coefficient lines from\n"
-        "                       stdin\n");
-}
-
-static bool parse_poly(int argc, char *argv[], WstPoly *poly)
-{
-    if (argc > WST_SOLVE_MAX_DEGREE + 1) {
-        LOG_E("too many coefficients (max degree %d)", WST_SOLVE_MAX_DEGREE);
-        return false;
-    }
-    if (argc < 1) {
-        LOG_E("no coefficients given, run 'toys_solve --help' for usage");
-        return false;
-    }
-
-    int count = 0;
-    for (int i = 0; i < argc; i++) {
-        if (!parse_coeff(argv[i], strlen(argv[i]), &poly->coeffs[count])) {
-            LOG_E("invalid coefficient %s", argv[i]);
-            return false;
-        }
-        poly->degree = count;
-        count++;
-    }
-    return true;
-}
-
-/* coeffs command: solve using numeric coefficients from argv starting from argv[0]. */
-static int run_coeffs(int argc, char *argv[], bool pretty)
-{
-    WstPoly poly = { 0 };
-    if (!parse_poly(argc, argv, &poly))
-        return 1;
 
     char buf[POLY_BUF_LEN];
-    print_poly(buf, sizeof(buf), "P", &poly, pretty);
-    printf("%s\n", buf);
+
+    if (cfg->pretty) {
+        wst_poly_print(buf, sizeof(buf), "P", &poly, true);
+        printf("%s\n", buf);
+    }
 
     WstSolution sol = wst_solve_poly(&poly);
-    print_solution(&sol, pretty);
+    print_solution(&sol, cfg->pretty);
 
     WstPoly deriv = wst_poly_deriv(&poly);
-    print_poly(buf, sizeof(buf), "P'", &deriv, pretty);
+    wst_poly_print(buf, sizeof(buf), "P'", &deriv, cfg->pretty);
     printf("%s\n", buf);
 
     WstPoly integ = { 0 };
     if (wst_poly_integ(&poly, &integ)) {
-        print_poly(buf, sizeof(buf), "\\int P", &integ, pretty);
+        wst_poly_print(buf, sizeof(buf), "\\int P", &integ, cfg->pretty);
         printf("%s\n", buf);
     }
-    
-    return 0;
+
+    return true;
 }
 
-/* deriv command: print derivative polynomial coefficients, constant term first. */
-static int run_deriv(int argc, char *argv[], bool pretty)
+/** Allocates string to hold expression dynamically, must be freed by user. */
+static char *concat_args(int argc, char *argv[])
 {
-    WstPoly poly = { 0 };
-    if (!parse_poly(argc, argv, &poly))
-        return 1;
-    WstPoly d = wst_poly_deriv(&poly);
-    char buf[POLY_BUF_LEN];
-    if (pretty) {
-        print_poly(buf, sizeof(buf), "P", &poly, true);
-        printf("%s\n", buf);
-    }
-    print_poly(buf, sizeof(buf), "P'", &d, pretty);
-    printf("%s\n", buf);
-    return 0;
-}
-
-/* TODO: expr command */
-static int run_expr(int argc, char *argv[], bool pretty)
-{
-    if (argc < 1) {
-        fprintf(stderr, "No expression given, use --help for usage\n");
-        return 1;
-    }
-
     /* Count space needed for remaining args to join in one string. */
     size_t total = 1;
     for (int i = 0; i < argc; i++)
@@ -309,7 +120,7 @@ static int run_expr(int argc, char *argv[], bool pretty)
     char *expr = malloc(total);
     if (expr == NULL) {
         LOG_E("Failed to allocate expression: %s", strerror(errno));
-        return 1;
+        return NULL;
     }
 
     /* Copy args into one string */
@@ -323,35 +134,93 @@ static int run_expr(int argc, char *argv[], bool pretty)
     }
     *dst = '\0';
 
-    WstPoly poly;
-    size_t err_pos;
-    const char *err_msg = wst_expr_to_poly(expr, strlen(expr), &poly, &err_pos);
-    if (err_msg != NULL) {
-        fprintf(stderr, "Expression error at position %zu: %s", err_pos, err_msg);
-        free(expr);
-        return 1;
-    }
-    free(expr);
-
-    char buf[POLY_BUF_LEN];
-    print_poly(buf, sizeof(buf), "P", &poly, pretty);
-    printf("%s\n", buf);
-    WstSolution sol = wst_solve_poly(&poly);
-    print_solution(&sol, pretty);
-    return 0;
+    return expr;
 }
 
-static int run_plot(int argc, char *argv[0])
+static void run_interactive(SolveConfig *cfg)
 {
-    WstPoly poly = { 0 };
-    if (!parse_poly(argc, argv, &poly))
+    if (isatty(fileno(stdin))) {
+        printf("Analyze polynomials and expressions for real roots, derivative and integral.\n");
+        if (cfg->expr_mode) {
+            printf("Type the coefficients from the constant term up to the highest power of x,\n");
+            printf("separated by spaces, then press Enter. Example:\n");
+            printf("  2 -3 1  solves  x^2 - 3 x + 2 = 0\n");
+        } else {
+            printf("Type expression using x as variable, example:\n");
+            printf("  (x + 1) ^ 2 + 5 * (-x - 1)\n");
+        }
+    }
+
+    char *line = NULL;
+    size_t len = 0;
+    while (1) {
+        if (isatty(fileno(stdin))) {
+            printf("> ");
+            fflush(stdout);
+        }
+        if (getline(&line, &len, stdin) == -1)
+            break;
+
+        analyze_expr(line, cfg);
+    }
+    free(line);
+}
+
+static void print_help_commands(void)
+{
+    printf(
+        "Commands:\n"
+        "  solve       Solve polynomial for real roots, find deriv and integrate\n"
+        "  plot        Plot a polynomial\n"
+        "  (none)      interactive mode, similar to 'solve' subcommand\n");
+}
+
+static int run_solve(int argc, char *argv[], SolveConfig *cfg)
+{
+    if (argc < 1) {
+        fprintf(stderr, "No expression/coeffs given, use --help for usage\n");
+        return 1;
+    }
+
+    char *expr = concat_args(argc, argv);
+    if (expr == NULL)
         return 1;
 
+    bool ret = analyze_expr(expr, cfg);
+    free(expr);
+    expr = NULL;
+    return ret ? 0 : 1;
+}
+
+static int run_plot(int argc, char *argv[], SolveConfig *cfg)
+{
+    if (argc < 1) {
+        fprintf(stderr, "No expression/coeffs given, use --help for usage\n");
+        return 1;
+    }
+
+    char *expr = concat_args(argc, argv);
+    if (expr == NULL)
+        return 1;
+
+    WstPoly poly;
+    size_t err_pos;
+    WstParserErr err_msg = wst_expr_to_poly(expr, &poly, &err_pos, cfg->expr_mode);
+    free(expr);
+    expr = NULL;
+
+    if (err_msg != WST_EXPR_NO_ERR) {
+        fprintf(stderr, "Expression error at position %zu: %s",
+                err_pos, wst_expr_err_string(err_msg));
+        return 1;
+    }
+
     char poly_pretty[POLY_BUF_LEN];
-    print_poly(poly_pretty, sizeof(poly_pretty), "y", &poly, true);
+    wst_poly_print(poly_pretty, sizeof(poly_pretty), "y", &poly, true);
+    printf("%s\n", poly_pretty);
 
     WstSolution sol = wst_solve_poly(&poly);
-    print_solution(&sol, true);
+    print_solution(&sol, cfg->pretty);
 
     SetTargetFPS(60);
 
@@ -473,10 +342,9 @@ static int run_plot(int argc, char *argv[0])
 int main(int argc, char *argv[])
 {
     bool help = false;
-    bool verbose = false;
-    bool pretty = false;
     const char *command = NULL;
     const char *debug_filename = NULL;
+    SolveConfig cfg = { 0 };
 
     ArgOption opts[] = {
         {
@@ -489,7 +357,7 @@ int main(int argc, char *argv[])
 #ifdef WST_DEBUG
         {
             .type = ARG_SWITCH,
-            .dest = &verbose,
+            .dest = &cfg.verbose,
             .short_name = "-v",
             .long_name = "--verbose",
             .description = "enable verbose logging messages",
@@ -504,10 +372,18 @@ int main(int argc, char *argv[])
         },
         {
             .type = ARG_SWITCH,
-            .dest = &pretty,
+            .dest = &cfg.pretty,
             .short_name = "-p",
             .long_name = "--pretty",
             .description = "print output in human friendly format",
+        },
+        {
+            .type = ARG_SWITCH,
+            .dest = &cfg.expr_mode,
+            .short_name = "-e",
+            .long_name = "--expr",
+            .description = "use mathematical expressions as input instead of raw coeffs "
+                           "(applies to all subcommands)",
         },
         {
             .type = ARG_POSITIONAL,
@@ -535,7 +411,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (verbose)
+    if (cfg.verbose)
         toys_log_set_max_prio(WST_LOG_VERBOSE);
 
     if (!toys_log_open(debug_filename))
@@ -543,19 +419,14 @@ int main(int argc, char *argv[])
     LOG_D("Started logger");
 
     if (command == NULL) {
-        run_interactive();
+        run_interactive(&cfg);
         return 0;
     }
 
-    if (strcmp(command, "coeffs") == 0)
-        return run_coeffs(parser.nrest, parser.rest, pretty);
-    if (strcmp(command, "expr") == 0)
-        return run_expr(parser.nrest, parser.rest, pretty);
-    // if (strcmp(command, "deriv") == 0)
-    //     return run_deriv(parser.nrest, parser.rest, pretty);
-
+    if (strcmp(command, "solve") == 0)
+        return run_solve(parser.nrest, parser.rest, &cfg);
     if (strcmp(command, "plot") == 0)
-        return run_plot(parser.nrest, parser.rest);
+        return run_plot(parser.nrest, parser.rest, &cfg);
 
     fprintf(stderr, "Unknown command '%s', run '%s --help' for usage\n", command, argv[0]);
     return 1;

@@ -5,18 +5,17 @@
 #include <assert.h>
 #include <math.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 
 /* `iszero` uses are questionable? */
-/* poly degree is int and not limited to never be < 0, so unexpected things may happen */
-/* wst_poly_solve is the only one that trims poly, have to keep this in mind. */
+/* poly degree is int and not limited to never be < 0, so unexpected things may happen. */
+/* Whenever polynomial degree may increase, output degree must be checked (trimmed). */
 
 void wst_poly_trim(WstPoly *p)
 {
     assert(p != NULL);
-    // /* Clamp bad degree number. */
-    // if (p->degree > WST_SOLVE_MAX_DEGREE)
-    //     p->degree = WST_SOLVE_MAX_DEGREE;
+
     while (p->degree > 0 && my_iszero(p->coeffs[p->degree]))
         p->degree--;
 }
@@ -70,6 +69,20 @@ bool wst_poly_mul(WstPoly *a, const WstPoly *b)
         for (int j = 0; j <= b->degree; j++)
             out.coeffs[i + j] += a->coeffs[i] * b->coeffs[j];
     *a = out;
+    return true;
+}
+
+bool wst_poly_cmp(const WstPoly *a, const WstPoly *b)
+{
+    assert(a != NULL);
+    assert(b != NULL);
+
+    if (a->degree != b->degree) return false;
+
+    for (int i = 0; i <= a->degree; i++)
+        if (!my_iszero(a->coeffs[i] - b->coeffs[i]))
+            return false;
+
     return true;
 }
 
@@ -177,4 +190,58 @@ WstSolution wst_solve_poly(WstPoly *poly)
         sol.count = WST_SOLVE_ERR;
         return sol;
     }
+}
+
+void wst_poly_print(char *buf, size_t nbuf, const char *name,
+                    const WstPoly *poly, bool pretty)
+{
+    char *cur = buf;
+    size_t rem = nbuf;
+    int written;
+
+#define ADD(fmt, ...) \
+    do { \
+        written = snprintf(cur, rem, fmt, ##__VA_ARGS__); \
+        if (written > 0) { \
+            size_t u_written = (size_t)written; \
+            if (u_written >= rem) { \
+                cur += (rem - 1); \
+                rem = 1; \
+            } else { \
+                cur += u_written; \
+                rem -= u_written; \
+            } \
+        } \
+    } while (0)
+    
+    if (!pretty) {
+        for (int i = 0; i <= poly->degree; i++)
+            ADD("%lg ", poly->coeffs[i]);
+        return;
+    }
+
+    ADD("%s(x) = ", name);
+
+    bool first = true;
+    for (int i = poly->degree; i >= 0; i--) {
+        if (my_iszero(poly->coeffs[i])) continue;
+
+        if (!first)
+            ADD(poly->coeffs[i] < 0.0 ? " - " : " + ");
+        else if (poly->coeffs[i] < 0.0)
+            ADD("-");
+
+        double a = fabs(poly->coeffs[i]);
+        if (i == 0 || !my_iszero(a - 1.0))
+            ADD("%lg", a);
+        if (i > 0)
+            ADD("x");
+        if (i > 1)
+            ADD("^%d", i);
+        first = false;
+    }
+    if (first)
+        ADD("0");
+
+#undef ADD
 }

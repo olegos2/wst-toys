@@ -9,12 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-/* Single pass expression parser: the lexer streams tokens into recursive descent and
- * every production returns its ToysPoly directly. */
-
 /* Nesting cap for '(' and '-' chains, which recurse per character. */
-#define TOYS_EXPR_MAX_DEPTH 256
+/* TODO: this is unused and unchecked */
+#define WST_EXPR_MAX_DEPTH 256
 
 /** Types of tokens that lexer can parse. */
 typedef enum {
@@ -50,20 +47,24 @@ typedef struct {
     Token lookahead;
     /* Whether lookahead is already filled. */
     bool have;
-    // /* [out] position in string at which first error happened. */
-    // size_t *err_pos;
-    // /* [out] error string. */
-    // const char *err_msg;
 } Parser;
 
-// static void err_set(Parser *p, size_t pos, const char *msg)
-// {
-//     /* First error sticks. */
-//     if (p->err_msg == NULL) {
-//         p->err_msg = msg;
-//         *p->err_pos = pos;
-//     }
-// }
+const char *wst_expr_err_string(WstParserErr err)
+{
+    static const char *parser_err[] = {
+        [WST_EXPR_NO_ERR] = "no error",
+        [WST_EXPR_FAILED_TO_PARSE_NUMBER]  = "failed to parse number",
+        [WST_EXPR_UNEXPECTED_CHAR_IN_NUM]  = "unexpected character in number",
+        [WST_EXPR_UNEXPECTED_CHAR_IN_EXPR] = "unexpected character in expression",
+        [WST_EXPR_UNEXPECTED_END_OF_EXPR]  = "unexpected end of expression",
+        [WST_EXPR_UNEXPECTED_ATOM]         = "expected number, x or '('",
+        [WST_EXPR_NON_INTEGER_POWER]       = "power must be a constant non-negative integer",
+        [WST_EXPR_DEGREE_EXCEEDED]         = "polynomial degree capacity exceeded",
+        [WST_EXPR_DIV_ERR]                 = "cannot divide by non-constant or zero",
+        [WST_EXPR_MISSING_RPAREN]          = "missing ')'",
+    };
+    return parser_err[err];
+}
 
 /**
  * Reads a number token with strtod, then checks the consumed span
@@ -72,35 +73,38 @@ typedef struct {
  * @param [out] tok resulting number token on success
  * @return error string or `NULL` on success
  */
-static const char *lex_number(Parser *p, Token *tok)
+static WstParserErr lex_number(Parser *p, Token *tok)
 {
     assert(p != NULL);
     assert(tok != NULL);
 
+    const char *start = p->s + p->pos;
     char *end = NULL;
-    double val = strtod(p->s + p->pos, &end);
-    size_t span = (size_t)(end - (p->s + p->pos));
 
-    if (span == 0)
-        return "failed to parse number";
+    double val = strtod(start, &end);
+    ptrdiff_t span = end - start;
 
-    for (size_t i = 0; i < span; i++) {
-        char c = p->s[p->pos + i];
-        if (!((c >= '0' && c <= '9') || c == '.' || c == 'e' || c == 'E')) {
-            // err_set(p, p->pos, "unexpected character");
-            return "unexpected character in number";
+    if (span <= 0) {
+        return WST_EXPR_FAILED_TO_PARSE_NUMBER;
+    }
+
+    for (ptrdiff_t i = 0; i < span; i++) {
+        char c = start[i];
+        if (!((c >= '0' && c <= '9') || c == '.' || c == 'e' || c == 'E' || c == '+' || c == '-')) {
+            return WST_EXPR_UNEXPECTED_CHAR_IN_NUM;
         }
     }
 
     tok->type = EXPR_NUM;
     tok->pos = p->pos;
     tok->val = val;
-    p->pos += span;
-    return NULL;
+    p->pos += (size_t)span;
+
+    return WST_EXPR_NO_ERR;
 }
 
 /* Fills *tok with the next token, or returns error string. */
-static const char *lex_next(Parser *p, Token *tok)
+static WstParserErr lex_next(Parser *p, Token *tok)
 {
     assert(p != NULL);
     assert(tok != NULL);
@@ -111,7 +115,7 @@ static const char *lex_next(Parser *p, Token *tok)
     tok->pos = p->pos;
     if (p->pos >= p->len) {
         tok->type = EXPR_END;
-        return NULL;
+        return WST_EXPR_NO_ERR;
     }
 
     char c = p->s[p->pos];
@@ -138,21 +142,22 @@ static const char *lex_next(Parser *p, Token *tok)
     //     tok->type = TOYS_EXPR_EQ;
     //     break;
     default:
-        return "unexpected character";
+        return WST_EXPR_UNEXPECTED_CHAR_IN_EXPR;
     }
     p->pos++;
-    return NULL;
+    return WST_EXPR_NO_ERR;
 }
 
-static const char *lex_peek(Parser *p, Token *tok)
+static WstParserErr lex_peek(Parser *p, Token *tok)
 {
     assert(p != NULL);
     assert(tok != NULL);
 
-    const char *ret = NULL;
+    WstParserErr ret = WST_EXPR_NO_ERR;
     if (!p->have) {
         ret = lex_next(p, &p->lookahead);
-        if (ret != NULL) {
+        if (ret != WST_EXPR_NO_ERR) {
+            LOG_D("lex_next: %s", wst_expr_err_string(ret));
             p->lookahead.type = EXPR_END;
             p->lookahead.pos = p->pos;
         }
@@ -169,18 +174,18 @@ static void lex_take(Parser *p)
     p->have = false;
 }
 
-static const char *parse_sum(Parser *p, WstPoly *out);
-static const char *parse_unary(Parser *p, WstPoly *out);
+static WstParserErr parse_sum(Parser *p, WstPoly *out);
+static WstParserErr parse_unary(Parser *p, WstPoly *out);
 
-static const char *parse_atom(Parser *p, WstPoly *out)
+static WstParserErr parse_atom(Parser *p, WstPoly *out)
 {
     assert(p != NULL);
     assert(out != NULL);
 
     Token tok;
-    const char *ret = NULL;
+    WstParserErr ret = WST_EXPR_NO_ERR;
     ret = lex_peek(p, &tok);
-    if (ret != NULL)
+    if (ret != WST_EXPR_NO_ERR)
         return ret;
 
     switch (tok.type) {
@@ -198,43 +203,46 @@ static const char *parse_atom(Parser *p, WstPoly *out)
     case EXPR_LPAREN:
         lex_take(p);
         parse_sum(p, out);
-        lex_peek(p, &tok);
+        ret = lex_peek(p, &tok);
+        if (ret != WST_EXPR_NO_ERR)
+            return ret;
         if (tok.type != EXPR_RPAREN)
-            return "expected ')'";
+            return WST_EXPR_MISSING_RPAREN;
         lex_take(p);
         break;
     case EXPR_END:
-        return "unexpected end of expression";
+        return WST_EXPR_UNEXPECTED_END_OF_EXPR;
     default:
-        return "expected number, x or '('";
+        return WST_EXPR_UNEXPECTED_ATOM;
     }
 
-    return NULL;
+    return ret;
 }
 
-static const char *parse_power(Parser *p, WstPoly *out)
+static WstParserErr parse_power(Parser *p, WstPoly *out)
 {
     assert(p != NULL);
     assert(out != NULL);
 
-    const char *ret = parse_atom(p, out);
-    if (ret != NULL) return ret;
+    WstParserErr ret = parse_atom(p, out);
+    if (ret != WST_EXPR_NO_ERR) return ret;
 
     Token tok;
-    lex_peek(p, &tok);
+    ret = lex_peek(p, &tok);
+    if (ret != WST_EXPR_NO_ERR) return ret;
     if (tok.type != EXPR_OP || tok.op != '^')
-        return NULL;
+        return WST_EXPR_NO_ERR;
     lex_take(p);
     WstPoly e = { 0 };
     ret = parse_unary(p, &e);
-    if (ret != NULL) return ret;
+    if (ret != WST_EXPR_NO_ERR) return ret;
 
     // TODO: better checks
     if (e.degree != 0 || !my_iszero(floor(e.coeffs[0]) - e.coeffs[0]))
-        return "Power must be a constant non-negative integer";
+        return WST_EXPR_NON_INTEGER_POWER;
     int pow = (int)e.coeffs[0];
     if (pow < 0)
-        return "Power must be a constant non-negative integer";
+        return WST_EXPR_NON_INTEGER_POWER;
 
     WstPoly src = *out;
     memset(out, 0, sizeof(*out));
@@ -242,78 +250,86 @@ static const char *parse_power(Parser *p, WstPoly *out)
 
     for (int i = 0; i < pow; i++) {
         if (!wst_poly_mul(out, &src))
-            return "Polynomial capacity exceeded";
+            return WST_EXPR_DEGREE_EXCEEDED;
     }
-    return NULL;
+    return ret;
 }
 
-static const char *parse_unary(Parser *p, WstPoly *out)
+static WstParserErr parse_unary(Parser *p, WstPoly *out)
 {
     assert(p != NULL);
     assert(out != NULL);
 
+    WstParserErr ret;
+
     bool neg = false;
     while (1) {
         Token tok;
-        lex_peek(p, &tok);
+        ret = lex_peek(p, &tok);
+        if (ret != WST_EXPR_NO_ERR) return ret;
         if (tok.type != EXPR_OP || (tok.op != '+' && tok.op != '-'))
             break;
         lex_take(p);
         if (tok.op == '-')
             neg = !neg;
     }
-    const char *ret = parse_power(p, out);
-    if (ret != NULL) return ret;
+    ret = parse_power(p, out);
+    if (ret != WST_EXPR_NO_ERR) return ret;
 
     if (neg)
         wst_poly_scale(out, -1.0);
-    return NULL;
+    return ret;
 }
 
-static const char *parse_mul(Parser *p, WstPoly *out)
+static WstParserErr parse_mul(Parser *p, WstPoly *out)
 {
     assert(p != NULL);
     assert(out != NULL);
 
-    const char *ret = parse_unary(p, out);
-    if (ret != NULL) return ret;
+    WstParserErr ret = parse_unary(p, out);
+    if (ret != WST_EXPR_NO_ERR) return ret;
 
     while (1) {
         Token tok;
-        lex_peek(p, &tok);
+        ret = lex_peek(p, &tok);
+        if (ret != WST_EXPR_NO_ERR) return ret;
         if (tok.type != EXPR_OP || (tok.op != '*' && tok.op != '/'))
             break;
         lex_take(p);
         WstPoly rhs = { 0 };
         ret = parse_unary(p, &rhs);
-        if (ret != NULL) return ret;
+        if (ret != WST_EXPR_NO_ERR) return ret;
     
         if (tok.op == '/') {
             if (rhs.degree != 0 || my_iszero(rhs.coeffs[0]))
-                return "Cannot divide by non-constant or zero";
+                return WST_EXPR_DIV_ERR;
             wst_poly_scale(out, 1.0 / rhs.coeffs[0]);
         }
         else if (!wst_poly_mul(out, &rhs))
-            return "Polynomial capacity exceeded";
+            return WST_EXPR_DEGREE_EXCEEDED;
     }
 
-    return NULL;
+    return ret;
 }
 
-static const char *parse_sum(Parser *p, WstPoly *out)
+static WstParserErr parse_sum(Parser *p, WstPoly *out)
 {
-    const char *ret = parse_mul(p, out);
-    if (ret != NULL) return ret;
+    assert(p != NULL);
+    assert(out != NULL);
+
+    WstParserErr ret = parse_mul(p, out);
+    if (ret != WST_EXPR_NO_ERR) return ret;
 
     while (1) {
         Token tok;
-        lex_peek(p, &tok);
+        ret = lex_peek(p, &tok);
+        if (ret != WST_EXPR_NO_ERR) return ret;
         if (tok.type != EXPR_OP || (tok.op != '+' && tok.op != '-'))
             break;
         lex_take(p);
         WstPoly rhs = { 0 };
         ret = parse_mul(p, &rhs);
-        if (ret != NULL) return ret;
+        if (ret != WST_EXPR_NO_ERR) return ret;
 
         if (tok.op == '+')
             wst_poly_add(out, &rhs);
@@ -321,13 +337,81 @@ static const char *parse_sum(Parser *p, WstPoly *out)
             wst_poly_sub(out, &rhs);
     }
 
-    return NULL;
+    return ret;
 }
 
-const char *wst_expr_to_poly(const char *s, size_t len, WstPoly *out, size_t *err_pos)
+/* TODO: combine number parsing for both modes into one routine */
+
+static const char *skip_seps(const char *s)
 {
-    Parser p = { .s = s, .len = len };
-    const char *ret = parse_sum(&p, out);
-    *err_pos = p.pos;
+    while (isspace(*s)) s++;
+    return s;
+}
+
+static const char *token_end(const char *s)
+{
+    while (!isspace(*s) && *s != '\0') s++;
+    return s;
+}
+
+static bool parse_coeff(const char *str, size_t len, double *out)
+{
+    assert(out != NULL);
+
+    char *end = NULL;
+    double val = strtod(str, &end);
+    if (end == str || end != str + len)
+        return false;
+    *out = val;
+    return true;
+}
+
+static WstParserErr parse_poly_coeffs(const char *line, WstPoly *poly, size_t *err_pos)
+{
+    assert(line != NULL);
+    assert(poly != NULL);
+
+    int n = 0;
+    for (const char *p = skip_seps(line); *p != '\0'; p = skip_seps(token_end(p)))
+        n++;
+    if (n == 0) {
+        *err_pos = 0;
+        return WST_EXPR_UNEXPECTED_END_OF_EXPR;
+    }
+    if (n - 1 > WST_SOLVE_MAX_DEGREE) {
+        *err_pos = strlen(line) - 1; /* Could be more accurate */
+        return WST_EXPR_DEGREE_EXCEEDED;
+    }
+
+    int i = 0;
+    for (const char *p = skip_seps(line); *p != '\0';) {
+        const char *end = token_end(p);
+        if (!parse_coeff(p, (size_t)(end - p), &poly->coeffs[i])) {
+            *err_pos = (size_t)(p - line);
+            return WST_EXPR_FAILED_TO_PARSE_NUMBER;
+        }
+        poly->degree = i;
+        i++;
+        p = skip_seps(end);
+    }
+    return WST_EXPR_NO_ERR;
+}
+
+WstParserErr wst_expr_to_poly(const char *s, WstPoly *out, size_t *err_pos, bool expr_mode)
+{
+    assert(s != NULL);
+    assert(out != NULL);
+
+    WstParserErr ret;
+
+    if (!expr_mode) {
+        ret = parse_poly_coeffs(s, out, err_pos);
+        return ret;
+    }
+
+    Parser p = { .s = s, .len = strlen(s), };
+    ret = parse_sum(&p, out);
+    if (ret != WST_EXPR_NO_ERR && err_pos != NULL)
+        *err_pos = p.pos;
     return ret;
 }

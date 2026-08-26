@@ -96,11 +96,13 @@ static void print_stack_trace(void)
     free(syms);
 }
 
-void toys_assert(bool expression, const char *expression_src, const char *file, int line, const char *func)
+void toys_assert(bool expr, const char *expr_src, const char *file,
+                 int line, const char *func)
 {
-    if (expression) return;
+    if (expr) return;
 
-    fprintf(stderr, "%s:%d: %s: Assertion `%s` failed.\n", file, line, func, expression_src);
+    fprintf(stderr, "%s:%d: %s: Assertion `%s` failed.\n",
+            file, line, func, expr_src);
     print_stack_trace();
     abort();
 }

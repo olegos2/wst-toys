@@ -249,6 +249,7 @@ void argparse_print_help(const ArgParser *p)
             width = len;
     }
 
+    /* TODO: Add description wrapping. */
     for (int i = 0; i < p->nopts; i++)
         printf("  %-*s  %s\n", (int)width, labels[i], p->opts[i].description);
 
