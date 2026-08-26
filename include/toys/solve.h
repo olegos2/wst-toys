@@ -60,16 +60,14 @@ WstSolution wst_solve_poly(WstPoly *poly);
 
 /**
  * When `expr_mode` is `true`:
- * parses the expression in s of length len and reduces it to a
- * polynomial, with + - * / ( ) = ^ as operators. A top-level '='
- * turns a = b into a - b = 0.
+ * parses the expression in s and reduces it to a
+ * polynomial, with + - * / ( ) ^ as operators.
  *
  * When `expr_mode` is `false`:
  * parses raw coeff numbers in ascending order separated by spaces from string.
  *
  * Returns `WST_EXPR_NO_ERR` on success and fills in *out. On failure returns an
- * error message that can be converted to string and stores error offset
- * in string in `*err_pos`.
+ * error code and stores error offset in string in `*err_pos`.
  */
 WstParserErr wst_expr_to_poly(const char *s, WstPoly *out, size_t *err_pos, bool expr_mode);
 

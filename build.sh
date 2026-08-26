@@ -38,5 +38,9 @@ pushd "$BUILD_DIR" &&
     "${common_src[@]}" \
     "$HOME_DIR/tests/test_poly.c" \
     "${common_flags[@]}" -o test_poly &&
+"$CC" \
+    "${common_src[@]}" \
+    "$HOME_DIR/tests/test_expr.c" \
+    "${common_flags[@]}" -o test_expr &&
 popd &&
 echo "Finished"

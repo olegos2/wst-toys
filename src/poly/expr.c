@@ -411,7 +411,23 @@ WstParserErr wst_expr_to_poly(const char *s, WstPoly *out, size_t *err_pos, bool
 
     Parser p = { .s = s, .len = strlen(s), };
     ret = parse_sum(&p, out);
-    if (ret != WST_EXPR_NO_ERR && err_pos != NULL)
-        *err_pos = p.pos;
-    return ret;
+    if (ret != WST_EXPR_NO_ERR) {
+        if (err_pos != NULL)
+            *err_pos = p.pos;
+        return ret;
+    }
+
+    Token tok;
+    ret = lex_peek(&p, &tok);
+    if (ret != WST_EXPR_NO_ERR) {
+        if (err_pos != NULL)
+            *err_pos = p.pos;
+        return ret;
+    }
+    if (tok.type != EXPR_END) {
+        if (err_pos != NULL)
+            *err_pos = tok.pos;
+        return WST_EXPR_UNEXPECTED_ATOM;
+    }
+    return WST_EXPR_NO_ERR;
 }
