@@ -13,6 +13,12 @@ static inline bool my_iszero(double a)
     return a > -DBL_EPSILON && a < DBL_EPSILON;
 }
 
+/** Check if `float` is in `-FLT_EPSILON..FLT_EPSILON` range. */
+static inline bool my_iszerof(float a)
+{
+    return a > -FLT_EPSILON && a < FLT_EPSILON;
+}
+
 /** Representation of IEEE double with sign, exponent and significand */
 typedef union {
     double val;
