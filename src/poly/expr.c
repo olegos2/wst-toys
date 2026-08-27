@@ -66,6 +66,8 @@ const char *wst_expr_err_string(WstParserErr err)
     return parser_err[err];
 }
 
+// finite state machine
+
 /**
  * Reads a number token with strtod, then checks the consumed span
  * only holds digits, dot and e/E.
@@ -174,6 +176,8 @@ static void lex_take(Parser *p)
     p->have = false;
 }
 
+// TODO: graph
+
 static WstParserErr parse_sum(Parser *p, WstPoly *out);
 static WstParserErr parse_unary(Parser *p, WstPoly *out);
 
@@ -281,6 +285,7 @@ static WstParserErr parse_unary(Parser *p, WstPoly *out)
     return ret;
 }
 
+// term
 static WstParserErr parse_mul(Parser *p, WstPoly *out)
 {
     assert(p != NULL);
@@ -312,6 +317,7 @@ static WstParserErr parse_mul(Parser *p, WstPoly *out)
     return ret;
 }
 
+// expr
 static WstParserErr parse_sum(Parser *p, WstPoly *out)
 {
     assert(p != NULL);

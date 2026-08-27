@@ -192,6 +192,155 @@ static int run_solve(int argc, char *argv[], SolveConfig *cfg)
     return ret ? 0 : 1;
 }
 
+typedef struct {
+    /** Visible rect on screen of plot in plot units. */
+    float start_x;
+    float end_x;
+    float start_y;
+    float end_y;
+    /** Size of one grid unix on screen in px. */
+    int size;
+} PlotGridConfig;
+
+typedef struct {
+    int w;
+    int h;
+} PlotWindowConfig;
+
+typedef struct {
+    int label;
+    int title;
+} PlotFontConfig;
+
+typedef struct {
+    PlotWindowConfig win;
+    PlotGridConfig grid;
+    PlotFontConfig font;
+    /** Position of plot origin on screen. */
+    float center_x;
+    float center_y;
+    float x_step;
+} PlotConfig;
+
+static void draw_background_grid(const PlotConfig *cfg)
+{
+    assert(cfg != NULL);
+
+    // start should be ceil'ed I think
+    for (int i = (int)cfg->grid.start_x; i <= (int)cfg->grid.end_x; i++) {
+        DrawLineEx((Vector2){ .x = cfg->center_x + (float)(i * cfg->grid.size), .y = 0 },
+                   (Vector2){ .x = cfg->center_x + (float)(i * cfg->grid.size), .y = (float)cfg->win.w },
+                   1.0, DARKGRAY);
+    }
+    for (int i = (int)cfg->grid.start_y; i <= (int)cfg->grid.end_y; i++) {
+        DrawLineEx((Vector2){ .x = 0, .y = cfg->center_y + (float)(i * cfg->grid.size) },
+                   (Vector2){ .x = (float)cfg->win.w, .y = cfg->center_y + (float)(i * cfg->grid.size) },
+                   1.0, DARKGRAY);
+    }
+}
+
+static void draw_main_axes(const PlotConfig *cfg)
+{
+    assert(cfg != NULL);
+
+    DrawLineEx((Vector2){ .x = cfg->center_x, .y = 0 },
+               (Vector2){ .x = cfg->center_x, .y = (float)cfg->win.h },
+               1.0, GRAY);
+    DrawLineEx((Vector2){ .x = 0, .y = cfg->center_y },
+               (Vector2){ .x = (float)cfg->win.w, .y = cfg->center_y },
+               1.0, GRAY);
+}
+
+static void draw_axes_number_lines(const PlotConfig *cfg)
+{
+    assert(cfg != NULL);
+
+    const char *text = NULL;
+    int text_width = 0;
+
+    // Draw axis x number line (except 0)
+    for (int i = (int)cfg->grid.start_x; i <= (int)cfg->grid.end_x; i++) {
+        if (i == 0) continue;
+        text = TextFormat("%d", i);
+        text_width = MeasureText(text, cfg->font.label);
+        DrawText(text, (int)cfg->center_x + i * cfg->grid.size - text_width / 2,
+                 (int)cfg->center_y - 4 - cfg->font.label, cfg->font.label, WHITE);
+    }
+    // Draw axis y number line (except 0)
+    for (int i = (int)cfg->grid.start_y; i <= (int)cfg->grid.end_y; i++) {
+        if (i == 0) continue;
+        /* Flip vertically */
+        DrawText(TextFormat("%d", i), (int)cfg->center_x + 4,
+                 (int)cfg->center_y - i * cfg->grid.size - cfg->font.label / 2,
+                 cfg->font.label, WHITE);
+    }
+    // Draw zero
+    DrawText("0", (int)cfg->center_x + 4, (int)cfg->center_y - cfg->font.label - 4,
+             cfg->font.label, WHITE);
+}
+
+static void draw_axes_labels(const PlotConfig *cfg)
+{
+    assert(cfg != NULL);
+
+    const char *text = NULL;
+    int text_width = 0;
+
+    // Draw axis x label
+    text = "x";
+    text_width = MeasureText(text, cfg->font.title);
+    DrawText(text, (int)(cfg->center_x + cfg->grid.end_x * (float)cfg->grid.size) - text_width - 4,
+             (int)cfg->center_y + 2, cfg->font.title, GREEN);
+
+    // Draw axis y label
+    text = "y";
+    text_width = MeasureText(text, cfg->font.title);
+    DrawText(text, (int)cfg->center_x - text_width - 2, 4, cfg->font.title, GREEN);
+}
+
+static void draw_poly_plot(const PlotConfig *cfg, const WstPoly *poly)
+{
+    assert(cfg != NULL);
+    assert(poly != NULL);
+
+    // Get first polynomial point on very left
+    float saved_i = cfg->grid.start_x;
+    float saved_j = (float)wst_poly_eval(poly, cfg->grid.start_x);
+
+    for (float i = (float)cfg->grid.start_x + cfg->x_step; i <= cfg->grid.end_x; i += cfg->x_step) {
+        // Draw polynomial
+        float j = (float)wst_poly_eval(poly, i);
+        DrawLineEx(
+            (Vector2){
+                .x = cfg->center_x + saved_i * (float)cfg->grid.size,
+                .y = cfg->center_y - saved_j * (float)cfg->grid.size
+            },
+            (Vector2){
+                .x = cfg->center_x + i * (float)cfg->grid.size,
+                .y = cfg->center_y - j * (float)cfg->grid.size
+            },
+            2.0, ORANGE
+        );
+        saved_i = i;
+        saved_j = j;
+    }
+}
+
+static void draw_plot_roots(const PlotConfig *cfg, const WstSolution *sol)
+{
+    assert(cfg != NULL);
+    assert(sol != NULL);
+
+    for (int i = 0; i < sol->count; i++) {
+        // Draw roots on x axis
+        int root_x = (int)(cfg->center_x + (float)sol->roots[i] * (float)cfg->grid.size);
+        DrawCircle(root_x, (int)cfg->center_y, 4.0, ORANGE);
+        DrawText(TextFormat("%.2lg", sol->roots[i]),
+                 root_x, (int)cfg->center_y + 2,
+                 cfg->font.title, GREEN);
+    }
+}
+
 static int run_plot(int argc, char *argv[], SolveConfig *cfg)
 {
     if (argc < 1) {
@@ -224,113 +373,48 @@ static int run_plot(int argc, char *argv[], SolveConfig *cfg)
 
     SetTargetFPS(60);
 
-    const int win_width = 800, win_height = 600;
-    const int grid_size = 40;
+    PlotConfig plot_cfg = {
+        .win = {
+            .w = 800,
+            .h = 600,
+        },
+        .grid = {
+            .size = 40,
+        },
+        .font = {
+            .title = 22,
+            .label = 16,
+        },
+    };
 
-    const int center_x = win_width / 2, center_y = win_height / 2;
-    int len_x = win_width / grid_size;
-    int len_y = win_height / grid_size;
-    InitWindow(win_width, win_height, "Polynomial plot");
+    plot_cfg.center_x = (float)plot_cfg.win.w / 2.f;
+    plot_cfg.center_y = (float)plot_cfg.win.h / 2.f;
+    plot_cfg.x_step = 2.f / (float)plot_cfg.grid.size;
 
-    int grid_start_x = -len_x / 2;
-    int grid_end_x = grid_start_x + len_x;
-    int grid_start_y = -len_y / 2;
-    int grid_end_y = grid_start_y + len_y;
+    float len_x = (float)plot_cfg.win.w / (float)plot_cfg.grid.size;
+    float len_y = (float)plot_cfg.win.h / (float)plot_cfg.grid.size;
+    InitWindow(plot_cfg.win.w, plot_cfg.win.h, "Polynomial plot");
 
-    const int font_size = 22;
-    const int label_size = 16;
-
-    double x_step = 2.0 / (double)grid_size;
+    plot_cfg.grid.start_x = -len_x / 2;
+    plot_cfg.grid.end_x = plot_cfg.grid.start_x + len_x;
+    plot_cfg.grid.start_y = -len_y / 2;
+    plot_cfg.grid.end_y = plot_cfg.grid.start_y + len_y;
 
     while (!WindowShouldClose()) {
-        // TODO: comments
-        const char *text = NULL;
-        int text_width = 0;
 
         BeginDrawing();
             ClearBackground(BLACK);
 
-            // Draw background grid
-            for (int i = grid_start_x * grid_size; i <= grid_end_x * grid_size; i += grid_size) {
-                DrawLineEx((Vector2){ .x = (float)(center_x + i), .y = 0 },
-                            (Vector2){ .x = (float)(center_x + i), .y = (float)win_height },
-                            1.0, DARKGRAY);
-            }
-            for (int i = grid_start_y * grid_size; i <= grid_end_y * grid_size; i += grid_size) {
-                DrawLineEx((Vector2){ .x = 0, .y = (float)(center_y + i) },
-                            (Vector2){ .x = (float)win_width, .y = (float)(center_y + i) },
-                            1.0, DARKGRAY);
-            }
-
-            // Draw axes
-            DrawLineEx((Vector2){ .x = (float)center_x, .y = 0 },
-                        (Vector2){ .x = (float)center_x, .y = (float)win_height },
-                        1.0, GRAY);
-            DrawLineEx((Vector2){ .x = 0, .y = (float)center_y },
-                        (Vector2){ .x = (float)win_width, .y = (float)center_y },
-                        1.0, GRAY);
-            
-            // Draw axis x number line (except 0)
-            for (int i = grid_start_x; i <= grid_end_x; i++) {
-                if (i == 0) continue;
-                text = TextFormat("%d", i);
-                text_width = MeasureText(text, label_size);
-                DrawText(text, center_x + i * grid_size - text_width / 2,
-                            center_y - 4 - label_size, label_size, WHITE);
-            }
-            // Draw axis y number line (except 0)
-            for (int i = grid_start_y; i <= grid_end_y; i++) {
-                if (i == 0) continue;
-                /* Flip vertically */
-                DrawText(TextFormat("%d", i), center_x + 4, center_y - i * grid_size - label_size / 2,
-                         label_size, WHITE);
-            }
-            // Draw zero
-            DrawText("0", center_x + 4, center_y - label_size - 4,
-                     label_size, WHITE);
-
-            // Draw axis x label
-            text = "x";
-            text_width = MeasureText(text, font_size);
-            DrawText(text, center_x + grid_end_x * grid_size - text_width - 4,
-                     center_y + 2, font_size, GREEN);
-
-            // Draw axis y label
-            text = "y";
-            text_width = MeasureText(text, font_size);
-            DrawText(text, center_x - text_width - 2, 4, font_size, GREEN);
-            
-            // Get first polynomial point on very left
-            double saved_i = grid_start_x;
-            double saved_j = wst_poly_eval(&poly, grid_start_x);
-
-            for (double i = grid_start_x + x_step; i <= grid_end_x; i += x_step) {
-                // Draw polynomial
-                double j = wst_poly_eval(&poly, i);
-                DrawLineEx(
-                    (Vector2){
-                        .x = (float)center_x + (float)saved_i * (float)grid_size,
-                        .y = (float)center_y - (float)saved_j * (float)grid_size
-                    },
-                    (Vector2){
-                        .x = (float)center_x + (float)i * (float)grid_size,
-                        .y = (float)center_y - (float)j * (float)grid_size
-                    },
-                    2.0, ORANGE
-                );
-                saved_i = i;
-                saved_j = j;
-            }
-
-            for (int i = 0; i < sol.count; i++) {
-                // Draw roots on x axis
-                int root_x = center_x + (int)(sol.roots[i] * grid_size);
-                DrawCircle(root_x, center_y, 4.0, ORANGE);
-                DrawText(TextFormat("%.2lg", sol.roots[i]), root_x, center_y + 2, font_size, GREEN);
-            }
+            draw_background_grid(&plot_cfg);
+            draw_main_axes(&plot_cfg);
+            draw_axes_number_lines(&plot_cfg);
+            draw_axes_labels(&plot_cfg);
+            draw_poly_plot(&plot_cfg, &poly);
+            draw_plot_roots(&plot_cfg, &sol);
 
             // Draw polynomial expression
-            DrawText(TextFormat("%s", poly_pretty), 10, 10, font_size, YELLOW);
+            DrawText(TextFormat("%s", poly_pretty),
+                     10, 10, plot_cfg.font.title, YELLOW);
         EndDrawing();
     }
 
