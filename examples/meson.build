@@ -8,7 +8,10 @@ toys_solve_deps = [
 
 executable(
     'toys_solve',
-    sources: files('solve.c'),
+    sources: files(
+        'plot.c',
+        'solve.c',
+    ),
     include_directories: inc,
     dependencies: toys_solve_deps,
     install: true,

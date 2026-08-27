@@ -1,5 +1,5 @@
 #include "toys/debug.h"
-#include "toys/solve.h"
+#include "toys/poly.h"
 #include "toys/math.h"
 
 #include <assert.h>
@@ -61,7 +61,7 @@ bool wst_poly_mul(WstPoly *a, const WstPoly *b)
     WstPoly out = { 0 };
 
     int degree = a->degree + b->degree;
-    if (degree > WST_SOLVE_MAX_DEGREE)
+    if (degree > WST_POLY_MAX_DEGREE)
         return false;
 
     out.degree = degree;
@@ -105,7 +105,7 @@ bool wst_poly_integ(const WstPoly *poly, WstPoly *out)
     assert(poly != NULL);
     assert(out != NULL);
 
-    if (poly->degree < 0 || poly->degree > WST_SOLVE_MAX_DEGREE - 1) {
+    if (poly->degree < 0 || poly->degree > WST_POLY_MAX_DEGREE - 1) {
         LOG_E("Cannot integrate poly degree %d", poly->degree);
         return false;
     }
@@ -167,7 +167,7 @@ static int wst_quad_solve(double c, double b, double a, double *x1, double *x2)
     return 2;
 }
 
-WstSolution wst_solve_poly(WstPoly *poly)
+WstSolution wst_poly_solve(WstPoly *poly)
 {
     assert(poly != NULL);
     WstSolution sol = { 0 };

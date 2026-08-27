@@ -25,6 +25,7 @@ pushd "$BUILD_DIR" &&
 "$CC" \
     "${common_src[@]}" \
     "$HOME_DIR/examples/solve.c" \
+    "$HOME_DIR/examples/plot.c" \
     "${common_flags[@]}" -o toys_solve &&
 "$CC" \
     "${common_src[@]}" \

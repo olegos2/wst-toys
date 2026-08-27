@@ -1,4 +1,4 @@
-#include "toys/solve.h"
+#include "toys/poly.h"
 #include "toys/math.h"
 
 #include <assert.h>
@@ -55,7 +55,7 @@ static void check_roots(const WstPoly *poly, const WstSolution *s, const WstSolu
 
 static void check_poly(WstPoly *poly, const WstSolution *expected)
 {
-    WstSolution sol = wst_solve_poly(poly);
+    WstSolution sol = wst_poly_solve(poly);
     check_roots(poly, &sol, expected);
 }
 
@@ -260,11 +260,11 @@ static void test_integ(void)
     CHECK(poly_eq(&out, &(WstPoly){ .degree = 1, .coeffs = { 0, 5 } }), "integ constant result");
 
     /* integ overflow: degree MAX-1 => degree MAX succeeds, degree MAX => fail */
-    p = (WstPoly){ .degree = WST_SOLVE_MAX_DEGREE - 1, .coeffs = { 1 } };
+    p = (WstPoly){ .degree = WST_POLY_MAX_DEGREE - 1, .coeffs = { 1 } };
     CHECK(wst_poly_integ(&p, &out), "integ at max-1");
-    CHECK(out.degree == WST_SOLVE_MAX_DEGREE, "integ degree at max");
+    CHECK(out.degree == WST_POLY_MAX_DEGREE, "integ degree at max");
 
-    p = (WstPoly){ .degree = WST_SOLVE_MAX_DEGREE, .coeffs = { 1 } };
+    p = (WstPoly){ .degree = WST_POLY_MAX_DEGREE, .coeffs = { 1 } };
     CHECK(!wst_poly_integ(&p, &out), "integ overflows");
 }
 

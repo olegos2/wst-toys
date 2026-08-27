@@ -1,4 +1,6 @@
-#include "toys/solve.h"
+#include "toys/poly.h"
+#include "toys/expr.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -109,8 +111,6 @@ typedef struct {
 
 int main(void)
 {
-    /* === Expression mode tests === */
-
     /* numbers */
     test_expr("0", &(WstPoly){ .degree = 0, .coeffs = { 0 } });
     test_expr("42", &(WstPoly){ .degree = 0, .coeffs = { 42 } });
@@ -176,8 +176,6 @@ int main(void)
     /* user's original test */
     test_expr("( 0 - 1.5) * 2 + (x + .5) ^ 2", &(WstPoly){ .degree = 2, .coeffs = { -2.75, 1.0, 1.0 } });
 
-    /* === Expression error tests === */
-
     test_expr_err("", WST_EXPR_UNEXPECTED_END_OF_EXPR);
     test_expr_err("  ", WST_EXPR_UNEXPECTED_END_OF_EXPR);
     test_expr_err("x +", WST_EXPR_UNEXPECTED_END_OF_EXPR);
@@ -194,8 +192,6 @@ int main(void)
     test_expr_err("5 / (x + 1)", WST_EXPR_DIV_ERR);
     test_expr_err("1 / (x - x)", WST_EXPR_DIV_ERR);
     test_expr_err("0.4e+2 @", WST_EXPR_UNEXPECTED_CHAR_IN_EXPR);
-
-    /* === Coeff mode tests === */
 
     test_coeff("1", &(WstPoly){ .degree = 0, .coeffs = { 1 } });
     test_coeff("1 2 3", &(WstPoly){ .degree = 2, .coeffs = { 1, 2, 3 } });

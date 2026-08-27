@@ -9,16 +9,18 @@
 #include <execinfo.h>
 #include <string.h>
 
+#define STACK_TRACE_DEPTH 100
+
 /** Currently saved file stream to use for printing logs to. */
 static FILE *debug_file = NULL;
 
 #ifdef WST_DEBUG
-static ToysLogPrio debug_level = WST_LOG_DEBUG;
+static WstLogPrio debug_level = WST_LOG_DEBUG;
 #else /* !WST_DEBUG */
-static ToysLogPrio debug_level = WST_LOG_INFO;
+static WstLogPrio debug_level = WST_LOG_INFO;
 #endif /* WST_DEBUG */
 
-static void toys_log_close(void)
+static void wst_log_close(void)
 {
     if (debug_file != NULL) {
         fclose(debug_file);
@@ -26,12 +28,12 @@ static void toys_log_close(void)
     }
 }
 
-bool toys_log_open(const char *filename)
+bool wst_log_open(const char *filename)
 {
     static bool close_registered = false;
 
     /* Ensure no file is left open/leaked. */
-    toys_log_close();
+    wst_log_close();
 
     if (filename == NULL) {
         debug_file = NULL;
@@ -42,14 +44,14 @@ bool toys_log_open(const char *filename)
 
     /* So flush happens on exit. */
     if (!close_registered) {
-        atexit(toys_log_close);
+        atexit(wst_log_close);
         close_registered = true;
     }
 
     return debug_file != NULL;
 }
 
-int toys_log_print(ToysLogPrio prio, const char *fmt, ...)
+int wst_log_print(WstLogPrio prio, const char *fmt, ...)
 {
     if (prio > debug_level)
         return 0;
@@ -62,7 +64,7 @@ int toys_log_print(ToysLogPrio prio, const char *fmt, ...)
     if (ret < 0) {
         fprintf(stderr, "Failed to print log to stream (fd %d), "
                 "switching to stderr\n", fileno(s));
-        toys_log_close();
+        wst_log_close();
         va_start(args, fmt);
         ret = vfprintf(stderr, fmt, args);
         va_end(args);
@@ -72,17 +74,15 @@ int toys_log_print(ToysLogPrio prio, const char *fmt, ...)
     return ret;
 }
 
-void toys_log_set_max_prio(ToysLogPrio prio)
+void wst_log_set_max_prio(WstLogPrio prio)
 {
     debug_level = prio;
 }
 
 static void print_stack_trace(void)
 {
-    static const int stack_len = 100;
-    // TODO: use define
-    void *buffer[stack_len];
-    int cur_len = backtrace(buffer, stack_len);
+    void *buffer[STACK_TRACE_DEPTH];
+    int cur_len = backtrace(buffer, STACK_TRACE_DEPTH);
     char **syms = backtrace_symbols(buffer, cur_len);
     if (syms == NULL) {
         LOG_E("backtrace_symbols: %s", strerror(errno));
@@ -96,7 +96,7 @@ static void print_stack_trace(void)
     free(syms);
 }
 
-void toys_assert(bool expr, const char *expr_src, const char *file,
+void wst_assert(bool expr, const char *expr_src, const char *file,
                  int line, const char *func)
 {
     if (expr) return;

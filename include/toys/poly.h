@@ -1,16 +1,16 @@
-#ifndef TOYS_SOLVE_H
-#define TOYS_SOLVE_H
+#ifndef TOYS_POLY_H
+#define TOYS_POLY_H
 
 #include <stdbool.h>
 #include <stddef.h>
 
 /** Max polynomial degree the solver accepts. */
-#define WST_SOLVE_MAX_DEGREE 8
+#define WST_POLY_MAX_DEGREE 8
 
 /** Polynomial with fixed capacity. */
 typedef struct {
     /** Coefficients of polynomial ascending power, coeffs[i] matches x^i coeff. */
-    double coeffs[WST_SOLVE_MAX_DEGREE + 1];
+    double coeffs[WST_POLY_MAX_DEGREE + 1];
     /** Degree of polynomial. */
     int degree;
 } WstPoly;
@@ -18,24 +18,10 @@ typedef struct {
 /** Solution for polynomial. */
 typedef struct {
     /** Roots, indices beyond `count - 1` should not be used. */
-    double roots[WST_SOLVE_MAX_DEGREE];
+    double roots[WST_POLY_MAX_DEGREE];
     /** Number of distinct values roots array holds. */
     int count;
 } WstSolution;
-
-/** Error that parser may return. */
-typedef enum {
-    WST_EXPR_NO_ERR = 0,
-    WST_EXPR_FAILED_TO_PARSE_NUMBER,
-    WST_EXPR_UNEXPECTED_CHAR_IN_NUM,
-    WST_EXPR_UNEXPECTED_CHAR_IN_EXPR,
-    WST_EXPR_UNEXPECTED_END_OF_EXPR,
-    WST_EXPR_UNEXPECTED_ATOM,
-    WST_EXPR_NON_INTEGER_POWER,
-    WST_EXPR_DEGREE_EXCEEDED,
-    WST_EXPR_DIV_ERR,
-    WST_EXPR_MISSING_RPAREN,
-} WstParserErr;
 
 enum {
     /** Returned when any real x solves the equation. */
@@ -52,27 +38,11 @@ void wst_poly_trim(WstPoly *p);
  *
  * Only constant, linear and quadratic equations are accepted. Trailing zero
  * coefficients are ignored. An all-zero polynomial yields WST_SOLVE_INF.
- * A degree above WST_SOLVE_MAX_DEGREE yields WST_SOLVE_ERR.
+ * A degree above WST_POLY_MAX_DEGREE yields WST_SOLVE_ERR.
  *
  * @param [in] poly polynomial to solve
  */
-WstSolution wst_solve_poly(WstPoly *poly);
-
-/**
- * When `expr_mode` is `true`:
- * parses the expression in s and reduces it to a
- * polynomial, with + - * / ( ) ^ as operators.
- *
- * When `expr_mode` is `false`:
- * parses raw coeff numbers in ascending order separated by spaces from string.
- *
- * Returns `WST_EXPR_NO_ERR` on success and fills in *out. On failure returns an
- * error code and stores error offset in string in `*err_pos`.
- */
-WstParserErr wst_expr_to_poly(const char *s, WstPoly *out, size_t *err_pos, bool expr_mode);
-
-/** Get error string for parser error number. */
-const char *wst_expr_err_string(WstParserErr err);
+WstSolution wst_poly_solve(WstPoly *poly);
 
 /** Scale all coeffs of polynomial by number. */
 void wst_poly_scale(WstPoly *a, double s);
@@ -106,4 +76,4 @@ double wst_poly_eval(const WstPoly *poly, double x);
 void wst_poly_print(char *buf, size_t nbuf, const char *name,
                     const WstPoly *poly, bool pretty);
 
-#endif /* TOYS_SOLVE_H */
+#endif /* TOYS_POLY_H */

@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 #define __WST_LOG(prio, fmt, ...) \
-    toys_log_print(WST_LOG_ ## prio, "%s: " fmt "\n", #prio, ## __VA_ARGS__)
+    wst_log_print(WST_LOG_ ## prio, "%s: " fmt "\n", #prio, ## __VA_ARGS__)
     // fprintf(stderr, "%s: " fmt "\n", #prio, ## __VA_ARGS__)
 
 #define __WST_LOG_FILE(prio, fmt, ...) \
@@ -52,33 +52,35 @@ typedef enum {
     WST_LOG_INFO,
     WST_LOG_DEBUG,
     WST_LOG_VERBOSE,
-} ToysLogPrio;
+} WstLogPrio;
 
 /**
  * Open a file and redirect all following logs to it.
  * When `filename` is NULL, prints to stderr.
  * By default logs are printed to stderr.
  */
-bool toys_log_open(const char *filename);
+bool wst_log_open(const char *filename);
 
 /**
  * Print a log line to current stream. Filters by priority.
  *
  * @return Number of bytes written to stream.
  */
-int toys_log_print(ToysLogPrio prio, const char *fmt, ...);
+int wst_log_print(WstLogPrio prio, const char *fmt, ...);
 
 /**
  * Sets max priority messages of which will be printed.
  */
-void toys_log_set_max_prio(ToysLogPrio prio);
-
-void toys_assert(bool expr, const char *expr_src, const char *file, int line, const char *func);
+void wst_log_set_max_prio(WstLogPrio prio);
 
 /**
  * Custom assert impl that may be more verbose.
  * Aborts program when expression is false.
  */
-#define my_assert(expr) toys_assert(expr, #expr, __FILE__, __LINE__, __func__)
+void wst_assert(bool expr, const char *expr_src, const char *file, int line, const char *func);
+
+#ifndef NDEBUG
+#  define my_assert(expr) wst_assert(expr, #expr, __FILE__, __LINE__, __func__)
+#endif
 
 #endif /* WST_DEBUG_H */

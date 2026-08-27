@@ -23,7 +23,7 @@ typedef union {
     };
 } double_repr;
 
-/** Replacements for macros for no reason */
+/** Replacements for builtin macros for no reason (for learning or smth) */
 static inline bool my_isnan(double a)
 {
     assert(sizeof(double) == 8);
