@@ -270,7 +270,7 @@ static void plot_audio_callback(void *frames_out, unsigned int frame_count)
     for (unsigned int i = 0; i < frame_count; i++) {
         synth->freq += (synth->target_freq - synth->freq) * synth->interp_factor;
         buf[i] = sinf(synth->phase);
-        synth->phase += fmodf((2.f * PI * synth->freq) / AUDIO_SAMPLE_RATE, 2.f * PI);
+        synth->phase = fmodf(synth->phase + (2.f * PI * synth->freq) / AUDIO_SAMPLE_RATE, 2.f * PI);
     }
 }
 
