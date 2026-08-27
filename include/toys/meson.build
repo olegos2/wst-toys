@@ -2,8 +2,9 @@ toys_hdrs = files(
     'argparse.h',
     'debug.h',
     'ds.h',
+    'expr.h',
     'math.h',
-    'solve.h',
+    'poly.h',
 )
 
 install_headers(toys_hdrs, subdir: 'toys')

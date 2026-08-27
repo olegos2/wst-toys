@@ -1,7 +1,9 @@
+#include "toys/debug.h"
 #include "toys/poly.h"
 
 #include <raylib.h>
 #include <raymath.h>
+#include <math.h>
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -61,12 +63,12 @@ static void draw_background_grid(const PlotConfig *cfg)
     for (int i = (int)cfg->grid.start_x; i <= (int)cfg->grid.end_x; i++) {
         DrawLineEx((Vector2){ .x = cfg->center_x + (float)(i * cfg->grid.size), .y = 0 },
                    (Vector2){ .x = cfg->center_x + (float)(i * cfg->grid.size), .y = (float)cfg->win.w },
-                   1.0, DARKGRAY);
+                   1.f, DARKGRAY);
     }
     for (int i = (int)cfg->grid.start_y; i <= (int)cfg->grid.end_y; i++) {
         DrawLineEx((Vector2){ .x = 0, .y = cfg->center_y + (float)(i * cfg->grid.size) },
                    (Vector2){ .x = (float)cfg->win.w, .y = cfg->center_y + (float)(i * cfg->grid.size) },
-                   1.0, DARKGRAY);
+                   1.f, DARKGRAY);
     }
 }
 
@@ -76,10 +78,10 @@ static void draw_main_axes(const PlotConfig *cfg)
 
     DrawLineEx((Vector2){ .x = cfg->center_x, .y = 0 },
                (Vector2){ .x = cfg->center_x, .y = (float)cfg->win.h },
-               1.0, GRAY);
+               1.f, GRAY);
     DrawLineEx((Vector2){ .x = 0, .y = cfg->center_y },
                (Vector2){ .x = (float)cfg->win.w, .y = cfg->center_y },
-               1.0, GRAY);
+               1.f, GRAY);
 }
 
 static void draw_axes_number_lines(const PlotConfig *cfg)
@@ -146,7 +148,7 @@ static void draw_poly_plot(const PlotConfig *cfg, const WstPoly *poly)
                 .x = cfg->center_x + i * (float)cfg->grid.size,
                 .y = cfg->center_y - j * (float)cfg->grid.size
             },
-            2.0, ORANGE
+            2.f, ORANGE
         );
         saved_i = i;
         saved_j = j;
@@ -169,7 +171,7 @@ static void draw_plot_roots(const PlotConfig *cfg, const WstSolution *sol)
 }
 
 static AudioSynth audio_synth = {
-    .interp_factor = 0.01f,
+    .interp_factor = 0.1f,
 }, *synth = &audio_synth;
 
 static void plot_audio_callback(void *frames_out, unsigned int frame_count)
@@ -204,7 +206,7 @@ int solve_run_plot(const WstPoly *poly, const WstSolution *sol)
         },
         .audio = {
             .low_freq = 150.f,
-            .high_freq = 5000.f,
+            .high_freq = 4000.f,
         },
         .font = {
             .title = 22,
@@ -251,10 +253,19 @@ int solve_run_plot(const WstPoly *poly, const WstSolution *sol)
             DrawText(TextFormat("%s", poly_pretty),
                      10, 10, plot_cfg.font.title, YELLOW);
 
-            // sound_x += 0.01f;
-            // float sound_y = (float)wst_poly_eval(&poly, sound_x);
-            // float sound_y_lin = sound_y - 
-            // synth->target_freq = 
+            sound_x += 0.03f;
+            if (sound_x > plot_cfg.grid.end_x)
+                sound_x = plot_cfg.grid.start_x;
+
+            float sound_y = (float)wst_poly_eval(poly, sound_x);
+            float sound_y_lin = (sound_y - plot_cfg.grid.start_y) / (plot_cfg.grid.end_y - plot_cfg.grid.start_y);
+            if (sound_y_lin > 2.f) sound_y_lin = 2.f;
+            else if (sound_y_lin < -1.f) sound_y_lin = -1.f;
+            synth->target_freq = plot_cfg.audio.low_freq * powf(plot_cfg.audio.high_freq / plot_cfg.audio.low_freq, sound_y_lin);
+
+            DrawLineEx((Vector2){ .x = plot_cfg.center_x + sound_x * (float)plot_cfg.grid.size, .y = 0, },
+                       (Vector2){ .x = plot_cfg.center_x + sound_x * (float)plot_cfg.grid.size, .y = (float)plot_cfg.win.h },
+                       1.f, GREEN);
         EndDrawing();
     }
 
