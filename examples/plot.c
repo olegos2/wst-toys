@@ -11,7 +11,12 @@
 
 #define AUDIO_SAMPLE_RATE 44100
 #define AUDIO_BUFFER_SIZE 4096
+
+/** Capacity of string that holds pretty polynomial expr. */
 #define POLY_BUF_LEN 256
+
+/** How many polynomials can be plotted at once. */
+#define POLY_CAP 4
 
 #define ARR_LEN(arr) (sizeof(arr) / sizeof(*arr))
 
@@ -33,6 +38,8 @@ typedef struct {
     Vector2 target_marks_step;
     /** How many grid units are between two marks on an axis. */
     Vector2 marks_step;
+    /** Whether to draw background grid or not. */
+    bool draw_background;
 } PlotGridConfig;
 
 typedef struct {
@@ -65,9 +72,9 @@ typedef struct {
 } PlotConfig;
 
 typedef struct {
-    float freq;
-    float target_freq;
-    float phase;
+    float freq[POLY_CAP];
+    float target_freq[POLY_CAP];
+    float phase[POLY_CAP];
     float interp_factor;
 } AudioSynth;
 
@@ -129,7 +136,10 @@ static inline Vector2 scale_pos(const PlotConfig *cfg, Vector2 pos)
 
 static inline Vector2 abs_to_relat(const PlotConfig *cfg, Vector2 abs_pos)
 {
-    return (Vector2){ .x = abs_pos.x - cfg->grid.px_pos.x, .y = abs_pos.y + cfg->grid.px_pos.y };
+    return (Vector2){
+        .x = abs_pos.x - cfg->grid.px_pos.x,
+        .y = abs_pos.y + cfg->grid.px_pos.y
+    };
 }
 
 static inline Vector2 relat_to_screen(const PlotConfig *cfg, Vector2 rel_pos)
@@ -157,7 +167,8 @@ static inline Vector2 screen_to_pos(const PlotConfig *cfg, Vector2 pos)
 
 static inline bool point_rect_intersection(PlotRect rect, Vector2 p)
 {
-    return p.x >= rect.start.x && p.x <= rect.end.x && p.y >= rect.start.y && p.y <= rect.end.y;
+    return p.x >= rect.start.x && p.x <= rect.end.x &&
+           p.y >= rect.start.y && p.y <= rect.end.y;
 }
 
 static void draw_background_grid(const PlotConfig *cfg)
@@ -339,6 +350,9 @@ static void draw_plot_deriv(const PlotConfig *cfg, const WstPoly *poly,
     wst_poly_print(tangent_str, ARR_LEN(tangent_str), "y'", &tangent, true);
     DrawText(tangent_str, (int)screen_point.x + 12, (int)screen_point.y - cfg->font.title - 12,
              cfg->font.title, YELLOW);
+    DrawText(TextFormat("(%.3g, %.3g)", plot_point.x, plot_point.y),
+             (int)screen_point.x + 12, (int)screen_point.y - 2 * cfg->font.title - 12,
+             cfg->font.title, GREEN);
 }
 
 static AudioSynth audio_synth = {
@@ -350,23 +364,32 @@ static void plot_audio_callback(void *frames_out, unsigned int frame_count)
     float *buf = (float *)frames_out;
     
     for (unsigned int i = 0; i < frame_count; i++) {
-        synth->freq += (synth->target_freq - synth->freq) * synth->interp_factor;
-        buf[i] = sinf(synth->phase);
-        synth->phase = fmodf(synth->phase + (2.f * PI * synth->freq) / AUDIO_SAMPLE_RATE, 2.f * PI);
+        for (int i = 0; i < POLY_CAP; i++) {
+            synth->freq[i] += (synth->target_freq[i] - synth->freq[i]) * synth->interp_factor;
+            buf[i] = sinf(synth->phase[i]);
+            synth->phase[i] = fmodf(synth->phase[i] + (2.f * PI * synth->freq[i])
+                                    / AUDIO_SAMPLE_RATE, 2.f * PI);
+        }
+    }
+
+    for (int i = 0; i < POLY_CAP; i++) {
+        if (my_iszerof(synth->freq[i])) {
+            synth->freq[i] = 0.f;
+            synth->phase[i] = 0.f;
+        }
     }
 }
 
-int solve_run_plot(const WstPoly *poly, const WstSolution *sol)
+int solve_run_plot(size_t npolys, const WstPoly *polys, const WstSolution *sols)
 {
-    char poly_pretty[POLY_BUF_LEN];
-    wst_poly_print(poly_pretty, POLY_BUF_LEN, "y", poly, true);
-    printf("%s\n", poly_pretty);
+    assert(npolys <= POLY_CAP);
 
-    WstPoly deriv = wst_poly_deriv(poly);
-    // wst_poly_print(buf, ARR_LEN(buf), "P'", &deriv, cfg->pretty);
-    // printf("%s\n", buf);
-
-    SetTargetFPS(60);
+    char poly_pretty[npolys][POLY_BUF_LEN];
+    WstPoly derivs[npolys];
+    bool playing_sound = false;
+    Vector2 pan_start_screen = { 0 };
+    Vector2 pan_start_pos = { 0 };
+    bool panning = false;
 
     PlotConfig cfg = {
         .win = {
@@ -376,6 +399,7 @@ int solve_run_plot(const WstPoly *poly, const WstSolution *sol)
         .grid = {
             .size = { .x = 40.f, .y = 40.f },
             .target_marks_step = { .x = 80.f, .y = 80.f },
+            .draw_background = true,
         },
         .audio = {
             .low_freq = 150.f,
@@ -390,24 +414,23 @@ int solve_run_plot(const WstPoly *poly, const WstSolution *sol)
     };
 
     move_plot(&cfg, (Vector2){ 0 });
-    
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(cfg.win.w, cfg.win.h, "Polynomial plot");
-
-    InitAudioDevice();
-
-    SetAudioStreamBufferSizeDefault(AUDIO_BUFFER_SIZE);
-    AudioStream stream = LoadAudioStream(AUDIO_SAMPLE_RATE, 32, 1);
-
-    SetAudioStreamCallback(stream, plot_audio_callback);
-    PlayAudioStream(stream);
 
     float sound_x = cfg.grid.rect.start.x;
-    bool playing_sound = false;
 
-    Vector2 pan_start = { 0 };
-    Vector2 saved_grid_pos = { 0 };
-    bool panning = false;
+    for (size_t i = 0; i < npolys; i++) {
+        wst_poly_print(poly_pretty[i], POLY_BUF_LEN, "y", &polys[i], true);
+        printf("%s\n", poly_pretty[i]);
+        derivs[i] = wst_poly_deriv(&polys[i]);
+    }
+
+    SetTargetFPS(60);
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    InitWindow(cfg.win.w, cfg.win.h, "Polynomial plot");
+    InitAudioDevice();
+    SetAudioStreamBufferSizeDefault(AUDIO_BUFFER_SIZE);
+    AudioStream stream = LoadAudioStream(AUDIO_SAMPLE_RATE, 32, 1);
+    SetAudioStreamCallback(stream, plot_audio_callback);
+    PlayAudioStream(stream);
 
     while (!WindowShouldClose()) {
         if (IsWindowResized()) {
@@ -418,14 +441,18 @@ int solve_run_plot(const WstPoly *poly, const WstSolution *sol)
 
         if (IsKeyPressed(KEY_SPACE)) {
             sound_x = cfg.grid.rect.start.x;
-            playing_sound = true;
+            playing_sound = !playing_sound;
+        }
+
+        if (IsKeyPressed(KEY_G)) {
+            cfg.grid.draw_background = !cfg.grid.draw_background;
         }
 
         Vector2 mouse_pos = GetMousePosition();
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            pan_start = mouse_pos;
-            saved_grid_pos = cfg.grid.pos;
+            pan_start_screen = mouse_pos;
+            pan_start_pos = cfg.grid.pos;
             panning = true;
         }
 
@@ -433,10 +460,10 @@ int solve_run_plot(const WstPoly *poly, const WstSolution *sol)
             panning = false;
 
         if (panning) {
-            Vector2 pan_delta = { .x = mouse_pos.x - pan_start.x, .y = mouse_pos.y - pan_start.y };
+            Vector2 pan_delta = { .x = mouse_pos.x - pan_start_screen.x, .y = mouse_pos.y - pan_start_screen.y };
             move_plot(&cfg, (Vector2){
-                .x = saved_grid_pos.x - pan_delta.x / cfg.grid.size.x,
-                .y = saved_grid_pos.y + pan_delta.y / cfg.grid.size.y,
+                .x = pan_start_pos.x - pan_delta.x / cfg.grid.size.x,
+                .y = pan_start_pos.y + pan_delta.y / cfg.grid.size.y,
             });
         }
 
@@ -454,33 +481,43 @@ int solve_run_plot(const WstPoly *poly, const WstSolution *sol)
             if (sound_x > cfg.grid.rect.end.x)
                 playing_sound = false;
 
-            float sound_y = (float)wst_poly_eval(poly, sound_x);
-            float sound_y_lin = (sound_y - cfg.grid.rect.start.y) / (cfg.grid.rect.end.y - cfg.grid.rect.start.y);
-            if (sound_y_lin > 2.f) sound_y_lin = 2.f;
-            else if (sound_y_lin < -1.f) sound_y_lin = -1.f;
-            synth->target_freq = cfg.audio.low_freq * powf(cfg.audio.high_freq / cfg.audio.low_freq, sound_y_lin);
+            for (size_t i = 0; i < npolys; i++) {
+                float sound_y = (float)wst_poly_eval(&polys[i], sound_x);
+                float sound_y_lin = (sound_y - cfg.grid.rect.start.y) / (cfg.grid.rect.end.y - cfg.grid.rect.start.y);
+                if (sound_y_lin > 2.f) sound_y_lin = 2.f;
+                else if (sound_y_lin < -1.f) sound_y_lin = -1.f;
+                synth->target_freq[i] = cfg.audio.low_freq * powf(cfg.audio.high_freq / cfg.audio.low_freq, sound_y_lin);
+            }
+        } else {
+            for (size_t i = 0; i < POLY_CAP; i++) {
+                synth->target_freq[i] = 0.f;
+            }
         }
 
         BeginDrawing();
             ClearBackground(BLACK);
 
-            draw_background_grid(&cfg);
+            if (cfg.grid.draw_background)
+                draw_background_grid(&cfg);
             draw_main_axes(&cfg);
             draw_axes_number_lines(&cfg);
             draw_axes_labels(&cfg);
-            draw_poly_plot(&cfg, poly);
-            draw_plot_roots(&cfg, sol);
 
-            // Draw polynomial expression
-            DrawText(TextFormat("%s", poly_pretty),
-                     10, 10, cfg.font.title, YELLOW);
+            for (size_t i = 0; i < npolys; i++) {
+                draw_poly_plot(&cfg, &polys[i]);
+                draw_plot_roots(&cfg, &sols[i]);
+
+                // Draw polynomial expression
+                DrawText(TextFormat("%s", poly_pretty),
+                        10, 10, cfg.font.title, LIGHTGRAY);
+
+                draw_plot_deriv(&cfg, &polys[i], &derivs[i], mouse_pos);
+            }
 
             if (playing_sound)
                 DrawLineEx((Vector2){ .x = cfg.center.x + sound_x * (float)cfg.grid.size.x, .y = 0, },
                            (Vector2){ .x = cfg.center.x + sound_x * (float)cfg.grid.size.x, .y = (float)cfg.win.h },
                            1.f, WHITE);
-
-            draw_plot_deriv(&cfg, poly, &deriv, mouse_pos);
         EndDrawing();
     }
 

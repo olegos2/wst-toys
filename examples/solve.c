@@ -33,7 +33,7 @@ typedef struct {
     bool expr_mode;
 } SolveConfig;
 
-int solve_run_plot(const WstPoly *poly, const WstSolution *sol);
+int solve_run_plot(size_t npolys, const WstPoly *polys, const WstSolution *sols);
 
 static double round_to_zero(double a)
 {
@@ -271,7 +271,7 @@ static int run_plot(int argc, char *argv[], SolveConfig *cfg)
     WstSolution sol = wst_poly_solve(&poly);
     print_solution(&sol, cfg->pretty);
 
-    return solve_run_plot(&poly, &sol);
+    return solve_run_plot(1, &poly, &sol);
 }
 
 int main(int argc, char *argv[])

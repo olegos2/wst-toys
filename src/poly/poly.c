@@ -238,7 +238,7 @@ void wst_poly_print(char *buf, size_t nbuf, const char *name,
 
         double a = fabs(poly->coeffs[i]);
         if (i == 0 || !my_iszero(a - 1.0))
-            str_append(&p, "%lg", a);
+            str_append(&p, "%.4lg", a);
         if (i > 0) {
             if (!my_iszero(a - 1.0))
                 str_append(&p, "*");
