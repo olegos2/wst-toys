@@ -12,7 +12,7 @@
 
 /* Nesting cap for '(' and '-' chains, which recurse per character. */
 /* TODO: this is unused and unchecked */
-#define WST_EXPR_MAX_DEPTH 256
+// #define WST_EXPR_MAX_DEPTH 256
 
 /** Types of tokens that lexer can parse. */
 typedef enum {
@@ -21,10 +21,11 @@ typedef enum {
     EXPR_OP,
     EXPR_LPAREN,
     EXPR_RPAREN,
-    // TOYS_EXPR_EQ,
+    // EXPR_EQ,
     EXPR_END,
 } TokenType;
 
+/** Token characters */
 typedef enum {
     EXPR_TOK_LPAREN = '(',
     EXPR_TOK_RPAREN = ')',
@@ -36,9 +37,9 @@ typedef enum {
     EXPR_TOK_X      = 'x',
 } TokenOp;
 
+/** Single expression token. */
 typedef struct {
     TokenType type;
-    size_t pos;
     union {
         double val;
         char op;
@@ -54,7 +55,7 @@ typedef struct {
     /* Position where parser is stopped now, also used to store where error happened. */
     size_t pos;
     /* Depth of expr nesting at current pos. */
-    size_t depth;
+    // size_t depth;
     /* Next token lookahead. */
     Token lookahead;
     /* Whether lookahead is already filled. */
@@ -105,6 +106,7 @@ static bool parse_coeff(const char *str, size_t len, double *out)
     return true;
 }
 
+/** Parse whitespace separated polynomial coeffs in ascending order. */
 static WstParserErr parse_poly_coeffs(const char *line, WstPoly *poly, size_t *err_pos)
 {
     assert(line != NULL);
@@ -136,13 +138,11 @@ static WstParserErr parse_poly_coeffs(const char *line, WstPoly *poly, size_t *e
     return WST_EXPR_NO_ERR;
 }
 
-/* Parse polynomial from math expression using grammar described below. */
-
-// TODO: finite state machine can be used in some places like number parsing.
-
 /**
  * Reads a number token with strtod, then checks the consumed span
  * only holds digits, dot and [+-]e/E.
+ * TODO: finite state machine can be used in some places like number parsing.
+ *
  * @param [inout] p parser state
  * @param [out] tok resulting number token on success
  * @return error string or `NULL` on success
@@ -170,7 +170,6 @@ static WstParserErr lex_number(Parser *p, Token *tok)
     }
 
     tok->type = EXPR_NUM;
-    tok->pos = p->pos;
     tok->val = val;
     p->pos += (size_t)span;
 
@@ -186,7 +185,6 @@ static WstParserErr lex_next(Parser *p, Token *tok)
     while (p->pos < p->len && isspace(p->s[p->pos]))
         p->pos++;
 
-    tok->pos = p->pos;
     if (p->pos >= p->len) {
         tok->type = EXPR_END;
         return WST_EXPR_NO_ERR;
@@ -234,7 +232,6 @@ static WstParserErr lex_peek(Parser *p, Token *tok)
         if (ret != WST_EXPR_NO_ERR) {
             LOG_D("lex_next: %s", wst_expr_err_string(ret));
             p->lookahead.type = EXPR_END;
-            p->lookahead.pos = p->pos;
         }
         p->have = true;
     }
@@ -249,17 +246,6 @@ static void lex_take(Parser *p)
 
     p->have = false;
 }
-
-/**
- * Expression parsing grammar
- * num   := [0-9]*\.?[0-9]+
- * var   := 'x'
- * prim  := '(' expr ')' | num | var
- * pow   := prim '^' prim
- * unary := [-+]* num
- * term  := unary [* /] unary
- * expr  := term [+-] term
- */
 
 static WstParserErr parse_expr(Parser *p, WstPoly *out);
 static WstParserErr parse_unary(Parser *p, WstPoly *out);
@@ -456,7 +442,7 @@ WstParserErr wst_expr_to_poly(const char *s, WstPoly *out, size_t *err_pos, bool
     }
     if (tok.type != EXPR_END) {
         if (err_pos != NULL)
-            *err_pos = tok.pos;
+            *err_pos = p.pos;
         return WST_EXPR_UNEXPECTED_ATOM;
     }
     return WST_EXPR_NO_ERR;

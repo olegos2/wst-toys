@@ -61,6 +61,7 @@ static bool parse_int(ArgParser *p, const ArgOption *o, const char *val)
 
 /**
  * Parses option in beginning of argv and sets its dest field.
+ *
  * @param [in] argc number of args starting from current option arg
  * @param [in] argv array of args where argv[0] is current option name
  * @param [out] opt set to found option by name if any, or kept unchanged

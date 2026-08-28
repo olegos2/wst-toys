@@ -70,6 +70,7 @@ double wst_poly_eval(const WstPoly *poly, double x);
 
 /**
  * Print a polynomial into buffer of length `nbuf`.
+ *
  * @param [in] name name for polynomial (e.g. `P` or `y`) in pretty format.
  * @param [in] pretty whether to use pretty formatting or just raw coeffs separated by spaces.
  */

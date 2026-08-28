@@ -19,7 +19,7 @@ static inline bool my_iszerof(float a)
     return a > -FLT_EPSILON && a < FLT_EPSILON;
 }
 
-/** Representation of IEEE double with sign, exponent and significand */
+/** Representation of IEEE double with sign, exponent and significand. */
 typedef union {
     double val;
     struct {
@@ -30,6 +30,8 @@ typedef union {
 } double_repr;
 
 /** Replacements for builtin macros for no reason (for learning or smth) */
+
+/** Test if double is one of three NAN values. */
 static inline bool my_isnan(double a)
 {
     assert(sizeof(double) == 8);
@@ -39,6 +41,7 @@ static inline bool my_isnan(double a)
         repr.significand == 1 || repr.significand == ((1ull << 51) | 1) || repr.significand == ((1ull << 52) - 1));
 }
 
+/** Test if double is either positive or negative inf. */
 static inline bool my_isinf(double a)
 {
     assert(sizeof(double) == 8);

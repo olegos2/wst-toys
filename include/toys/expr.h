@@ -30,6 +30,15 @@ typedef enum {
  *
  * Returns `WST_EXPR_NO_ERR` on success and fills in *out. On failure returns an
  * error code and stores error offset in string in `*err_pos`.
+ *
+ * Expression parsing grammar
+ * - num   := [0-9]*\.?[0-9]+
+ * - var   := 'x'
+ * - prim  := '(' expr ')' | num | var
+ * - pow   := prim '^' prim
+ * - unary := [-+]* num
+ * - term  := unary [* /] unary
+ * - expr  := term [+-] term
  */
 WstParserErr wst_expr_to_poly(const char *s, WstPoly *out, size_t *err_pos, bool expr_mode);
 

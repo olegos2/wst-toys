@@ -111,69 +111,55 @@ typedef struct {
 
 int main(void)
 {
-    /* numbers */
     test_expr("0", &(WstPoly){ .degree = 0, .coeffs = { 0 } });
     test_expr("42", &(WstPoly){ .degree = 0, .coeffs = { 42 } });
     test_expr("3.14", &(WstPoly){ .degree = 0, .coeffs = { 3.14 } });
     test_expr("0.4e+2", &(WstPoly){ .degree = 0, .coeffs = { 40.0 } });
     test_expr(".5", &(WstPoly){ .degree = 0, .coeffs = { 0.5 } });
 
-    /* variable */
     test_expr("x", &(WstPoly){ .degree = 1, .coeffs = { 0, 1 } });
     test_expr("  x  ", &(WstPoly){ .degree = 1, .coeffs = { 0, 1 } });
 
-    /* addition */
     test_expr("1 + 2", &(WstPoly){ .degree = 0, .coeffs = { 3 } });
     test_expr("x + 1", &(WstPoly){ .degree = 1, .coeffs = { 1, 1 } });
     test_expr("x + x", &(WstPoly){ .degree = 1, .coeffs = { 0, 2 } });
 
-    /* subtraction */
     test_expr("5 - 3", &(WstPoly){ .degree = 0, .coeffs = { 2 } });
     test_expr("x - 1", &(WstPoly){ .degree = 1, .coeffs = { -1, 1 } });
     test_expr("1 - x", &(WstPoly){ .degree = 1, .coeffs = { 1, -1 } });
 
-    /* multiplication */
     test_expr("3 * 4", &(WstPoly){ .degree = 0, .coeffs = { 12 } });
     test_expr("3 * x", &(WstPoly){ .degree = 1, .coeffs = { 0, 3 } });
     test_expr("x * x", &(WstPoly){ .degree = 2, .coeffs = { 0, 0, 1 } });
     test_expr("(x + 1) * (x - 1)", &(WstPoly){ .degree = 2, .coeffs = { -1, 0, 1 } });
 
-    /* division by constant */
     test_expr("x / 2", &(WstPoly){ .degree = 1, .coeffs = { 0, 0.5 } });
     test_expr("6 / 3", &(WstPoly){ .degree = 0, .coeffs = { 2 } });
 
-    /* power */
     test_expr("x ^ 0", &(WstPoly){ .degree = 0, .coeffs = { 1 } });
     test_expr("x ^ 1", &(WstPoly){ .degree = 1, .coeffs = { 0, 1 } });
     test_expr("x ^ 2", &(WstPoly){ .degree = 2, .coeffs = { 0, 0, 1 } });
     test_expr("x ^ 3", &(WstPoly){ .degree = 3, .coeffs = { 0, 0, 0, 1 } });
     test_expr("2 ^ 3", &(WstPoly){ .degree = 0, .coeffs = { 8 } });
 
-    /* unary operators */
     test_expr("-5", &(WstPoly){ .degree = 0, .coeffs = { -5 } });
     test_expr("+5", &(WstPoly){ .degree = 0, .coeffs = { 5 } });
     test_expr("--5", &(WstPoly){ .degree = 0, .coeffs = { 5 } });
     test_expr("-x", &(WstPoly){ .degree = 1, .coeffs = { 0, -1 } });
     test_expr("---x", &(WstPoly){ .degree = 1, .coeffs = { 0, -1 } });
 
-    /* parentheses */
     test_expr("(1)", &(WstPoly){ .degree = 0, .coeffs = { 1 } });
     test_expr("((x))", &(WstPoly){ .degree = 1, .coeffs = { 0, 1 } });
     test_expr("(x + 1) * (x - 1)", &(WstPoly){ .degree = 2, .coeffs = { -1, 0, 1 } });
 
-    /* combined: x^2 - 5x + 6 */
     test_expr("x^2 - 5*x + 6", &(WstPoly){ .degree = 2, .coeffs = { 6, -5, 1 } });
 
-    /* complex: (x+1)^2 = x^2 + 2x + 1 */
     test_expr("(x + 1) ^ 2", &(WstPoly){ .degree = 2, .coeffs = { 1, 2, 1 } });
 
-    /* precedence: 2 + 3 * 4 = 14 */
     test_expr("2 + 3 * 4", &(WstPoly){ .degree = 0, .coeffs = { 14 } });
 
-    /* nested: ((x+1)*(x-1))^1 = x^2 - 1 */
     test_expr("((x+1)*(x-1))^1", &(WstPoly){ .degree = 2, .coeffs = { -1, 0, 1 } });
 
-    /* user's original test */
     test_expr("( 0 - 1.5) * 2 + (x + .5) ^ 2", &(WstPoly){ .degree = 2, .coeffs = { -2.75, 1.0, 1.0 } });
 
     test_expr_err("", WST_EXPR_UNEXPECTED_END_OF_EXPR);

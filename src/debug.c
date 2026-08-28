@@ -97,7 +97,7 @@ static void print_stack_trace(void)
 }
 
 void wst_assert(bool expr, const char *expr_src, const char *file,
-                 int line, const char *func)
+                const char *func, int line)
 {
     if (expr) return;
 
