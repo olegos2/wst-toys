@@ -142,6 +142,9 @@ int main(void)
     test_expr("x ^ 3", &(WstPoly){ .degree = 3, .coeffs = { 0, 0, 0, 1 } });
     test_expr("2 ^ 3", &(WstPoly){ .degree = 0, .coeffs = { 8 } });
 
+    test_expr("x ** 3", &(WstPoly){ .degree = 3, .coeffs = { 0, 0, 0, 1 } });
+    test_expr("2 ** 3", &(WstPoly){ .degree = 0, .coeffs = { 8 } });
+
     test_expr("-5", &(WstPoly){ .degree = 0, .coeffs = { -5 } });
     test_expr("+5", &(WstPoly){ .degree = 0, .coeffs = { 5 } });
     test_expr("--5", &(WstPoly){ .degree = 0, .coeffs = { 5 } });

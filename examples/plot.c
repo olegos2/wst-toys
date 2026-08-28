@@ -182,9 +182,15 @@ static void draw_axes_number_lines(const PlotConfig *cfg)
         .y = round_down(cfg->grid.start.y, cfg->grid.marks_step.y),
     };
 
+    Vector2 origin = {
+        .x = cfg->grid.marks_step.x / 2.f,
+        .y = cfg->grid.marks_step.y / 2.f,
+    };
+
     // Draw axis x number line (except 0)
     for (float i = start.x; i <= cfg->grid.end.x; i += cfg->grid.marks_step.x) {
-        if (my_iszerof(i)) continue;
+        if (-origin.x < i && i < origin.x)
+            continue;
         text = TextFormat("%.1f", i);
         text_width = MeasureText(text, cfg->font.label);
         p = pos_to_screen(cfg, (Vector2){ .x = i, .y = 0.f });
@@ -193,7 +199,8 @@ static void draw_axes_number_lines(const PlotConfig *cfg)
     }
     // Draw axis y number line (except 0)
     for (float i = start.y; i <= cfg->grid.end.y; i += cfg->grid.marks_step.y) {
-        if (my_iszerof(i)) continue;
+        if (-origin.y < i && i < origin.y)
+            continue;
         p = pos_to_screen(cfg, (Vector2){ .x = 0.f, .y = i });
         /* Flip vertically */
         DrawText(TextFormat("%.1f", -i), (int)p.x + 4,

@@ -198,11 +198,22 @@ static WstParserErr lex_next(Parser *p, Token *tok)
     case EXPR_TOK_X:
         tok->type = EXPR_VAR;
         break;
-    case EXPR_TOK_ADD: case EXPR_TOK_SUB:
-    case EXPR_TOK_MUL: case EXPR_TOK_DIV:
-    case EXPR_TOK_POW:
+    case EXPR_TOK_ADD:
+    case EXPR_TOK_SUB:
+    case EXPR_TOK_DIV:
         tok->type = EXPR_OP;
         tok->op = c;
+        break;
+    case EXPR_TOK_MUL:
+    case EXPR_TOK_POW:
+        tok->type = EXPR_OP;
+        /* Handling double mul char as power here */
+        if (p->pos + 1 < p->len && p->s[p->pos + 1] == EXPR_TOK_MUL) {
+            p->pos++;
+            tok->op = EXPR_TOK_POW;
+        } else {
+            tok->op = c;
+        }
         break;
     case EXPR_TOK_LPAREN:
         tok->type = EXPR_LPAREN;
