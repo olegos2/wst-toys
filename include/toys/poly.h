@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 /** Max polynomial degree the solver accepts. */
-#define WST_POLY_MAX_DEGREE 8
+#define WST_POLY_MAX_DEGREE 16
 
 /** Polynomial with fixed capacity. */
 typedef struct {
