@@ -100,7 +100,7 @@ static void rebuild_plot_config(PlotConfig *cfg)
     cfg->grid.marks_step.x = round_to_digits(cfg->grid.marks_step.x, 2);
     cfg->grid.marks_step.y = round_to_digits(cfg->grid.marks_step.y, 2);
 
-    LOG_D("w %d, h %d, pos %f %f, start %f %f, end %f %f, size %f %f, marks_step %f %f, freq %f %f "
+    LOG_V("w %d, h %d, pos %f %f, start %f %f, end %f %f, size %f %f, marks_step %f %f, freq %f %f "
           "center %f %f", cfg->win.w, cfg->win.h, cfg->grid.pos.x, cfg->grid.pos.y, cfg->grid.start.x,
           cfg->grid.start.y, cfg->grid.end.x, cfg->grid.end.y, cfg->grid.size.x, cfg->grid.size.y,
           cfg->grid.marks_step.x, cfg->grid.marks_step.y, cfg->audio.low_freq, cfg->audio.high_freq,
