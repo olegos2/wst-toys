@@ -290,17 +290,17 @@ static void test_print(void)
 
     /* raw mode */
     p = (WstPoly){ .degree = 2, .coeffs = { 1, 2, 3 } };
-    wst_poly_print(buf, sizeof(buf), "P", &p, false);
+    wst_poly_print(buf, ARR_LEN(buf), "P", &p, false);
     CHECK(strstr(buf, "1") && strstr(buf, "2") && strstr(buf, "3"), "print raw contains coeffs");
 
     /* pretty mode */
     p = (WstPoly){ .degree = 2, .coeffs = { -4, 0, 1 } };
-    wst_poly_print(buf, sizeof(buf), "P", &p, true);
+    wst_poly_print(buf, ARR_LEN(buf), "P", &p, true);
     CHECK(strstr(buf, "P(x)"), "print pretty has name");
 
     /* zero polynomial */
     p = (WstPoly){ .degree = 0, .coeffs = { 0 } };
-    wst_poly_print(buf, sizeof(buf), "Q", &p, true);
+    wst_poly_print(buf, ARR_LEN(buf), "Q", &p, true);
     CHECK(strstr(buf, "0"), "print zero poly");
 
     /* truncation: tiny buffer should not crash */

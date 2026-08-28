@@ -25,6 +25,7 @@
 #endif
 
 #define POLY_BUF_LEN 256
+#define ARR_LEN(arr) (sizeof(arr) / sizeof(*arr))
 
 typedef struct {
     bool verbose;
@@ -92,7 +93,7 @@ static bool analyze_expr(const char *expr, SolveConfig *cfg)
     char buf[POLY_BUF_LEN];
 
     if (cfg->pretty) {
-        wst_poly_print(buf, sizeof(buf), "P", &poly, true);
+        wst_poly_print(buf, ARR_LEN(buf), "P", &poly, true);
         printf("%s\n", buf);
     }
 
@@ -100,12 +101,12 @@ static bool analyze_expr(const char *expr, SolveConfig *cfg)
     print_solution(&sol, cfg->pretty);
 
     WstPoly deriv = wst_poly_deriv(&poly);
-    wst_poly_print(buf, sizeof(buf), "P'", &deriv, cfg->pretty);
+    wst_poly_print(buf, ARR_LEN(buf), "P'", &deriv, cfg->pretty);
     printf("%s\n", buf);
 
     WstPoly integ = { 0 };
     if (wst_poly_integ(&poly, &integ)) {
-        wst_poly_print(buf, sizeof(buf), "\\int P", &integ, cfg->pretty);
+        wst_poly_print(buf, ARR_LEN(buf), "\\int P", &integ, cfg->pretty);
         printf("%s\n", buf);
     }
 
@@ -173,8 +174,9 @@ static void print_help_commands(void)
 {
     printf(
         "Commands:\n"
-        "  solve       Solve polynomial for real roots, find deriv and integrate\n"
-        "  plot        Plot a polynomial\n"
+        "  solve       Solve polynomial or expression for real roots, find deriv and integrate\n"
+        "  plot        Plot a polynomial or expression\n"
+        "  gen         Generate a polynomial from real roots\n"
         "  (none)      interactive mode, similar to 'solve' subcommand\n");
 }
 
@@ -193,6 +195,54 @@ static int run_solve(int argc, char *argv[], SolveConfig *cfg)
     free(expr);
     expr = NULL;
     return ret ? 0 : 1;
+}
+
+static int run_gen(int argc, char *argv[], SolveConfig *cfg)
+{
+    WstPoly poly = { 0 };
+    char poly_buf[POLY_BUF_LEN];
+
+    if (argc < 1) {
+        fprintf(stderr, "No roots given? Use --help for usage\n");
+        poly.degree = 0;
+        poly.coeffs[0] = 1.0;
+        wst_poly_print(poly_buf, ARR_LEN(poly_buf), "P", &poly, cfg->pretty);
+        printf("%s\n", poly_buf);
+        return 0;
+    }
+
+    char *expr = concat_args(argc, argv);
+    if (expr == NULL)
+        return 1;
+
+    WstPoly roots = { 0 };
+    size_t err_pos = 0;
+    WstParserErr err_msg = wst_expr_to_poly(expr, &roots, &err_pos, false);
+    free(expr);
+    expr = NULL;
+
+    if (err_msg != WST_EXPR_NO_ERR) {
+        fprintf(stderr, "Expression error at position %zu: %s",
+                err_pos, wst_expr_err_string(err_msg));
+        return 1;
+    }
+
+    poly.degree = 0;
+    poly.coeffs[0] = 1.f;
+
+    for (int i = 0; i <= roots.degree; i++) {
+        WstPoly rhs = { .degree = 1, .coeffs = { -roots.coeffs[i], 1.f } };
+        if (!wst_poly_mul(&poly, &rhs)) {
+            fprintf(stderr, "Polynomial degree capacity exceeded (%d)",
+                    WST_POLY_MAX_DEGREE);
+            return 1;
+        }
+    }
+
+    wst_poly_print(poly_buf, ARR_LEN(poly_buf), "P", &poly, cfg->pretty);
+    printf("%s\n", poly_buf);
+
+    return 0;
 }
 
 static int run_plot(int argc, char *argv[], SolveConfig *cfg)
@@ -281,7 +331,7 @@ int main(int argc, char *argv[])
     ArgParser parser = {
         .prog = argv[0],
         .opts = opts,
-        .nopts = sizeof(opts) / sizeof(*opts),
+        .nopts = ARR_LEN(opts),
         /* Capture subcommand args */
         .capture_rest = true,
     };
@@ -312,6 +362,8 @@ int main(int argc, char *argv[])
         return run_solve(parser.nrest, parser.rest, &cfg);
     if (strcmp(command, "plot") == 0)
         return run_plot(parser.nrest, parser.rest, &cfg);
+    if (strcmp(command, "gen") == 0)
+        return run_gen(parser.nrest, parser.rest, &cfg);
 
     fprintf(stderr, "Unknown command '%s', run '%s --help' for usage\n", command, argv[0]);
     return 1;

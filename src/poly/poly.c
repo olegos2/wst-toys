@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -192,56 +193,60 @@ WstSolution wst_poly_solve(WstPoly *poly)
     }
 }
 
+typedef struct {
+    char *cur;
+    size_t rem;
+} StringPosition;
+
+static void str_append(StringPosition *pos, const char *fmt, ...)
+{
+    va_list args = { 0 };
+    va_start(args, fmt);
+    int written = vsnprintf(pos->cur, pos->rem, fmt, args);
+    va_end(args);
+
+    if (written > 0) {
+        size_t u_written = (size_t)written;
+        if (u_written >= pos->rem)
+            u_written = pos->rem;
+        pos->cur += u_written;
+        pos->rem -= u_written;
+    }
+}
+
 void wst_poly_print(char *buf, size_t nbuf, const char *name,
                     const WstPoly *poly, bool pretty)
 {
-    char *cur = buf;
-    size_t rem = nbuf;
-    int written;
-
-#define ADD(fmt, ...) \
-    do { \
-        written = snprintf(cur, rem, fmt, ##__VA_ARGS__); \
-        if (written > 0) { \
-            size_t u_written = (size_t)written; \
-            if (u_written >= rem) { \
-                cur += (rem - 1); \
-                rem = 1; \
-            } else { \
-                cur += u_written; \
-                rem -= u_written; \
-            } \
-        } \
-    } while (0)
+    StringPosition p = { .cur = buf, .rem = nbuf };
     
     if (!pretty) {
         for (int i = 0; i <= poly->degree; i++)
-            ADD("%lg ", poly->coeffs[i]);
+            str_append(&p, "%lg ", poly->coeffs[i]);
         return;
     }
 
-    ADD("%s(x) = ", name);
+    str_append(&p, "%s(x) = ", name);
 
     bool first = true;
     for (int i = poly->degree; i >= 0; i--) {
         if (my_iszero(poly->coeffs[i])) continue;
 
         if (!first)
-            ADD(poly->coeffs[i] < 0.0 ? " - " : " + ");
+            str_append(&p, poly->coeffs[i] < 0.0 ? " - " : " + ");
         else if (poly->coeffs[i] < 0.0)
-            ADD("-");
+            str_append(&p, "-");
 
         double a = fabs(poly->coeffs[i]);
         if (i == 0 || !my_iszero(a - 1.0))
-            ADD("%lg", a);
+            str_append(&p, "%lg*", a);
         if (i > 0)
-            ADD("x");
+            str_append(&p, "x");
         if (i > 1)
-            ADD("^%d", i);
+            str_append(&p, "^%d", i);
         first = false;
     }
     if (first)
-        ADD("0");
+        str_append(&p, "0");
 
 #undef ADD
 }

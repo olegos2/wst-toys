@@ -63,6 +63,19 @@ typedef struct {
     float interp_factor;
 } AudioSynth;
 
+static inline float round_down(float a, float mod)
+{
+    return a - fmodf(a, mod);
+}
+
+static float round_to_digits(float a, int digits)
+{
+    if (my_iszerof(a)) return 0.0;
+    float factor = powf(10.0, (float)digits - ceilf(log10f(fabsf(a))));
+    return roundf(a * factor) / factor;   
+}
+
+
 /** Derives some fields. */
 static void rebuild_plot_config(PlotConfig *cfg)
 {
@@ -71,7 +84,7 @@ static void rebuild_plot_config(PlotConfig *cfg)
 
     cfg->center.x = (float)cfg->win.w / 2.f;
     cfg->center.y = (float)cfg->win.h / 2.f;
-    cfg->x_step = 2.f / cfg->grid.size.x;
+    cfg->x_step = 1.f / cfg->grid.size.x;
 
     float len_x = (float)cfg->win.w / cfg->grid.size.x;
     float len_y = (float)cfg->win.h / cfg->grid.size.y;
@@ -84,10 +97,8 @@ static void rebuild_plot_config(PlotConfig *cfg)
     cfg->grid.marks_step.x = cfg->grid.target_marks_step.x / cfg->grid.size.x;
     cfg->grid.marks_step.y = cfg->grid.target_marks_step.y / cfg->grid.size.y;
 
-    // if (cfg->grid.marks_step.x > 1.f)
-    //     cfg->grid.marks_step.x = floorf(cfg->grid.marks_step.x);
-    // if (cfg->grid.marks_step.y > 1.f)
-    //     cfg->grid.marks_step.y = floorf(cfg->grid.marks_step.y);
+    cfg->grid.marks_step.x = round_to_digits(cfg->grid.marks_step.x, 2);
+    cfg->grid.marks_step.y = round_to_digits(cfg->grid.marks_step.y, 2);
 
     LOG_D("w %d, h %d, pos %f %f, start %f %f, end %f %f, size %f %f, marks_step %f %f, freq %f %f "
           "center %f %f", cfg->win.w, cfg->win.h, cfg->grid.pos.x, cfg->grid.pos.y, cfg->grid.start.x,
@@ -125,11 +136,6 @@ static inline Vector2 abs_to_screen(const PlotConfig *cfg, Vector2 abs_pos)
 static inline Vector2 pos_to_screen(const PlotConfig *cfg, Vector2 pos)
 {
     return abs_to_screen(cfg, scale_pos(cfg, pos));
-}
-
-static inline float round_down(float a, float mod)
-{
-    return a - fmodf(a, mod);
 }
 
 static void draw_background_grid(const PlotConfig *cfg)
@@ -191,7 +197,7 @@ static void draw_axes_number_lines(const PlotConfig *cfg)
     for (float i = start.x; i <= cfg->grid.end.x; i += cfg->grid.marks_step.x) {
         if (-origin.x < i && i < origin.x)
             continue;
-        text = TextFormat("%.1f", i);
+        text = TextFormat("%.4g", i);
         text_width = MeasureText(text, cfg->font.label);
         p = pos_to_screen(cfg, (Vector2){ .x = i, .y = 0.f });
         DrawText(text, (int)p.x - text_width / 2,
@@ -203,7 +209,7 @@ static void draw_axes_number_lines(const PlotConfig *cfg)
             continue;
         p = pos_to_screen(cfg, (Vector2){ .x = 0.f, .y = i });
         /* Flip vertically */
-        DrawText(TextFormat("%.1f", -i), (int)p.x + 4,
+        DrawText(TextFormat("%.4g", -i), (int)p.x + 4,
                  (int)p.y - cfg->font.label / 2,
                  cfg->font.label, WHITE);
     }
@@ -284,7 +290,7 @@ static void plot_audio_callback(void *frames_out, unsigned int frame_count)
 int solve_run_plot(const WstPoly *poly, const WstSolution *sol)
 {
     char poly_pretty[POLY_BUF_LEN];
-    wst_poly_print(poly_pretty, sizeof(poly_pretty), "y", poly, true);
+    wst_poly_print(poly_pretty, POLY_BUF_LEN, "y", poly, true);
     printf("%s\n", poly_pretty);
 
     SetTargetFPS(60);
