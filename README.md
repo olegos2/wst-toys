@@ -4,7 +4,7 @@ C library for polynomial math: expression parsing, arithmetic, solving, calculus
 
 ## Dependencies
 
-- `raylib` -- for graphical calculator example
+- `raylib` — for graphical calculator example
 
 ## Build
 
@@ -29,11 +29,11 @@ For build-system-less build:
 
 ## Library
 
-- `poly.h` -- polynomial type, arithmetic (`add`/`sub`/`mul`/`scale`), `eval`, `deriv`, `integ`, `solve`
-- `expr.h` -- parse math expressions or raw coefficients into polynomials
-- `argparse.h` -- command line option parser
-- `ds.h` -- dynamic array (stb-style)
-- `debug.h` -- logging with priority levels
+- `poly.h` — polynomial type, arithmetic (`add`/`sub`/`mul`/`scale`), `eval`, `deriv`, `integ`, `solve`
+- `expr.h` — parse math expressions or raw coefficients into polynomials
+- `argparse.h` — command line option parser
+- `ds.h` — dynamic array (stb-style)
+- `debug.h` — logging with priority levels
 
 ## Example
 
