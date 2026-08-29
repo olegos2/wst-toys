@@ -24,7 +24,7 @@ declare -a common_inc=(
     "$HOME_DIR/src/include"
 )
 
-DEFAULT_CFLAGS="-Wall -Wextra -Wconversion -Wfloat-equal -O2 -g"
+DEFAULT_CFLAGS="-Wall -Wextra -Wconversion -Wfloat-equal -Wshadow -O2 -g"
 DEFAULT_CPPFLAGS="-DWST_DEBUG"
 DEFAULT_LDFLAGS=""
 export CC=${CC:=gcc}

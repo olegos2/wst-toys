@@ -1,3 +1,6 @@
+#include "solve.h"
+#include "plot.h"
+
 #include "toys/argparse.h"
 #include "toys/debug.h"
 #include "toys/poly.h"
@@ -24,16 +27,11 @@
 #  include <unistd.h>
 #endif
 
-#define POLY_BUF_LEN 256
-#define ARR_LEN(arr) (sizeof(arr) / sizeof(*arr))
-
 typedef struct {
     bool verbose;
     bool pretty;
     bool expr_mode;
 } SolveConfig;
-
-int solve_run_plot(size_t npolys, const WstPoly *polys, const WstSolution *sols);
 
 static double round_to_zero(double a)
 {
@@ -245,6 +243,7 @@ static int run_gen(int argc, char *argv[], SolveConfig *cfg)
     return 0;
 }
 
+/** Concatenates argv, splits with ',', parses every segment to polynomial, plots all. */
 static int run_plot(int argc, char *argv[], SolveConfig *cfg)
 {
     if (argc < 1) {
@@ -256,22 +255,41 @@ static int run_plot(int argc, char *argv[], SolveConfig *cfg)
     if (expr == NULL)
         return 1;
 
-    WstPoly poly;
-    size_t err_pos;
-    WstParserErr err_msg = wst_expr_to_poly(expr, &poly, &err_pos, cfg->expr_mode);
+    static const char delim[] = ",";
+
+    WstPoly poly[POLY_CAP];
+    WstSolution sol[POLY_CAP];
+
+    char *current_pos = strtok(expr, delim);
+
+    int ret = 0;
+    size_t count = 0;
+
+    for (size_t i = 0; i < POLY_CAP; i++) {
+        if (current_pos == NULL) break;
+
+        size_t err_pos;
+        WstParserErr err_msg = wst_expr_to_poly(current_pos, &poly[i], &err_pos, cfg->expr_mode);
+
+        if (err_msg != WST_EXPR_NO_ERR) {
+            fprintf(stderr, "Expression error at position %zu: %s",
+                    err_pos, wst_expr_err_string(err_msg));
+            ret = 1;
+            break;
+        }
+
+        sol[i] = wst_poly_solve(&poly[i]);
+        print_solution(&sol[i], cfg->pretty);
+        count++;
+
+        current_pos = strtok(NULL, delim);
+    }
     free(expr);
     expr = NULL;
 
-    if (err_msg != WST_EXPR_NO_ERR) {
-        fprintf(stderr, "Expression error at position %zu: %s",
-                err_pos, wst_expr_err_string(err_msg));
-        return 1;
-    }
+    if (ret != 0) return ret;
 
-    WstSolution sol = wst_poly_solve(&poly);
-    print_solution(&sol, cfg->pretty);
-
-    return solve_run_plot(1, &poly, &sol);
+    return solve_run_plot(count, poly, sol);
 }
 
 int main(int argc, char *argv[])

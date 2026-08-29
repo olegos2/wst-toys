@@ -1,6 +1,13 @@
 project('toys', 'c', version: '0.1', meson_version: '>= 1.1.0')
 
-add_project_arguments('-Wall', '-Wextra', '-Wconversion', '-Wfloat-equal', language: 'c')
+add_project_arguments(
+    '-Wall',
+    '-Wextra',
+    '-Wconversion',
+    '-Wfloat-equal',
+    '-Wshadow',
+    language: 'c'
+)
 
 if get_option('debug')
     add_project_arguments('-DWST_DEBUG', language: 'c')

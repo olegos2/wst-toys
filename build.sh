@@ -16,7 +16,7 @@ declare -a common_src=(
 # коллективный разум закреп
 declare -a common_flags=(
     -lm -I"$HOME_DIR/include" -I"$HOME_DIR/src/inculde"
-    ${CFLAGS:="-Wall -Wextra -Wconversion -Wfloat-equal -O2 -g"}
+    ${CFLAGS:="-Wall -Wextra -Wconversion -Wfloat-equal -Wshadow -O2 -g"}
     -DWST_DEBUG
 )
 
@@ -24,8 +24,8 @@ mkdir -p "$BUILD_DIR" &&
 pushd "$BUILD_DIR" &&
 "$CC" \
     "${common_src[@]}" \
-    "$HOME_DIR/examples/solve.c" \
-    "$HOME_DIR/examples/plot.c" \
+    "$HOME_DIR/examples/calc/solve.c" \
+    "$HOME_DIR/examples/calc/plot.c" \
     "${common_flags[@]}" -o toys_solve &&
 "$CC" \
     "${common_src[@]}" \
