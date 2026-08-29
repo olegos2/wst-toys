@@ -19,7 +19,7 @@ static AudioSynth audio_synth = {
 }, *synth = &audio_synth;
 
 
-static const Color poly_colors[POLY_CAP] = {
+static const Color poly_colors[] = {
     YELLOW, GREEN, ORANGE, BLUE
 };
 
@@ -325,8 +325,6 @@ static void plot_audio_callback(void *frames_out, unsigned int frame_count)
 
 int solve_run_plot(size_t npolys, const WstPoly *polys, const WstSolution *sols)
 {
-    assert(npolys <= POLY_CAP);
-
     char poly_pretty[npolys][POLY_BUF_LEN];
     WstPoly derivs[npolys];
     bool playing_sound = false;
@@ -435,7 +433,9 @@ int solve_run_plot(size_t npolys, const WstPoly *polys, const WstSolution *sols)
             if (sound_x > cfg.grid.rect.end.x)
                 playing_sound = false;
 
-            for (size_t i = 0; i < npolys; i++) {
+            size_t cap = (npolys > POLY_CAP) ? POLY_CAP : npolys;
+
+            for (size_t i = 0; i < cap; i++) {
                 float sound_y = (float)wst_poly_eval(&polys[i], sound_x);
                 float sound_y_lin = (sound_y - cfg.grid.rect.start.y) / (cfg.grid.rect.end.y - cfg.grid.rect.start.y);
                 /* Stop sound if plot is too far off screen */
@@ -460,7 +460,7 @@ int solve_run_plot(size_t npolys, const WstPoly *polys, const WstSolution *sols)
             draw_axes_labels(&cfg);
 
             for (size_t i = 0; i < npolys; i++) {
-                draw_poly_plot(&cfg, &polys[i], poly_colors[i]);
+                draw_poly_plot(&cfg, &polys[i], poly_colors[i % ARR_LEN(poly_colors)]);
                 draw_plot_roots(&cfg, &sols[i]);
 
                 // Draw polynomial expression

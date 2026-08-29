@@ -6,7 +6,7 @@
 
 
 /** How many polynomials can be plotted at once. */
-#define POLY_CAP 4
+#define POLY_CAP 8
 
 #define AUDIO_SAMPLE_RATE 44100
 #define AUDIO_BUFFER_SIZE 4096
