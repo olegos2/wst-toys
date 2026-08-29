@@ -39,6 +39,7 @@ typedef struct {
     bool draw_background;
 } PlotGridConfig;
 
+/** Plot window state. */
 typedef struct {
     int w;
     int h;
@@ -56,6 +57,7 @@ typedef struct {
     PlotFont label;
 } PlotFontConfig;
 
+/** Audio configuration for plot. */
 typedef struct {
     float low_freq;
     float high_freq;

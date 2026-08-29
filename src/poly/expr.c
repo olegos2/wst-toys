@@ -11,7 +11,7 @@
 #include <string.h>
 
 /* Nesting cap for '(' and '-' chains, which recurse per character. */
-/* TODO: this is unused and unchecked */
+/* this is unused and unchecked */
 // #define WST_EXPR_MAX_DEPTH 256
 
 /** Types of tokens that lexer can parse. */

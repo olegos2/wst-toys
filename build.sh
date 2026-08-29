@@ -4,6 +4,7 @@ HOME_DIR=$(dirname "$(realpath "$0")")
 BUILD_DIR="$HOME_DIR/builddir"
 
 export CC="${CC:=gcc}"
+export PATH="/usr/lib/ccache/bin:$PATH"
 
 declare -a common_src=(
     "$HOME_DIR/src/poly/expr.c"
@@ -26,6 +27,7 @@ pushd "$BUILD_DIR" &&
     "${common_src[@]}" \
     "$HOME_DIR/examples/calc/solve.c" \
     "$HOME_DIR/examples/calc/plot.c" \
+    -lraylib \
     "${common_flags[@]}" -o toys_solve &&
 "$CC" \
     "${common_src[@]}" \

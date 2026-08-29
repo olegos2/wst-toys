@@ -76,8 +76,9 @@ build_solve() {
         solve_deps+=(-l"$i")
     done
 
-    my_cc -c "$HOME_DIR/examples/solve.c" -o toys_solve.o &&
-    my_ld toys_solve.o "${solve_deps[@]}" -o toys_solve
+    my_cc -c "$HOME_DIR/examples/calc/solve.c" -o calc_solve.o &&
+    my_cc -c "$HOME_DIR/examples/calc/plot.c" -o calc_plot.o &&
+    my_ld calc_solve.o calc_plot.o "${solve_deps[@]}" -o toys_solve
 }
 
 build_test_poly() {
@@ -95,6 +96,11 @@ build_test_argparse() {
     my_ld test_argparse.o libtoys_common.a -o test_argparse
 }
 
+build_test_expr() {
+    my_cc -c "$HOME_DIR/tests/test_expr.c" -o test_expr.o &&
+    my_ld test_expr.o libtoys_poly.a libtoys_common.a -lm -o test_expr
+}
+
 pushd "$BUILD_DIR" &&
 build_common &&
 build_poly &&
@@ -102,5 +108,6 @@ build_solve &&
 build_test_argparse &&
 build_test_ds &&
 build_test_poly &&
+build_test_expr &&
 popd &&
 echo "Build finished"
