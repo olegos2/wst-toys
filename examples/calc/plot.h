@@ -1,8 +1,11 @@
 #ifndef CALC_PLOT_H
 #define CALC_PLOT_H
 
+#include "toys/poly.h"
+
 #include <raylib.h>
 #include <raymath.h>
+#include <stddef.h>
 
 
 /** How many polynomials can be plotted at once. */
@@ -81,5 +84,16 @@ typedef struct {
     float interp_factor;
     float volume;
 } AudioSynth;
+
+
+/**
+ * Runs graphical calculator that draws passed polynomials and their solutions.
+ * 
+ * @param [in] npolys number of polynomials and solutions passed
+ * @param [in] polys polynomials array
+ * @param [in] sols solutions array with `npolys` elements
+ */
+int solve_run_plot(size_t npolys, const WstPoly *polys, const WstSolution *sols);
+
 
 #endif /* CALC_PLOT_H */

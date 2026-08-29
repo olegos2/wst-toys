@@ -14,21 +14,20 @@
 
 
 static AudioSynth audio_synth = {
-    .interp_factor = 0.005f,
+    .interp_factor = 0.0002f,
     .volume = 1.f / POLY_CAP,
 }, *synth = &audio_synth;
-
 
 static const Color poly_colors[] = {
     YELLOW, GREEN, ORANGE, BLUE
 };
-
 
 static inline float round_down(float a, float mod)
 {
     return a - fmodf(a, mod);
 }
 
+/** Round number to have `digits` significant digits. */
 static float round_to_digits(float a, int digits)
 {
     if (my_iszerof(a)) return 0.0;
@@ -75,11 +74,13 @@ static void move_plot(PlotConfig *cfg, Vector2 new_pos)
     rebuild_plot_config(cfg);
 }
 
+/** Convert vector from plot units to screen (px) units. */
 static inline Vector2 scale_pos(const PlotConfig *cfg, Vector2 pos)
 {
     return (Vector2){ .x = pos.x * cfg->grid.size.x, .y = -pos.y * cfg->grid.size.y };
 }
 
+/** Convert absolute px position to viewport center relative position */
 static inline Vector2 abs_to_relat(const PlotConfig *cfg, Vector2 abs_pos)
 {
     return (Vector2){
@@ -88,21 +89,25 @@ static inline Vector2 abs_to_relat(const PlotConfig *cfg, Vector2 abs_pos)
     };
 }
 
+/** Convert viewport center-relative coords to actual viewport coords (top-left relative) */
 static inline Vector2 relat_to_screen(const PlotConfig *cfg, Vector2 rel_pos)
 {
     return (Vector2){ .x = rel_pos.x + cfg->center.x, .y = rel_pos.y + cfg->center.y };
 }
 
+/** Convert absolute px position in plot space to screen position (in px). */
 static inline Vector2 abs_to_screen(const PlotConfig *cfg, Vector2 abs_pos)
 {
     return relat_to_screen(cfg, abs_to_relat(cfg, abs_pos));
 }
 
+/** Convert plot units space position to screen position (in px). */
 static inline Vector2 pos_to_screen(const PlotConfig *cfg, Vector2 pos)
 {
     return abs_to_screen(cfg, scale_pos(cfg, pos));
 }
 
+/** Convert screen position (in px) to plot position (in plot units). */
 static inline Vector2 screen_to_pos(const PlotConfig *cfg, Vector2 pos)
 {
     return (Vector2){
@@ -111,6 +116,7 @@ static inline Vector2 screen_to_pos(const PlotConfig *cfg, Vector2 pos)
     };
 }
 
+/** Check if point is on edge or inside of rect. */
 static inline bool point_rect_intersection(PlotRect rect, Vector2 p)
 {
     return p.x >= rect.start.x && p.x <= rect.end.x &&

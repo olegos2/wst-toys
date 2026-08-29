@@ -243,7 +243,7 @@ static int run_gen(int argc, char *argv[], SolveConfig *cfg)
     return 0;
 }
 
-/** Concatenates argv, splits with ',', parses every segment to polynomial, plots all. */
+/** Concatenate argv, splits with ',', parses every segment to polynomial, plots all. */
 static int run_plot(int argc, char *argv[], SolveConfig *cfg)
 {
     if (argc < 1) {
@@ -257,8 +257,8 @@ static int run_plot(int argc, char *argv[], SolveConfig *cfg)
 
     static const char delim[] = ",";
 
-    WstPoly poly[POLY_CAP];
-    WstSolution sol[POLY_CAP];
+    WstPoly poly[POLY_CAP] = { 0 };
+    WstSolution sol[POLY_CAP] = { 0 };
 
     char *current_pos = strtok(expr, delim);
 

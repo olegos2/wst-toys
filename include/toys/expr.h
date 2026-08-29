@@ -37,8 +37,8 @@ typedef enum {
  * - prim  := '(' expr ')' | num | var
  * - pow   := prim '^' prim
  * - unary := [-+]* num
- * - term  := unary [* /] unary
- * - expr  := term [+-] term
+ * - term  := unary [* /] unary +
+ * - expr  := term [+-] term +
  *
  * @param [in] s string that contains expression
  * @param [out] out resulting polynomial
