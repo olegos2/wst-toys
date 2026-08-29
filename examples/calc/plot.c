@@ -15,6 +15,7 @@
 
 static AudioSynth audio_synth = {
     .interp_factor = 0.005f,
+    .volume = 1.f / POLY_CAP,
 }, *synth = &audio_synth;
 
 
@@ -243,7 +244,7 @@ static void draw_plot_roots(const PlotConfig *cfg, const WstSolution *sol)
         Vector2 p = pos_to_screen(cfg, (Vector2){ .x = (float)sol->roots[i], .y = 0.f });
 
         DrawCircle((int)p.x, (int)p.y, 4.0, ORANGE);
-        DrawText(TextFormat("%.2lg", sol->roots[i]),
+        DrawText(TextFormat("%.2lg", sol->roots[i] + 0.0),
                  (int)p.x, (int)p.y + 2,
                  cfg->font.title.sz, GREEN);
     }
@@ -308,7 +309,7 @@ static void plot_audio_callback(void *frames_out, unsigned int frame_count)
         buf[i] = 0.f;
         for (int j = 0; j < POLY_CAP; j++) {
             synth->freq[j] += (synth->target_freq[j] - synth->freq[j]) * synth->interp_factor;
-            buf[i] += sinf(synth->phase[j]);
+            buf[i] += sinf(synth->phase[j]) * audio_synth.volume;
             synth->phase[j] = fmodf(synth->phase[j] + (2.f * PI * synth->freq[j])
                                     / AUDIO_SAMPLE_RATE, 2.f * PI);
         }

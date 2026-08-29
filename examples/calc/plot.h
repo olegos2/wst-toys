@@ -79,6 +79,7 @@ typedef struct {
     float target_freq[POLY_CAP];
     float phase[POLY_CAP];
     float interp_factor;
+    float volume;
 } AudioSynth;
 
 #endif /* CALC_PLOT_H */
