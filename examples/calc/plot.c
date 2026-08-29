@@ -305,9 +305,10 @@ static void plot_audio_callback(void *frames_out, unsigned int frame_count)
     float *buf = (float *)frames_out;
     
     for (unsigned int i = 0; i < frame_count; i++) {
+        buf[i] = 0.f;
         for (int j = 0; j < POLY_CAP; j++) {
             synth->freq[j] += (synth->target_freq[j] - synth->freq[j]) * synth->interp_factor;
-            buf[i] = sinf(synth->phase[j]);
+            buf[i] += sinf(synth->phase[j]);
             synth->phase[j] = fmodf(synth->phase[j] + (2.f * PI * synth->freq[j])
                                     / AUDIO_SAMPLE_RATE, 2.f * PI);
         }
@@ -343,7 +344,7 @@ int solve_run_plot(size_t npolys, const WstPoly *polys, const WstSolution *sols)
             .draw_background = true,
         },
         .audio = {
-            .low_freq = 150.f,
+            .low_freq = 250.f,
             .high_freq = 2000.f,
         },
         .font = {
@@ -436,9 +437,11 @@ int solve_run_plot(size_t npolys, const WstPoly *polys, const WstSolution *sols)
             for (size_t i = 0; i < npolys; i++) {
                 float sound_y = (float)wst_poly_eval(&polys[i], sound_x);
                 float sound_y_lin = (sound_y - cfg.grid.rect.start.y) / (cfg.grid.rect.end.y - cfg.grid.rect.start.y);
-                if (sound_y_lin > 2.f) sound_y_lin = 2.f;
-                else if (sound_y_lin < -1.f) sound_y_lin = -1.f;
-                synth->target_freq[i] = cfg.audio.low_freq * powf(cfg.audio.high_freq / cfg.audio.low_freq, sound_y_lin);
+                /* Stop sound if plot is too far off screen */
+                if (sound_y_lin > 2.f || sound_y_lin < -1.f)
+                    synth->target_freq[i] = 0.f;
+                else
+                    synth->target_freq[i] = cfg.audio.low_freq * powf(cfg.audio.high_freq / cfg.audio.low_freq, sound_y_lin);
             }
         } else {
             for (size_t i = 0; i < POLY_CAP; i++) {
@@ -467,10 +470,12 @@ int solve_run_plot(size_t npolys, const WstPoly *polys, const WstSolution *sols)
                                 mouse_pos, TextFormat("y%zu'", i));
             }
 
-            if (playing_sound)
-                DrawLineEx((Vector2){ .x = cfg.center.x + sound_x * (float)cfg.grid.size.x, .y = 0, },
-                           (Vector2){ .x = cfg.center.x + sound_x * (float)cfg.grid.size.x, .y = (float)cfg.win.h },
+            if (playing_sound) {
+                Vector2 p = pos_to_screen(&cfg, (Vector2){ .x = sound_x, .y = 0.f });
+                DrawLineEx((Vector2){ .x = p.x, .y = 0, },
+                           (Vector2){ .x = p.x, .y = (float)cfg.win.h },
                            1.f, WHITE);
+            }
         EndDrawing();
     }
 
