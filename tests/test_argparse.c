@@ -1,19 +1,10 @@
+#include "tests_common.h"
+
 #include "toys/argparse.h"
 
 #include <stdio.h>
 #include <string.h>
 
-static int failures = 0;
-
-#define CHECK(cond, msg) \
-    do { \
-        if (!(cond)) { \
-            fprintf(stderr, "FAIL %s (%s:%d)\n", msg, __FILE__, __LINE__); \
-            failures++; \
-        } \
-    } while (0)
-
-#define ARR_LEN(arr) (sizeof(arr) / sizeof(*arr))
 
 static bool try_parse(ArgParser *p, int argc, char *argv[], const char *msg, const char *file, int line)
 {
@@ -28,6 +19,7 @@ static bool try_parse(ArgParser *p, int argc, char *argv[], const char *msg, con
 #define CHECK_PARSE(p, argc, argv, msg) \
     try_parse(p, argc, argv, msg, __FILE__, __LINE__)
 
+
 static void test_parse(void)
 {
     bool verbose = false;
@@ -37,22 +29,30 @@ static void test_parse(void)
 
     ArgOption opts[] = {
         {
-            .type = ARG_SWITCH, .dest = &verbose,
-            .short_name = "-v", .long_name = "--verbose",
+            .type = ARG_SWITCH,
+            .dest = &verbose,
+            .short_name = "-v",
+            .long_name = "--verbose",
             .description = "be loud",
         },
         {
-            .type = ARG_INT, .dest = &num,
-            .short_name = "-n", .long_name = "--num",
+            .type = ARG_INT,
+            .dest = &num,
+            .short_name = "-n",
+            .long_name = "--num",
             .description = "a number",
         },
         {
-            .type = ARG_STRING, .dest = &mode,
-            .short_name = "-m", .long_name = "--mode",
+            .type = ARG_STRING,
+            .dest = &mode,
+            .short_name = "-m",
+            .long_name = "--mode",
             .description = "some mode",
         },
         {
-            .type = ARG_POSITIONAL, .dest = &file, .required = true,
+            .type = ARG_POSITIONAL,
+            .dest = &file,
+            .required = true,
             .long_name = "file",
             .description = "input file",
         },
@@ -94,17 +94,23 @@ static void test_errors(void)
 
     ArgOption opts[] = {
         {
-            .type = ARG_SWITCH, .dest = &force,
-            .short_name = "-f", .long_name = "--force",
+            .type = ARG_SWITCH,
+            .dest = &force,
+            .short_name = "-f",
+            .long_name = "--force",
             .description = "overwrite",
         },
         {
-            .type = ARG_INT, .dest = &num,
-            .short_name = "-n", .long_name = "--num",
+            .type = ARG_INT,
+            .dest = &num,
+            .short_name = "-n",
+            .long_name = "--num",
             .description = "a number",
         },
         {
-            .type = ARG_POSITIONAL, .dest = &file, .required = true,
+            .type = ARG_POSITIONAL,
+            .dest = &file,
+            .required = true,
             .long_name = "file",
             .description = "input file",
         },
@@ -139,8 +145,10 @@ static void test_rest(void)
     bool help = false;
     ArgOption opts[] = {
         {
-            .type = ARG_SWITCH, .dest = &help,
-            .short_name = "-h", .long_name = "--help",
+            .type = ARG_SWITCH,
+            .dest = &help,
+            .short_name = "-h",
+            .long_name = "--help",
             .description = "help",
         },
     };
@@ -151,7 +159,6 @@ static void test_rest(void)
         .nopts = ARR_LEN(opts),
     };
 
-    /* capture off by default, extras still fail */
     char *argv1[] = { "prog", "a", "b" };
     CHECK(!argparse_parse(&p, ARR_LEN(argv1), argv1), "no capture by default");
 
@@ -171,7 +178,8 @@ static void test_subcommand_tail(void)
     const char *cmd = NULL;
     ArgOption opts[] = {
         {
-            .type = ARG_POSITIONAL, .dest = &cmd,
+            .type = ARG_POSITIONAL,
+            .dest = &cmd,
             .long_name = "command",
             .description = "sub",
         },
@@ -184,11 +192,13 @@ static void test_subcommand_tail(void)
         .capture_rest = true,
     };
 
-    char *argv1[] = { "prog", "coeffs", "-6", "5" };
-    CHECK(argparse_parse(&p, ARR_LEN(argv1), argv1), "dash tokens go raw after positional");
-    CHECK(cmd != NULL && strcmp(cmd, "coeffs") == 0, "command captured");
-    CHECK(p.nrest == 2, "raw tail length");
-    CHECK(strcmp(p.rest[0], "-6") == 0, "negative number stays raw");
+    char *argv[] = { "prog", "coeffs", "-6", "5" };
+
+    if (CHECK_PARSE(&p, ARR_LEN(argv), argv, "dash tokens go raw after positional")) {
+        CHECK(cmd != NULL && strcmp(cmd, "coeffs") == 0, "command captured");
+        CHECK(p.nrest == 2, "raw tail length");
+        CHECK(strcmp(p.rest[0], "-6") == 0, "negative number stays raw");
+    }
 }
 
 int main(void)
@@ -197,10 +207,5 @@ int main(void)
     test_errors();
     test_rest();
     test_subcommand_tail();
-    if (failures == 0) {
-        printf("all tests passed\n");
-        return 0;
-    }
-    printf("%d test(s) failed\n", failures);
-    return 1;
+    return tests_summary();
 }

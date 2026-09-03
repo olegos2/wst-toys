@@ -13,6 +13,13 @@
 /* poly degree is int and not limited to never be < 0, so unexpected things may happen. */
 /* Whenever polynomial degree may increase, output degree must be checked (trimmed). */
 
+
+typedef struct {
+    char *cur;
+    size_t rem;
+} StringPosition;
+
+
 void wst_poly_trim(WstPoly *p)
 {
     assert(p != NULL);
@@ -87,24 +94,29 @@ bool wst_poly_cmp(const WstPoly *a, const WstPoly *b)
     return true;
 }
 
-WstPoly wst_poly_deriv(const WstPoly *poly)
-{
-    assert(poly != NULL);
-    WstPoly out = { 0 };
-
-    if (poly->degree <= 0)
-        return out;
-
-    out.degree = poly->degree - 1;
-    for (int i = 0; i <= out.degree; i++)
-        out.coeffs[i] = poly->coeffs[i + 1] * (double)(i + 1);
-    return out;
-}
-
-bool wst_poly_integ(const WstPoly *poly, WstPoly *out)
+void wst_poly_deriv(const WstPoly *poly, WstPoly *out)
 {
     assert(poly != NULL);
     assert(out != NULL);
+
+    if (poly->degree <= 0) {
+        memset(out, 0, sizeof(*out));
+        return;
+    }
+
+    out->degree = poly->degree - 1;
+    for (int i = 0; i <= out->degree; i++)
+        out->coeffs[i] = poly->coeffs[i + 1] * (double)(i + 1);
+
+    for (int i = out->degree + 1; i <= WST_POLY_MAX_DEGREE; i++)
+        out->coeffs[i] = 0.0;
+}
+
+bool wst_poly_integ(const WstPoly *restrict poly, WstPoly *restrict out)
+{
+    assert(poly != NULL);
+    assert(out != NULL);
+    assert(poly != out);
 
     if (poly->degree < 0 || poly->degree > WST_POLY_MAX_DEGREE - 1) {
         LOG_E("Cannot integrate poly degree %d", poly->degree);
@@ -138,7 +150,8 @@ double wst_poly_eval(const WstPoly *poly, double x)
 /**
  * @return number of roots
  */
-static int wst_quad_solve(double c, double b, double a, double *x1, double *x2)
+static int wst_quad_solve(double c, double b, double a,
+                          double *restrict x1, double *restrict x2)
 {
     assert(x1 != NULL);
     assert(x2 != NULL);
@@ -193,11 +206,6 @@ WstSolution wst_poly_solve(WstPoly *poly)
     }
 }
 
-typedef struct {
-    char *cur;
-    size_t rem;
-} StringPosition;
-
 static void str_append(StringPosition *pos, const char *fmt, ...)
 {
     va_list args = { 0 };
@@ -217,6 +225,8 @@ static void str_append(StringPosition *pos, const char *fmt, ...)
 void wst_poly_print(char *buf, size_t nbuf, const char *name,
                     const WstPoly *poly, bool pretty)
 {
+    assert(buf != NULL);
+
     StringPosition p = { .cur = buf, .rem = nbuf };
     
     if (!pretty) {
@@ -250,6 +260,4 @@ void wst_poly_print(char *buf, size_t nbuf, const char *name,
     }
     if (first)
         str_append(&p, "0");
-
-#undef ADD
 }

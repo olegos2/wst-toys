@@ -5,6 +5,7 @@ toys_hdrs = files(
     'expr.h',
     'math.h',
     'poly.h',
+    'string.h',
 )
 
 install_headers(toys_hdrs, subdir: 'toys')

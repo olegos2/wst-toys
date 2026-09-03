@@ -1,3 +1,5 @@
+#include "tests_common.h"
+
 #include "toys/poly.h"
 #include "toys/expr.h"
 
@@ -6,9 +8,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ARR_LEN(arr) (sizeof(arr) / sizeof(*arr))
-
-static int failures = 0;
 static int counter = 0;
 
 static void test_expr(const char *expr, const WstPoly *exp_poly)
@@ -103,26 +102,61 @@ static void test_coeff_err(const char *input, WstParserErr exp_err)
     failures++;
 }
 
-typedef struct {
-    const char *expr;
-    WstParserErr exp_ret;
-    WstPoly exp_poly;
-} ExprTestCase;
-
 int main(void)
 {
-    test_expr("0", &(WstPoly){ .degree = 0, .coeffs = { 0 } });
-    test_expr("42", &(WstPoly){ .degree = 0, .coeffs = { 42 } });
-    test_expr("3.14", &(WstPoly){ .degree = 0, .coeffs = { 3.14 } });
-    test_expr("0.4e+2", &(WstPoly){ .degree = 0, .coeffs = { 40.0 } });
-    test_expr(".5", &(WstPoly){ .degree = 0, .coeffs = { 0.5 } });
+    assert(WST_EXPR_NO_ERR == 0);
 
-    test_expr("x", &(WstPoly){ .degree = 1, .coeffs = { 0, 1 } });
-    test_expr("  x  ", &(WstPoly){ .degree = 1, .coeffs = { 0, 1 } });
-
-    test_expr("1 + 2", &(WstPoly){ .degree = 0, .coeffs = { 3 } });
-    test_expr("x + 1", &(WstPoly){ .degree = 1, .coeffs = { 1, 1 } });
-    test_expr("x + x", &(WstPoly){ .degree = 1, .coeffs = { 0, 2 } });
+    struct {
+        const char *expr;
+        WstParserErr exp_ret;
+        WstPoly exp_poly;
+    } cases[] = {
+        {
+            .expr = "0",
+            .exp_poly = { .degree = 0, .coeffs = { 0 } },
+        },
+        {
+            .expr = "42.",
+            .exp_poly = { .degree = 0, .coeffs = { 42 } },
+        },
+        {
+            .expr = "3.14",
+            .exp_poly = { .degree = 0, .coeffs = { 3.14 } },
+        },
+        {
+            .expr = "0.4e+2",
+            .exp_poly = { .degree = 0, .coeffs = { 0.4e+2 } },
+        },
+        {
+            .expr = ".5",
+            .exp_poly = { .degree = 0, .coeffs = { .5 } },
+        },
+        {
+            .expr = "x",
+            .exp_poly = { .degree = 1, .coeffs = { 0, 1 } },
+        },
+        {
+            .expr = "x + 1",
+            .exp_poly = { .degree = 1, .coeffs = { 1, 1 } },
+        },
+        {
+            .expr = " ( x +1 + 3+ x)  ",
+            .exp_poly = { .degree = 1, .coeffs = { 4, 2 } },
+        },
+        {
+            .expr = "x",
+            .exp_poly = { .degree = 1, .coeffs = { 0, 1 } },
+        },
+        {
+            .expr = "x",
+            .exp_poly = { .degree = 1, .coeffs = { 0, 1 } },
+        },
+        {
+            .expr = "x",
+            .exp_poly = { .degree = 1, .coeffs = { 0, 1 } },
+        },
+        
+    };
 
     test_expr("5 - 3", &(WstPoly){ .degree = 0, .coeffs = { 2 } });
     test_expr("x - 1", &(WstPoly){ .degree = 1, .coeffs = { -1, 1 } });
@@ -191,10 +225,5 @@ int main(void)
     test_coeff_err("", WST_EXPR_UNEXPECTED_END_OF_EXPR);
     test_coeff_err("abc", WST_EXPR_FAILED_TO_PARSE_NUMBER);
 
-    if (failures == 0) {
-        printf("all tests passed\n");
-        return 0;
-    }
-    printf("%d test(s) failed\n", failures);
-    return 1;
+    return tests_summary();
 }

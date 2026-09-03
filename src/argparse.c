@@ -9,8 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define OPT_LABEL_LEN 128
-
 
 /* Name to show in messages, prefers the long form. */
 static const char *opt_name(const ArgOption *o)
@@ -26,12 +24,12 @@ static const char *opt_name(const ArgOption *o)
  */
 static ArgOption *find_opt(ArgParser *p, const char *name, size_t len)
 {
-    for (int i = 0; i < p->nopts; i++) {
-        const char *s = p->opts[i].short_name;
-        const char *l = p->opts[i].long_name;
+    for (int opt_i = 0; opt_i < p->nopts; opt_i++) {
+        const char *s = p->opts[opt_i].short_name;
+        const char *l = p->opts[opt_i].long_name;
         if ((s && strlen(s) == len && strncmp(s, name, len) == 0) ||
             (l && strlen(l) == len && strncmp(l, name, len) == 0))
-            return &p->opts[i];
+            return &p->opts[opt_i];
     }
     return NULL;
 }
@@ -126,8 +124,8 @@ bool argparse_parse(ArgParser *p, int argc, char **argv)
     p->nrest = 0;
 
     /* reset dests to zeros so repeated parses start clean */
-    for (int i = 0; i < p->nopts; i++) {
-        ArgOption *o = &p->opts[i];
+    for (int opt_i = 0; opt_i < p->nopts; opt_i++) {
+        ArgOption *o = &p->opts[opt_i];
         o->seen = false;
         if (o->type == ARG_SWITCH)
             *(bool *)o->dest = false;
@@ -144,8 +142,8 @@ bool argparse_parse(ArgParser *p, int argc, char **argv)
      * so subcommand args like -6 never read as options */
     int npos_total = 0;
     int npos_filled = 0;
-    for (int j = 0; j < p->nopts; j++)
-        if (p->opts[j].type == ARG_POSITIONAL)
+    for (int opt_i = 0; opt_i < p->nopts; opt_i++)
+        if (p->opts[opt_i].type == ARG_POSITIONAL)
             npos_total++;
 
     for (int i = 1; i < argc; i++) {
@@ -194,9 +192,9 @@ bool argparse_parse(ArgParser *p, int argc, char **argv)
         npos_filled++;
     }
 
-    for (int i = 0; i < p->nopts; i++) {
-        if (p->opts[i].required && !p->opts[i].seen) {
-            err_set(p, "missing required %s", opt_name(&p->opts[i]));
+    for (int opt_i = 0; opt_i < p->nopts; opt_i++) {
+        if (p->opts[opt_i].required && !p->opts[opt_i].seen) {
+            err_set(p, "missing required %s", opt_name(&p->opts[opt_i]));
             return false;
         }
     }

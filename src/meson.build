@@ -3,8 +3,9 @@ toys_common_lib = static_library(
     'toys_common',
     sources: files(
         'argparse.c',
-        'ds.c',
             'debug.c',
+        'ds.c',
+        'string.c',
     ),
     include_directories: inc,
     install: false,

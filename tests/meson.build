@@ -1,3 +1,21 @@
+# tests_common = static_library(
+#     'tests_common',
+#     sources: files(
+#         'common.c',
+#     ),
+#     include_directories: [
+#         inc,
+#     ],
+#     dependencies: toys_poly_dep,
+#     install: false,
+# )
+
+# tests_common_dep = declare_dependency(
+#     link_with: tests_common_lib,
+#     include_directories: inc,
+#     dependencies: toys_poly_dep,
+# )
+
 test_poly = executable(
     'test_poly',
     'test_poly.c',

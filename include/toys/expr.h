@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-/** Error that parser may return. */
+/** Error that parser may return. No error is always `0`. */
 typedef enum {
     WST_EXPR_NO_ERR = 0,
     WST_EXPR_FAILED_TO_PARSE_NUMBER,

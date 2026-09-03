@@ -1,18 +1,8 @@
+#include "tests_common.h"
+
 #include "toys/ds.h"
 
-#include <stdio.h>
 #include <stdbool.h>
-
-static int failures = 0;
-
-#define CHECK(cond, msg) \
-    do { \
-        if (!(cond)) { \
-            fprintf(stderr, "FAIL %s (%s:%d)\n", msg, __FILE__, __LINE__); \
-            failures++; \
-        } \
-    } while (0)
-
 
 static void test_vec(void)
 {
@@ -44,10 +34,5 @@ static void test_vec(void)
 int main(void)
 {
     test_vec();
-    if (failures == 0) {
-        printf("all tests passed\n");
-        return 0;
-    }
-    printf("%d test(s) failed\n", failures);
-    return 1;
+    return tests_summary();
 }

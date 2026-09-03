@@ -5,7 +5,7 @@ add_project_arguments(
     '-Wextra',
     '-Wconversion',
     '-Wfloat-equal',
-    '-Wshadow',
+    '-Wshadow-all',
     language: 'c'
 )
 

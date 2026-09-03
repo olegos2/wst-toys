@@ -53,17 +53,17 @@ void wst_poly_add(WstPoly *a, const WstPoly *b);
 /** Subtract matching coeffs of polynomial `b` from `a`. */
 void wst_poly_sub(WstPoly *a, const WstPoly *b);
 
-/** Compare two polynomials equal: degree, then every coefficient. */
+/** Check two polynomials equality: degree, then every coefficient. */
 bool wst_poly_cmp(const WstPoly *a, const WstPoly *b);
 
 /** Convolute (multiply) `a` by `b`, returns `false` on error. */
 bool wst_poly_mul(WstPoly *a, const WstPoly *b);
 
 /** Get derivative of polynomial. */
-WstPoly wst_poly_deriv(const WstPoly *poly);
+void wst_poly_deriv(const WstPoly *poly, WstPoly *out);
 
 /** Get indefinite integral of polynomial, returns `false` on error. */
-bool wst_poly_integ(const WstPoly *poly, WstPoly *out);
+bool wst_poly_integ(const WstPoly *restrict poly, WstPoly *restrict out);
 
 /** Evaluate polynomial at a point x. */
 double wst_poly_eval(const WstPoly *poly, double x);

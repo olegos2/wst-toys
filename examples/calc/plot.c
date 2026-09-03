@@ -372,7 +372,7 @@ int solve_run_plot(size_t npolys, const WstPoly *polys, const WstSolution *sols)
         wst_poly_print(poly_pretty[i], POLY_BUF_LEN,
             TextFormat("y%zu", i), &polys[i], true);
         printf("%s\n", poly_pretty[i]);
-        derivs[i] = wst_poly_deriv(&polys[i]);
+        wst_poly_deriv(&polys[i], &derivs[i]);
     }
 
     SetTargetFPS(60);

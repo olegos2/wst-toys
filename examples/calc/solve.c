@@ -98,7 +98,8 @@ static bool analyze_expr(const char *expr, SolveConfig *cfg)
     WstSolution sol = wst_poly_solve(&poly);
     print_solution(&sol, cfg->pretty);
 
-    WstPoly deriv = wst_poly_deriv(&poly);
+    WstPoly deriv = { 0 };
+    wst_poly_deriv(&poly, &deriv);
     wst_poly_print(buf, ARR_LEN(buf), "P'", &deriv, cfg->pretty);
     printf("%s\n", buf);
 
