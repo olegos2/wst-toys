@@ -17,7 +17,7 @@ declare -a common_src=(
 # should add more flags?
 declare -a common_flags=(
     -lm -I"$HOME_DIR/include" -I"$HOME_DIR/src/inculde"
-    ${CFLAGS:="-Wall -Wextra -Wconversion -Wfloat-equal -Wshadow-all -O2 -g"}
+    ${CFLAGS:="-Wall -Wextra -Wconversion -Wfloat-equal -Wshadow -O2 -g"}
     -DWST_DEBUG
 )
 
