@@ -91,9 +91,9 @@ typedef struct {
 /**
  * Runs graphical calculator that draws passed polynomials and their solutions.
  * 
- * @param [in] npolys number of polynomials and solutions passed
- * @param [in] polys polynomials array
- * @param [in] sols solutions array with `npolys` elements
+ * @param[in] npolys Number of polynomials and solutions passed.
+ * @param[in] polys Polynomials array.
+ * @param[in] sols Solutions array with `npolys` elements.
  */
 int solve_run_plot(size_t npolys, const WstPoly *polys, const WstSolution *sols);
 

@@ -40,7 +40,7 @@ void wst_poly_trim(WstPoly *p);
  * coefficients are ignored. An all-zero polynomial yields WST_SOLVE_INF.
  * A degree above WST_POLY_MAX_DEGREE yields WST_SOLVE_ERR.
  *
- * @param [in] poly polynomial to solve
+ * @param[in] poly Polynomial to solve.
  */
 WstSolution wst_poly_solve(WstPoly *poly);
 
@@ -71,8 +71,8 @@ double wst_poly_eval(const WstPoly *poly, double x);
 /**
  * Print a polynomial into buffer of length `nbuf`.
  *
- * @param [in] name name for polynomial (e.g. `P` or `y`) in pretty format.
- * @param [in] pretty whether to use pretty formatting or just raw coeffs separated by spaces.
+ * @param[in] name Name for polynomial (e.g. `P` or `y`) in pretty format.
+ * @param[in] pretty Whether to use pretty formatting or just raw coeffs separated by spaces.
  */
 void wst_poly_print(char *buf, size_t nbuf, const char *name,
                     const WstPoly *poly, bool pretty);

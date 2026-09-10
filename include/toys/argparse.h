@@ -62,9 +62,9 @@ typedef struct {
  * Parses argv and fills their dest variables.
  * Ints and bools are parsed, string pointers are set (strings not dup'ed).
  *
- * @param [in] p parser with accepted options already filled
- * @param [in] argc command line args count
- * @param [in] argv command line args strings
+ * @param[in] p Parser with accepted options already filled.
+ * @param[in] argc Command line args count.
+ * @param[in] argv Command line args strings.
  *
  * @return `true` on success, otherwise sets p->error and returns `false`.
  */
@@ -73,7 +73,7 @@ bool argparse_parse(ArgParser *p, int argc, char **argv);
 /**
  * Prints the usage line and the option table to stdout.
  *
- * @param [in] p parser with accepted options already filled
+ * @param[in] p Parser with accepted options already filled.
  */
 void argparse_print_help(const ArgParser *p);
 

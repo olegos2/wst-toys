@@ -19,8 +19,8 @@ static const char *opt_name(const ArgOption *o)
 /**
  * Find named option in parser
  *
- * @param [in] name Name of option to look for
- * @param [in] len Length of name (in case it's followed with `=`)
+ * @param[in] name Name of option to look for.
+ * @param[in] len Length of name (in case it's followed with `=`).
  */
 static ArgOption *find_opt(ArgParser *p, const char *name, size_t len)
 {
@@ -48,7 +48,7 @@ static bool parse_int(ArgParser *p, const ArgOption *o, const char *val)
 {
     char *end = NULL;
     errno = 0;
-    long v = strtol(val, &end, 10);
+    long v = strtol(val, &end, 0);
     if (errno != 0 || end == val || *end != '\0' || v < INT_MIN || v > INT_MAX) {
         err_set(p, "value of %s must be an integer", opt_name(o));
         return false;
@@ -60,10 +60,10 @@ static bool parse_int(ArgParser *p, const ArgOption *o, const char *val)
 /**
  * Parses option in beginning of argv and sets its dest field.
  *
- * @param [in] argc number of args starting from current option arg
- * @param [in] argv array of args where argv[0] is current option name
- * @param [out] opt set to found option by name if any, or kept unchanged
- * @return number of args consumed, where zero means error
+ * @param[in] argc Number of args starting from current option arg.
+ * @param[in] argv Array of args where argv[0] is current option name.
+ * @param[out] opt Set to found option by name if any, or kept unchanged.
+ * @return Number of args consumed, where zero means error.
  */
 static int parse_named_option(ArgParser *p, int argc, char **argv, ArgOption **opt)
 {

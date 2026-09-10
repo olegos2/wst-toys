@@ -40,10 +40,10 @@ typedef enum {
  * - term  := unary [* /] unary +
  * - expr  := term [+-] term +
  *
- * @param [in] s string that contains expression
- * @param [out] out resulting polynomial
- * @param [out] err_pos position in string where parsing error occured
- * @param [in] expr_mode whether input string is a math expression or raw polynomial coeffs
+ * @param[in] s String that contains expression.
+ * @param[out] out Resulting polynomial.
+ * @param[out] err_pos Position in string where parsing error occured.
+ * @param[in] expr_mode Whether input string is a math expression or raw polynomial coeffs.
  */
 WstParserErr wst_expr_to_poly(const char *s, WstPoly *out, size_t *err_pos, bool expr_mode);
 

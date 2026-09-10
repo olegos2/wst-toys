@@ -148,7 +148,7 @@ double wst_poly_eval(const WstPoly *poly, double x)
 }
 
 /**
- * @return number of roots
+ * @return Number of roots.
  */
 static int wst_quad_solve(double c, double b, double a,
                           double *restrict x1, double *restrict x2)

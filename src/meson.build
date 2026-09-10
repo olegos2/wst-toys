@@ -5,6 +5,7 @@ toys_common_lib = static_library(
         'argparse.c',
             'debug.c',
         'ds.c',
+        'mtx.c',
         'string.c',
     ),
     include_directories: inc,

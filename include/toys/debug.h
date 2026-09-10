@@ -78,11 +78,11 @@ void wst_log_set_max_prio(WstLogPrio prio);
  * Custom assert impl that may be more verbose.
  * Aborts program when expression is false.
  *
- * @param [in] expr expression evaluation result
- * @param [in] expr_src the expression itself as a string
- * @param [in] file file from which expression comes from
- * @param [in] func function in which this expression is located
- * @param [in] line line at which this expression is located
+ * @param[in] expr Expression evaluation result.
+ * @param[in] expr_src Expression itself as a string.
+ * @param[in] file File from which expression comes from.
+ * @param[in] func Function in which this expression is located.
+ * @param[in] line Line at which this expression is located.
  */
 void wst_assert(bool expr, const char *expr_src, const char *file, const char *func, int line);
 

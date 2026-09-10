@@ -143,9 +143,9 @@ static WstParserErr parse_poly_coeffs(const char *line, WstPoly *poly, size_t *e
  * only holds digits, dot and [+-]e/E.
  * TODO: finite state machine can be used in some places like number parsing.
  *
- * @param [inout] p parser state
- * @param [out] tok resulting number token on success
- * @return error string or `NULL` on success
+ * @param[inout] p Parser state.
+ * @param[out] tok Resulting number token on success.
+ * @return Error string or `NULL` on success.
  */
 static WstParserErr lex_number(Parser *p, Token *tok)
 {
