@@ -4,21 +4,12 @@
 #include <stddef.h>
 
 /**
- * A function that compares two objects pointed by params.
- * Should return integer `< 0` when `a < b`, `0` when `a == b`, `> 0` when `a > b`.
- */
-typedef int (*WstComparator)(const void *a, const void *b);
-
-/**
- * Sort array using quick sort.
+ * Sort an array of strings lexicographically (using radix/bucket sort on bytes).
  *
- * @param[in] base Base address of array.
- * @param[in] count Number of elements in array.
- * @param[in] size Size of a single array element.
- * @param[in] compar Comparator.
+ * @param[in,out] strings Array of `count` null-terminated strings to sort in place.
+ * @param[in] count Number of strings in the array.
  */
-void wst_qsort(void *base, size_t count, size_t size,
-               WstComparator compar);
+void wst_str_sort(const char *strings[], size_t count);
 
 /**
  * Calculate the length of a string.
@@ -33,11 +24,11 @@ size_t wst_strlen(const char *str);
  * Determine the length of a fixed-size string.
  *
  * @param[in] str Pointer to the string.
- * @param[in] max_len Maximum number of bytes to examine.
+ * @param[in] nbytes Maximum number of bytes to examine.
  *
  * @return The number of bytes in the string if less than max_len, otherwise max_len.
  */
-size_t wst_strnlen(const char *str, size_t max_len);
+size_t wst_strnlen(const char *str, size_t nbytes);
 
 /**
  * Find the terminating null byte of a string.
@@ -103,33 +94,33 @@ char *wst_strdup(const char *str);
  * Duplicate a fixed-size string.
  *
  * @param[in] str Pointer to the string to duplicate.
- * @param[in] len Maximum number of bytes to copy.
+ * @param[in] nbytes Maximum number of bytes to copy.
  *
  * @return A pointer to the newly allocated string, or NULL if insufficient memory was available.
  */
-char *wst_strndup(const char *str, size_t len);
+char *wst_strndup(const char *str, size_t nbytes);
 
 /**
  * Compare memory areas.
  *
  * @param[in] str1 Pointer to the first memory area.
  * @param[in] str2 Pointer to the second memory area.
- * @param[in] len Number of bytes to compare.
+ * @param[in] nbytes Number of bytes to compare.
  *
  * @return An integer less than, equal to, or greater than zero if str1 is found to be less than, match, or be greater than str2.
  */
-int wst_memcmp(const void *str1, const void *str2, size_t len);
+int wst_memcmp(const void *str1, const void *str2, size_t nbytes);
 
 /**
  * Copy memory area.
  *
  * @param[out] dest Pointer to the destination memory area.
  * @param[in] src Pointer to the source memory area.
- * @param[in] len Number of bytes to copy.
+ * @param[in] nbytes Number of bytes to copy.
  *
  * @return A pointer to the destination memory area dest.
  */
-void *wst_memcpy(void *restrict dest, const void *restrict src, size_t len);
+void *wst_memcpy(void *restrict dest, const void *restrict src, size_t nbytes);
 
 /**
  * Compare two strings.
@@ -140,6 +131,17 @@ void *wst_memcpy(void *restrict dest, const void *restrict src, size_t len);
  * @return An integer less than, equal to, or greater than zero if str1 is found to be less than, match, or be greater than str2.
  */
 int wst_strcmp(const char *str1, const char *str2);
+
+/**
+ * Compare two strings, at most `len` bytes.
+ *
+ * @param[in] str1 Pointer to the first null-terminated string.
+ * @param[in] str2 Pointer to the second null-terminated string.
+ * @param[in] nbytes Max number of bytes to compare.
+ *
+ * @return An integer less than, equal to, or greater than zero if str1 is found to be less than, match, or be greater than str2.
+ */
+int wst_strncmp(const char *str1, const char *str2, size_t nbytes);
 
 /**
  * Concatenate two strings.
@@ -156,22 +158,22 @@ char *wst_strcat(char *restrict dest, const char *restrict src);
  *
  * @param[in] str Pointer to the memory area.
  * @param[in] c Character to look for, passed as an int but interpreted as an unsigned char.
- * @param[in] len Number of bytes to scan.
+ * @param[in] nbytes Number of bytes to scan.
  *
  * @return A pointer to the matching byte, or NULL if the character does not occur in the given memory area.
  */
-void *wst_memchr(const void *str, int c, size_t len);
+void *wst_memchr(const void *str, int c, size_t nbytes);
 
 /**
  * Scan memory backwards for a character.
  *
  * @param[in] str Pointer to the memory area.
  * @param[in] c Character to look for, passed as an int but interpreted as an unsigned char.
- * @param[in] len Number of bytes to scan.
+ * @param[in] nbytes Number of bytes to scan.
  *
  * @return A pointer to the matching byte, or NULL if the character does not occur in the given memory area.
  */
-void *wst_memrchr(const void *str, int c, size_t len);
+void *wst_memrchr(const void *str, int c, size_t nbytes);
 
 /**
  * Locate character in string.

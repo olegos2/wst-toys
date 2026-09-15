@@ -10,12 +10,6 @@
 
 /* TODO: Optimize some mem ops to use wider types */
 
-void wst_qsort(void *base, size_t count, size_t size,
-               WstComparator compar)
-{
-    // TODO
-}
-
 /**
  * Sorts strings by char at position `pos` (using radix/bucket sort).
  *
@@ -73,6 +67,22 @@ static void wst_str_sort_rec(const unsigned char *strings[], const unsigned char
         wst_str_sort_rec(strings, buf, start + count[i],
                      start + count[i + 1], pos + 1);
     }
+}
+
+void wst_str_sort(const char *strings[], size_t count)
+{
+    assert(strings != NULL);
+
+    if (count < 2)
+        return;
+
+    const unsigned char **buf = calloc(count, sizeof(*buf));
+    if (buf == NULL)
+        return;
+
+    wst_str_sort_rec((const unsigned char **)strings, buf, 0, count, 0);
+
+    free(buf);
 }
 
 size_t wst_strlen(const char *str)
@@ -160,25 +170,32 @@ char *wst_strdup(const char *str)
     return wst_strcpy(dest, str);
 }
 
-char *wst_strndup(const char *str, size_t len)
+char *wst_strndup(const char *str, size_t nbytes)
 {
-    assert(len == 0 || str != NULL);
+    assert(nbytes == 0 || str != NULL);
 
-    size_t dsize = wst_strnlen(str, len) + 1;
+    if (nbytes == 0)
+        return calloc(1, sizeof(char));
 
-    char *dest = calloc(dsize, sizeof(char));
+    size_t len = wst_strnlen(str, nbytes);
+
+    char *dest = calloc(len + 1, sizeof(char));
     if (dest == NULL)
         return NULL;
 
-    return wst_strncpy(dest, str, dsize);
+    wst_strncpy(dest, str, len);
+
+    dest[len] = '\0';
+
+    return dest;
 }
 
-int wst_memcmp(const void *str1, const void *str2, size_t len)
+int wst_memcmp(const void *str1, const void *str2, size_t nbytes)
 {
-    assert(len == 0 || str1 != NULL);
-    assert(len == 0 || str2 != NULL);
+    assert(nbytes == 0 || str1 != NULL);
+    assert(nbytes == 0 || str2 != NULL);
 
-    for (size_t i = 0; i < len; i++) {
+    for (size_t i = 0; i < nbytes; i++) {
         unsigned char c1 = ((unsigned char *)str1)[i];
         unsigned char c2 = ((unsigned char *)str2)[i];
         if (c1 < c2)
@@ -190,12 +207,12 @@ int wst_memcmp(const void *str1, const void *str2, size_t len)
     return 0;
 }
 
-void *wst_memcpy(void *restrict dest, const void *restrict src, size_t len)
+void *wst_memcpy(void *restrict dest, const void *restrict src, size_t nbytes)
 {
     assert(dest != NULL);
     assert(src != NULL);
 
-    for (size_t i = 0; i < len; i++) {
+    for (size_t i = 0; i < nbytes; i++) {
         ((unsigned char *)dest)[i] = ((unsigned char *)src)[i];
     }
 
@@ -225,6 +242,26 @@ int wst_strcmp(const char *str1, const char *str2)
     return 0;
 }
 
+int wst_strncmp(const char *str1, const char *str2, size_t nbytes)
+{
+    assert(str1 != NULL);
+    assert(str2 != NULL);
+
+    for (size_t i = 0; i < nbytes; i++) {
+        unsigned char c1 = (unsigned char)str1[i];
+        unsigned char c2 = (unsigned char)str2[i];
+        if (c1 < c2)
+            return -1;
+        else if (c1 > c2)
+            return 1;
+
+        if (str1[i] == '\0' || str2[i] == '\0')
+            break;
+    }
+
+    return 0;
+}
+
 char *wst_strcat(char *restrict dest, const char *restrict src)
 {
     wst_strcpy((char *)wst_strnul(dest), src);
@@ -232,13 +269,13 @@ char *wst_strcat(char *restrict dest, const char *restrict src)
     return dest;
 }
 
-void *wst_memchr(const void *str, int c, size_t len)
+void *wst_memchr(const void *str, int c, size_t nbytes)
 {
-    assert(len == 0 || str != NULL);
+    assert(nbytes == 0 || str != NULL);
 
     const unsigned char *s = (const unsigned char *)str;
 
-    for (size_t i = 0; i < len; i++) {
+    for (size_t i = 0; i < nbytes; i++) {
         if (s[i] == (unsigned char)c)
             return (void *)(s + i);
     }
@@ -246,16 +283,16 @@ void *wst_memchr(const void *str, int c, size_t len)
     return NULL;
 }
 
-void *wst_memrchr(const void *str, int c, size_t len)
+void *wst_memrchr(const void *str, int c, size_t nbytes)
 {
-    assert(len == 0 || str != NULL);
+    assert(nbytes == 0 || str != NULL);
 
-    if (len == 0)
+    if (nbytes == 0)
         return NULL;
 
     const unsigned char *s = (const unsigned char *)str;
 
-    size_t i = len;
+    size_t i = nbytes;
     while (i--) {
         if (s[i] == (unsigned char)c)
             return (void *)(s + i);

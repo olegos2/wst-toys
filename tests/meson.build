@@ -56,3 +56,14 @@ test_expr = executable(
 )
 
 test('expr', test_expr)
+
+test_string = executable(
+    'test_string',
+    'test_string.c',
+    dependencies: [
+        toys_common_dep,
+    ],
+)
+
+test('string', test_string)
+

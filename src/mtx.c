@@ -175,6 +175,7 @@ void wst_mtx_clear(WstMtx *a)
     assert(a != NULL);
 
     free(a->arr);
+    a->arr = NULL;
     a->cols = 0;
     a->rows = 0;
 }
@@ -361,5 +362,6 @@ void wst_mtxs_clear(WstMtxSym *a)
     assert(a != NULL);
 
     free(a->arr);
+    a->arr = NULL;
     a->size = 0;
 }
