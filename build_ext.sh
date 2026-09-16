@@ -24,7 +24,7 @@ declare -a common_inc=(
     "$HOME_DIR/src/include"
 )
 
-DEFAULT_CFLAGS="-Wall -Wextra -Wconversion -Wfloat-equal -Wshadow -O2 -g"
+DEFAULT_CFLAGS="-Wall -Wextra -Wconversion -Wfloat-equal -Wshadow -Wpointer-arith -Wno-unused-function -O2 -g"
 DEFAULT_CPPFLAGS="-DWST_DEBUG"
 DEFAULT_LDFLAGS=""
 export CC=${CC:=gcc}
@@ -49,17 +49,16 @@ my_ld() {
     print_eval "$LD" ${LDFLAGS:="$DEFAULT_LDFLAGS"} "$@"
 }
 
-build_common() {
-    my_cc -c "$HOME_DIR/src/argparse.c" -o toys_argparse.o &&
-    my_cc -c "$HOME_DIR/src/debug.c" -o toys_debug.o &&
-    my_cc -c "$HOME_DIR/src/ds.c" -o toys_ds.o &&
-    "$AR" rcs libtoys_common.a toys_argparse.o toys_debug.o toys_ds.o
-}
-
-build_poly() {
-    my_cc -c "$HOME_DIR/src/poly/expr.c" -o toys_expr.o &&
-    my_cc -c "$HOME_DIR/src/poly/poly.c" -o toys_poly.o &&
-    "$AR" rcs libtoys_poly.a toys_expr.o toys_poly.o
+# build_archive dir ar_filename sources
+build_archive() {
+    mkdir -p "$BUILD_DIR/$1" || return
+    declare -a objs=()
+    local src_name
+    for src_name in "${@:3}"; do
+        my_cc -c "$HOME_DIR/$1/$src_name.c" -o "$1/$src_name.o" || return
+        objs+=("$1/$src_name.o")
+    done
+    "$AR" rcs "$2" "${objs[@]}"
 }
 
 build_solve() {
@@ -81,33 +80,41 @@ build_solve() {
     my_ld calc_solve.o calc_plot.o "${solve_deps[@]}" -o toys_solve
 }
 
-build_test_poly() {
-    my_cc -c "$HOME_DIR/tests/test_poly.c" -o test_poly.o &&
-    my_ld test_poly.o libtoys_poly.a libtoys_common.a -lm -o test_poly
-}
-
-build_test_ds() {
-    my_cc -c "$HOME_DIR/tests/test_ds.c" -o test_ds.o &&
-    my_ld test_ds.o libtoys_common.a -o test_ds
-}
-
-build_test_argparse() {
+build_tests() {
     my_cc -c "$HOME_DIR/tests/test_argparse.c" -o test_argparse.o &&
-    my_ld test_argparse.o libtoys_common.a -o test_argparse
-}
+    my_ld test_argparse.o libtoys_common.a -o test_argparse &&
 
-build_test_expr() {
+    my_cc -c "$HOME_DIR/tests/test_ds.c" -o test_ds.o &&
+    my_ld test_ds.o libtoys_common.a -o test_ds &&
+
     my_cc -c "$HOME_DIR/tests/test_expr.c" -o test_expr.o &&
-    my_ld test_expr.o libtoys_poly.a libtoys_common.a -lm -o test_expr
+    my_ld test_expr.o libtoys_poly.a libtoys_common.a -lm -o test_expr &&
+
+    my_cc -c "$HOME_DIR/tests/test_mtx.c" -o test_mtx.o &&
+    my_ld test_mtx.o libtoys_common.a -o test_mtx &&
+
+    my_cc -c "$HOME_DIR/tests/test_poly.c" -o test_poly.o &&
+    my_ld test_poly.o libtoys_poly.a libtoys_common.a -lm -o test_poly &&
+
+    my_cc -c "$HOME_DIR/tests/test_sort.c" -o test_sort.o &&
+    my_ld test_sort.o libtoys_common.a -o test_sort &&
+
+    my_cc -c "$HOME_DIR/tests/test_string.c" -o test_string.o &&
+    my_ld test_string.o libtoys_common.a -o test_string
 }
 
 pushd "$BUILD_DIR" &&
-build_common &&
-build_poly &&
+build_archive src libtoys_common.a \
+    argparse \
+    debug \
+    ds \
+    mtx \
+    sort \
+    string &&
+build_archive src/poly libtoys_poly.a \
+    expr \
+    poly &&
 build_solve &&
-build_test_argparse &&
-build_test_ds &&
-build_test_poly &&
-build_test_expr &&
+build_tests &&
 popd &&
 echo "Build finished"

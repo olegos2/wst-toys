@@ -67,3 +67,23 @@ test_string = executable(
 
 test('string', test_string)
 
+test_mtx = executable(
+    'test_mtx',
+    'test_mtx.c',
+    dependencies: [
+        toys_common_dep,
+    ],
+)
+
+test('mtx', test_mtx)
+
+test_sort = executable(
+    'test_sort',
+    'test_sort.c',
+    dependencies: [
+        toys_common_dep,
+    ],
+)
+
+test('sort', test_sort)
+

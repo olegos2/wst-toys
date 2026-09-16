@@ -76,6 +76,7 @@ bool wst_poly_mul(WstPoly *a, const WstPoly *b)
     for (int i = 0; i <= a->degree; i++)
         for (int j = 0; j <= b->degree; j++)
             out.coeffs[i + j] += a->coeffs[i] * b->coeffs[j];
+    wst_poly_trim(&out);
     *a = out;
     return true;
 }

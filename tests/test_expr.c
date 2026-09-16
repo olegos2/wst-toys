@@ -17,11 +17,9 @@ static void test_coeff(const char *input, const WstPoly *exp_poly)
     size_t err_pos = 0;
     WstParserErr ret = wst_expr_to_poly(input, &res, &err_pos, false);
     if (ret != WST_EXPR_NO_ERR) {
-        fprintf(stderr, "\nFAIL coeff parse error at %zu: %s\n"
-                "     input: %s\n", err_pos, wst_expr_err_string(ret), input);
-        failures++;
+        FAIL("coeff parse error at %zu: %s", err_pos, wst_expr_err_string(ret));
     } else if (!wst_poly_cmp(&res, exp_poly)) {
-        fprintf(stderr, "\nFAIL coeff input: %s\n", input);
+        FAIL("coeff input: %s", input);
         fprintf(stderr, "     expected (degree %d): ", exp_poly->degree);
         for (int i = 0; i <= exp_poly->degree; i++)
             fprintf(stderr, "%lg ", exp_poly->coeffs[i]);
@@ -29,7 +27,6 @@ static void test_coeff(const char *input, const WstPoly *exp_poly)
         for (int i = 0; i <= res.degree; i++)
             fprintf(stderr, "%lg ", res.coeffs[i]);
         fprintf(stderr, "\n");
-        failures++;
     }
 }
 
@@ -43,9 +40,9 @@ static void test_coeff_err(const char *input, WstParserErr exp_err)
     if (ret == exp_err)
         return;
 
-    fprintf(stderr, "\nFAIL coeff input: %s\n"
-            "     got error: %s, expected: %s\n",
-            input, wst_expr_err_string(ret), wst_expr_err_string(exp_err));
+    FAIL("coeff input: %s", input);
+    fprintf(stderr, "     got error: %s, expected: %s\n",
+            wst_expr_err_string(ret), wst_expr_err_string(exp_err));
     failures++;
 }
 

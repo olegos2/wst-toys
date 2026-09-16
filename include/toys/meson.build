@@ -4,7 +4,9 @@ toys_hdrs = files(
     'ds.h',
     'expr.h',
     'math.h',
+    'mtx.h',
     'poly.h',
+    'sort.h',
     'string.h',
 )
 

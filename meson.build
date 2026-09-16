@@ -6,6 +6,8 @@ add_project_arguments(
     '-Wconversion',
     '-Wfloat-equal',
     '-Wshadow',
+    '-Wpointer-arith',
+    '-Wno-unused-function',
     language: 'c'
 )
 

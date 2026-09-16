@@ -165,6 +165,7 @@ static WstParserErr lex_number(Parser *p, Token *tok)
     for (ptrdiff_t i = 0; i < span; i++) {
         char c = start[i];
         if (!((c >= '0' && c <= '9') || c == '.' || c == 'e' || c == 'E' || c == '+' || c == '-')) {
+            LOG_D("Unexpected character in number token: %c", c);
             return WST_EXPR_UNEXPECTED_CHAR_IN_NUM;
         }
     }
@@ -439,6 +440,8 @@ WstParserErr wst_expr_to_poly(const char *s, WstPoly *out, size_t *err_pos, bool
     Parser p = { .s = s, .len = strlen(s), };
     ret = parse_expr(&p, out);
     if (ret != WST_EXPR_NO_ERR) {
+        LOG_D("Failed to parse expression with error at %zu: %s",
+              p.pos, wst_expr_err_string(ret));
         if (err_pos != NULL)
             *err_pos = p.pos;
         return ret;
@@ -447,6 +450,8 @@ WstParserErr wst_expr_to_poly(const char *s, WstPoly *out, size_t *err_pos, bool
     Token tok;
     ret = lex_peek(&p, &tok);
     if (ret != WST_EXPR_NO_ERR) {
+        LOG_D("Failed to parse last token of expression %zu: %s",
+              p.pos, wst_expr_err_string(ret));
         if (err_pos != NULL)
             *err_pos = p.pos;
         return ret;

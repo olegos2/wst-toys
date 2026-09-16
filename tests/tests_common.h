@@ -12,7 +12,7 @@ static int failures = 0;
 
 #define FAIL(fmt, ...) \
     do { \
-        fprintf(stderr, "FAIL (%s:%s:%d) " fmt "\n", __FILE_NAME__, __func__, __LINE__, ##__VA_ARGS__); \
+        fprintf(stderr, "\nFAIL (%s:%s:%d) " fmt "\n", __FILE_NAME__, __func__, __LINE__, ##__VA_ARGS__); \
         failures++; \
     } while (0)
 

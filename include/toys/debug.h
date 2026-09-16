@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 #define __WST_LOG(prio, fmt, ...) \
-    wst_log_print(WST_LOG_ ## prio, "%s: " fmt "\n", #prio, ## __VA_ARGS__)
+    wst_log_print(WST_LOG_ ## prio, fmt "\n", ## __VA_ARGS__)
     // fprintf(stderr, "%s: " fmt "\n", #prio, ## __VA_ARGS__)
 
 #define __WST_LOG_FILE(prio, fmt, ...) \

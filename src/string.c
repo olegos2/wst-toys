@@ -8,8 +8,6 @@
 
 #define BUCKET_SORT_LEN ((1 << 8) + 1)
 
-/* TODO: Optimize some mem ops to use wider types */
-
 /**
  * Sorts strings by char at position `pos` (using radix/bucket sort).
  *
@@ -88,6 +86,7 @@ void wst_str_sort(const char *strings[], size_t count)
 size_t wst_strlen(const char *str)
 {
     assert(str != NULL);
+    /* TODO: Optimize using wider types. */
 
     size_t i = 0;
     while (str[i] != '\0') i++;
@@ -98,6 +97,7 @@ size_t wst_strlen(const char *str)
 size_t wst_strnlen(const char *str, size_t max_len)
 {
     assert(str != NULL);
+    /* TODO: Optimize using wider types. */
 
     size_t i = 0;
     while (str[i] != '\0' && i < max_len) i++;
@@ -108,6 +108,7 @@ size_t wst_strnlen(const char *str, size_t max_len)
 const char *wst_strnul(const char *str)
 {
     assert(str != NULL);
+    /* TODO: Optimize using wider types. */
 
     const char *cur = str;
     while (*cur != '\0') cur++;
@@ -119,6 +120,7 @@ char *wst_stpcpy(char *restrict dest, const char *restrict src)
 {
     assert(dest != NULL);
     assert(src != NULL);
+    /* TODO: Optimize using wider types. */
 
     size_t i;
     for (i = 0; src[i] != '\0'; i++)
@@ -132,6 +134,7 @@ char *wst_stpncpy(char *restrict dest, const char *restrict src, size_t dsize)
 {
     assert(dest != NULL);
     assert(src != NULL);
+    /* TODO: Optimize using wider types. */
 
     size_t i;
     for (i = 0; src[i] != '\0' && i < dsize; i++)
@@ -211,12 +214,30 @@ void *wst_memcpy(void *restrict dest, const void *restrict src, size_t nbytes)
 {
     assert(dest != NULL);
     assert(src != NULL);
+    /* TODO: Optimize using wider types. */
 
     for (size_t i = 0; i < nbytes; i++) {
         ((unsigned char *)dest)[i] = ((unsigned char *)src)[i];
     }
 
     return dest;
+}
+
+void wst_memswp(void *restrict data1, const void *restrict data2, size_t nbytes)
+{
+    assert(data1 != NULL);
+    assert(data2 != NULL);
+    /* TODO: Optimize using wider types. */
+
+    unsigned char tmp;
+    unsigned char *char1 = (unsigned char *)data1;
+    unsigned char *char2 = (unsigned char *)data2;
+
+    for (size_t i = 0; i < nbytes; i++) {
+        tmp = char1[i];
+        char1[i] = char2[i];
+        char2[i] = tmp;
+    }
 }
 
 int wst_strcmp(const char *str1, const char *str2)

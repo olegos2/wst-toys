@@ -205,4 +205,13 @@ char *wst_strrchr(const char *str, int c);
  */
 char *wst_strtok(char *restrict str, const char *restrict delim);
 
+/**
+ * Interchange/swap bytes of 2 memory areas.
+ *
+ * @param[out] data1 Pointer to the destination memory area.
+ * @param[in] data2 Pointer to the source memory area.
+ * @param[in] nbytes Number of bytes to swap.
+ */
+void wst_memswp(void *restrict data1, const void *restrict data2, size_t nbytes);
+
 #endif /* TOYS_STRING_H */

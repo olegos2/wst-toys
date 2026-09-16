@@ -20,4 +20,15 @@ typedef int (*WstComparator)(const void *a, const void *b);
 void wst_qsort(void *base, size_t count, size_t size,
                WstComparator compar);
 
+/**
+ * Sort array using bubble sort.
+ *
+ * @param[in] base Base address of array.
+ * @param[in] count Number of elements in array.
+ * @param[in] size Size of a single array element.
+ * @param[in] compar Comparator.
+ */
+void wst_bsort(void *base, size_t count, size_t size,
+               WstComparator compar);
+
 #endif /* TOYS_SORT_H */

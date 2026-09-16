@@ -144,55 +144,124 @@ static void test_scale(void)
     }
 }
 
-/* TODO: refactor the rest of tests. */
-
 static void test_add(void)
 {
-    WstPoly poly;
+    struct {
+        WstPoly a, b, expected;
+    } cases[] = {
+        {
+            .a = { .degree = 2, .coeffs = { 1, 2, 3 } },
+            .b = { .degree = 2, .coeffs = { 4, 5, 6 } },
+            .expected = { .degree = 2, .coeffs = { 5, 7, 9 } },
+        },
+        {
+            .a = { .degree = 1, .coeffs = { 1, 2 } },
+            .b = { .degree = 3, .coeffs = { 0, 0, 0, 1 } },
+            .expected = { .degree = 3, .coeffs = { 1, 2, 0, 1 } },
+        },
+        {
+            .a = { .degree = 2, .coeffs = { 1, 2, 3 } },
+            .b = { .degree = 2, .coeffs = { -1, -2, -3 } },
+            .expected = { .degree = 0, .coeffs = { 0 } },
+        },
+        {
+            .a = { .degree = 2, .coeffs = { 1, 2, 3 } },
+            .b = { .degree = 0, .coeffs = { 0 } },
+            .expected = { .degree = 2, .coeffs = { 1, 2, 3 } },
+        },
+    };
 
-    poly = (WstPoly){ .degree = 2, .coeffs = { 1, 2, 3 } };
-    wst_poly_add(&poly, &(WstPoly){ .degree = 2, .coeffs = { 4, 5, 6 } });
-    CHECK(wst_poly_cmp(&poly, &(WstPoly){ .degree = 2, .coeffs = { 5, 7, 9 } }), "add same degree");
-
-    poly = (WstPoly){ .degree = 1, .coeffs = { 1, 2 } };
-    wst_poly_add(&poly, &(WstPoly){ .degree = 3, .coeffs = { 0, 0, 0, 1 } });
-    CHECK(wst_poly_cmp(&poly, &(WstPoly){ .degree = 3, .coeffs = { 1, 2, 0, 1 } }), "add increasing degree");
-
-    poly = (WstPoly){ .degree = 2, .coeffs = { 1, 2, 3 } };
-    wst_poly_add(&poly, &(WstPoly){ .degree = 2, .coeffs = { -1, -2, -3 } });
-    CHECK(poly.degree == 0 && my_iszero(poly.coeffs[0]), "add cancels to zero");
+    for (size_t i = 0; i < ARR_LEN(cases); i++) {
+        WstPoly got = cases[i].a;
+        wst_poly_add(&got, &cases[i].b);
+        if (!wst_poly_cmp(&got, &cases[i].expected)) {
+            FAIL("add test #%zu", i + 1);
+            print_poly(&got, "Got");
+            print_poly(&cases[i].expected, "Expected");
+        }
+    }
 }
 
 static void test_sub(void)
 {
-    WstPoly a;
+    struct {
+        WstPoly a, b, expected;
+    } cases[] = {
+        {
+            .a = { .degree = 2, .coeffs = { 5, 7, 9 } },
+            .b = { .degree = 2, .coeffs = { 1, 2, 3 } },
+            .expected = { .degree = 2, .coeffs = { 4, 5, 6 } },
+        },
+        {
+            .a = { .degree = 1, .coeffs = { 1, 2 } },
+            .b = { .degree = 1, .coeffs = { 1, 2 } },
+            .expected = { .degree = 0, .coeffs = { 0 } },
+        },
+        {
+            .a = { .degree = 2, .coeffs = { 1, 2, 3 } },
+            .b = { .degree = 0, .coeffs = { 0 } },
+            .expected = { .degree = 2, .coeffs = { 1, 2, 3 } },
+        },
+    };
 
-    a = (WstPoly){ .degree = 2, .coeffs = { 5, 7, 9 } };
-    wst_poly_sub(&a, &(WstPoly){ .degree = 2, .coeffs = { 1, 2, 3 } });
-    CHECK(wst_poly_cmp(&a, &(WstPoly){ .degree = 2, .coeffs = { 4, 5, 6 } }), "sub same degree");
-
-    a = (WstPoly){ .degree = 1, .coeffs = { 1, 2 } };
-    wst_poly_sub(&a, &(WstPoly){ .degree = 1, .coeffs = { 1, 2 } });
-    CHECK(a.degree == 0 && my_iszero(a.coeffs[0]), "sub self to zero");
+    for (size_t i = 0; i < ARR_LEN(cases); i++) {
+        WstPoly got = cases[i].a;
+        wst_poly_sub(&got, &cases[i].b);
+        if (!wst_poly_cmp(&got, &cases[i].expected)) {
+            FAIL("sub test #%zu", i + 1);
+            print_poly(&got, "Got");
+            print_poly(&cases[i].expected, "Expected");
+        }
+    }
 }
 
 static void test_mul(void)
 {
-    WstPoly a;
+    struct {
+        WstPoly a, b, expected;
+        bool exp_ret;
+    } cases[] = {
+        {
+            /* (1 + x) * (1 + x) = 1 + 2x + x^2 */
+            .a = { .degree = 1, .coeffs = { 1, 1 } },
+            .b = { .degree = 1, .coeffs = { 1, 1 } },
+            .expected = { .degree = 2, .coeffs = { 1, 2, 1 } },
+            .exp_ret = true,
+        },
+        {
+            /* 3 * x = 3x */
+            .a = { .degree = 0, .coeffs = { 3 } },
+            .b = { .degree = 1, .coeffs = { 0, 1 } },
+            .expected = { .degree = 1, .coeffs = { 0, 3 } },
+            .exp_ret = true,
+        },
+        {
+            /* zero times poly stays zero */
+            .a = { .degree = 0, .coeffs = { 0 } },
+            .b = { .degree = 2, .coeffs = { 1, 2, 3 } },
+            .expected = { .degree = 0, .coeffs = { 0 } },
+            .exp_ret = true,
+        },
+        {
+            /* degree overflow must fail */
+            .a = { .degree = WST_POLY_MAX_DEGREE, .coeffs = { 1 } },
+            .b = { .degree = 1, .coeffs = { 1, 1 } },
+            .expected = { .degree = 0, .coeffs = { 0 } },
+            .exp_ret = false,
+        },
+    };
 
-    /* (1 + x) * (1 + x) = 1 + 2x + x^2 */
-    a = (WstPoly){ .degree = 1, .coeffs = { 1, 1 } };
-    CHECK(wst_poly_mul(&a, &(WstPoly){ .degree = 1, .coeffs = { 1, 1 } }), "mul succeeds");
-    CHECK(wst_poly_cmp(&a, &(WstPoly){ .degree = 2, .coeffs = { 1, 2, 1 } }), "mul (1+x)^2");
-
-    /* 3 * x = 3x */
-    a = (WstPoly){ .degree = 0, .coeffs = { 3 } };
-    CHECK(wst_poly_mul(&a, &(WstPoly){ .degree = 1, .coeffs = { 0, 1 } }), "mul const*x");
-    CHECK(wst_poly_cmp(&a, &(WstPoly){ .degree = 1, .coeffs = { 0, 3 } }), "mul const*x result");
-
-    /* mul overflow */
-    // a = (WstPoly){ .degree = 5, .coeffs = { 1, 1, 1, 1, 1, 1 } };
-    // CHECK(!wst_poly_mul(&a, &(WstPoly){ .degree = 5, .coeffs = { 1, 1, 1, 1, 1, 1 } }), "mul overflow");
+    for (size_t i = 0; i < ARR_LEN(cases); i++) {
+        WstPoly got = cases[i].a;
+        bool ret = wst_poly_mul(&got, &cases[i].b);
+        if (ret != cases[i].exp_ret) {
+            FAIL("mul test #%zu: got ret %d, expected %d", i + 1, ret, cases[i].exp_ret);
+        } else if (ret && !wst_poly_cmp(&got, &cases[i].expected)) {
+            FAIL("mul test #%zu", i + 1);
+            print_poly(&got, "Got");
+            print_poly(&cases[i].expected, "Expected");
+        }
+    }
 }
 
 static void test_cmp(void)

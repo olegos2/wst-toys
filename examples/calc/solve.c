@@ -83,7 +83,7 @@ static bool analyze_expr(const char *expr, SolveConfig *cfg)
     WstParserErr err_msg = wst_expr_to_poly(expr, &poly, &err_pos, cfg->expr_mode);
     if (err_msg != WST_EXPR_NO_ERR) {
         /* TODO: add more visual error position pointing. */
-        fprintf(stderr, "Expression error at position %zu: %s",
+        fprintf(stderr, "Expression error at position %zu: %s\n",
                 err_pos, wst_expr_err_string(err_msg));
         return false;
     }
@@ -144,7 +144,7 @@ static void run_interactive(SolveConfig *cfg)
 {
     if (isatty(fileno(stdin))) {
         printf("Analyze polynomials and expressions for real roots, derivative and integral.\n");
-        if (cfg->expr_mode) {
+        if (!cfg->expr_mode) {
             printf("Type the coefficients from the constant term up to the highest power of x,\n");
             printf("separated by spaces, then press Enter. Example:\n");
             printf("  2 -3 1  solves  x^2 - 3 x + 2 = 0\n");
