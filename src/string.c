@@ -35,7 +35,7 @@ static void wst_str_sort_rec(const unsigned char *strings[], const unsigned char
     assert(strings != NULL);
     assert(buf != NULL);
 
-    if (start >= end - 1)
+    if (end - start < 2)
         return;
 
     /* `count[i + 1]` corresponds to number of occurencies
@@ -69,7 +69,7 @@ static void wst_str_sort_rec(const unsigned char *strings[], const unsigned char
 
 void wst_str_sort(const char *strings[], size_t count)
 {
-    assert(strings != NULL);
+    assert(count == 0 || strings != NULL);
 
     if (count < 2)
         return;

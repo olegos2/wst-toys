@@ -13,8 +13,8 @@ double *wst_mtx_idx(const WstMtx *mtx, size_t row, size_t col)
     assert(mtx != NULL);
 
     if (row >= mtx->rows || col >= mtx->cols) {
-        LOG_W("Access out of bounds matrix (%zu, %zu): (%zu, %zu)",
-              mtx->cols, mtx->rows, col, row);
+        LOG_W("index (%zu, %zu) out of bounds for %zux%zu matrix",
+              row, col, mtx->rows, mtx->cols);
         return NULL;
     }
 
@@ -41,8 +41,8 @@ bool wst_mtx_add(WstMtx *a, const WstMtx *b)
     assert(b != NULL);
 
     if (a->rows != b->rows || a->cols != b->cols) {
-        LOG_D("Cannot add matrices: a(%zu, %zu) + b(%zu, %zu)",
-              a->cols, a->rows, b->cols, b->rows);
+        LOG_D("cannot add %zux%zu + %zux%zu: dimension mismatch",
+              a->rows, a->cols, b->rows, b->cols);
         return false;
     }
 
@@ -58,8 +58,8 @@ bool wst_mtx_sub(WstMtx *a, const WstMtx *b)
     assert(b != NULL);
 
     if (a->rows != b->rows || a->cols != b->cols) {
-        LOG_D("Cannot sub matrices: a(%zu, %zu) - b(%zu, %zu)",
-              a->cols, a->rows, b->cols, b->rows);
+        LOG_D("cannot sub %zux%zu - %zux%zu: dimension mismatch",
+              a->rows, a->cols, b->rows, b->cols);
         return false;
     }
 
@@ -118,8 +118,8 @@ bool wst_mtx_mul(const WstMtx *a, const WstMtx *b, WstMtx *res)
     assert(res != NULL);
 
     if (a->cols != b->rows) {
-        LOG_D("Cannot mul matrices: a(%zu, %zu) * b(%zu, %zu)",
-              a->cols, a->rows, b->cols, b->rows);
+        LOG_D("cannot mul %zux%zu * %zux%zu: inner dimensions mismatch",
+              a->rows, a->cols, b->rows, b->cols);
         return false;
     }
 
@@ -137,6 +137,33 @@ bool wst_mtx_mul(const WstMtx *a, const WstMtx *b, WstMtx *res)
     }
 
     return true;
+}
+
+bool wst_mtx_det(const WstMtx *mtx, double *out)
+{
+    assert(mtx != NULL);
+    assert(out != NULL);
+
+    if (mtx->rows != mtx->cols) {
+        LOG_D("cannot det %zux%zu: matrix is not square",
+              mtx->rows, mtx->cols);
+        return false;
+    }
+
+    size_t n = mtx->rows;
+    if (n == 0) {
+        LOG_D("cannot det 0x0: matrix is empty");
+        return false;
+    }
+
+    if (n == 1) {
+        *out = mtx->arr[0];
+        return true;
+    }
+
+    /* TODO */
+
+    return false;
 }
 
 bool wst_mtx_dup(const WstMtx *a, WstMtx *b)
@@ -222,7 +249,7 @@ bool wst_mtxs_add(WstMtxSym *a, const WstMtxSym *b)
     assert(b != NULL);
 
     if (a->size != b->size) {
-        LOG_D("Cannot add symmetrical matrices: a(%zu) + b(%zu)",
+        LOG_D("cannot add sym(%zu) + sym(%zu): size mismatch",
               a->size, b->size);
         return false;
     }
@@ -239,7 +266,7 @@ bool wst_mtxs_sub(WstMtxSym *a, const WstMtxSym *b)
     assert(b != NULL);
 
     if (a->size != b->size) {
-        LOG_D("Cannot sub symmetrical matrices: a(%zu) - b(%zu)",
+        LOG_D("cannot sub sym(%zu) - sym(%zu): size mismatch",
               a->size, b->size);
         return false;
     }
@@ -298,7 +325,7 @@ bool wst_mtxs_mul(const WstMtxSym *a, const WstMtxSym *b, WstMtx *res)
     assert(res != NULL);
 
     if (a->size != b->size) {
-        LOG_D("Cannot mul symmetrical matrices: a(%zu) * b(%zu)", a->size, b->size);
+        LOG_D("cannot mul sym(%zu) * sym(%zu): size mismatch", a->size, b->size);
         return false;
     }
 

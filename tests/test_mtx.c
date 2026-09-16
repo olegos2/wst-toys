@@ -1,5 +1,6 @@
 #include "tests_common.h"
 
+#include "toys/math.h"
 #include "toys/mtx.h"
 
 static bool cmp_mtx(const WstMtx *a, const double *expected)
@@ -46,7 +47,6 @@ static void test_add(void)
             .exp_ret = true,
         },
         {
-            /* sub to zero via add of negation (edge: signed cancel) */
             .a_rows = 1, .a_cols = 3,
             .b_rows = 1, .b_cols = 3,
             .a = { 1, -2, 3 },
@@ -105,7 +105,7 @@ static void test_mul(void)
             .exp_ret = true,
         },
         {
-            /* identity (edge: 1x1 and scaling by one) */
+            /* identity */
             .a_rows = 1, .a_cols = 1,
             .b_rows = 1, .b_cols = 1,
             .a = { 3 },
@@ -115,7 +115,7 @@ static void test_mul(void)
             .exp_ret = true,
         },
         {
-            /* inner dimension mismatch */
+            /* dimension mismatch */
             .a_rows = 2, .a_cols = 3,
             .b_rows = 2, .b_cols = 2,
             .a = { 1, 2, 3, 4, 5, 6 },
@@ -163,7 +163,7 @@ static void test_sym(void)
             .exp_ret = true,
         },
         {
-            /* size mismatch (edge) */
+            /* dimension mismatch */
             .size = 2,
             .a = { 1, 2, 3 },
             .b = { 1, 2, 3 },
@@ -202,12 +202,12 @@ static void test_sym(void)
         wst_mtxs_clear(&b);
     }
 
-    /* sym mul: 2x2 identity-like check */
+    /* sym mul 2x2 identity-like check */
     {
         WstMtxSym a = { 0 }, b = { 0 };
         WstMtx res = { 0 };
         /* a = |1 2|, b = |0 1| => a*b = |2 3| */
-        /*     |2 3|      |1 1|          |3 5|  */
+        /*     |2 3|      |1 1|          |3 5| */
         double da[] = { 1, 2, 3 };
         double db[] = { 0, 1, 1 };
         double expected[] = { 2, 3, 3, 5 };
@@ -236,11 +236,80 @@ static void test_idx_edge(void)
     wst_mtx_clear(&m);
 }
 
+static void test_det(void)
+{
+    static const struct {
+        size_t rows, cols;
+        double data[9];
+        double expected;
+        bool exp_ret;
+    } cases[] = {
+        {
+            /* 1x1 */
+            .rows = 1, .cols = 1,
+            .data = { 5 },
+            .expected = 5, .exp_ret = true,
+        },
+        {
+            /* 2x2 basic: 1*4 - 2*3 */
+            .rows = 2, .cols = 2,
+            .data = { 1, 2, 3, 4 },
+            .expected = -2, .exp_ret = true,
+        },
+        {
+            .rows = 2, .cols = 2,
+            .data = { 0, 1, 1, 0 },
+            .expected = -1, .exp_ret = true,
+        },
+        {
+            /* singular */
+            .rows = 2, .cols = 2,
+            .data = { 1, 2, 2, 4 },
+            .expected = 0, .exp_ret = true,
+        },
+        {
+            /* 3x3: 1*(0-24) - 2*(0-20) + 3*(0-5) = 1 */
+            .rows = 3, .cols = 3,
+            .data = { 1, 2, 3, 0, 1, 4, 5, 6, 0 },
+            .expected = 1, .exp_ret = true,
+        },
+        {
+            /* 3x3 identity */
+            .rows = 3, .cols = 3,
+            .data = { 1, 0, 0, 0, 1, 0, 0, 0, 1 },
+            .expected = 1, .exp_ret = true,
+        },
+        {
+            /* not square */
+            .rows = 2, .cols = 3,
+            .data = { 1, 2, 3, 4, 5, 6 },
+            .expected = 0, .exp_ret = false,
+        },
+    };
+
+    for (size_t i = 0; i < ARR_LEN(cases); i++) {
+        WstMtx m = { 0 };
+        wst_mtx_create(cases[i].data, cases[i].rows, cases[i].cols, &m);
+        double result = 0;
+        bool ret = wst_mtx_det(&m, &result);
+        if (ret != cases[i].exp_ret) {
+            FAIL("mtx det test #%zu: got ret %d, expected %d",
+                 i + 1, ret, cases[i].exp_ret);
+        } else if (ret && !my_iszero(result - cases[i].expected)) {
+            FAIL("mtx det test #%zu: got %lg, expected %lg",
+                    i + 1, result, cases[i].expected);
+            print_mtx(&m, "Matrix");
+        }
+        wst_mtx_clear(&m);
+    }
+}
+
 int main(void)
 {
     test_add();
     test_mul();
     test_sym();
+    test_det();
     test_idx_edge();
     return tests_summary();
 }

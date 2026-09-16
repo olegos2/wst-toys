@@ -2,19 +2,22 @@
 #define WST_DEBUG_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 #define __WST_LOG(prio, fmt, ...) \
-    wst_log_print(WST_LOG_ ## prio, fmt "\n", ## __VA_ARGS__)
+    wst_log_print_at(WST_LOG_ ## prio, NULL, NULL, 0, fmt "\n", ## __VA_ARGS__)
+    // wst_log_print(WST_LOG_ ## prio, fmt "\n", ## __VA_ARGS__)
+    // wst_log_print(WST_LOG_ ## prio, "%s " fmt "\n", __wst_log_prio_fmt[WST_LOG_ ## prio], ## __VA_ARGS__)
     // fprintf(stderr, "%s: " fmt "\n", #prio, ## __VA_ARGS__)
 
 #define __WST_LOG_FILE(prio, fmt, ...) \
-    __WST_LOG(prio, "%s: " fmt, __FILE_NAME__, ## __VA_ARGS__)
+    wst_log_print_at(WST_LOG_ ## prio, __FILE_NAME__, NULL, 0, fmt "\n", ## __VA_ARGS__)
 
 #define __WST_LOG_FUNC(prio, fmt, ...) \
-    __WST_LOG(prio, "%s:%s: " fmt, __FILE_NAME__, __func__, ## __VA_ARGS__)
+    wst_log_print_at(WST_LOG_ ## prio, __FILE_NAME__, __func__, 0, fmt "\n", ## __VA_ARGS__)
 
 #define __WST_LOG_LINE(prio, fmt, ...) \
-    __WST_LOG(prio, "%s:%s:%d: " fmt, __FILE_NAME__, __func__, __LINE__, ## __VA_ARGS__)
+    wst_log_print_at(WST_LOG_ ## prio, __FILE_NAME__, __func__, __LINE__, fmt "\n", ## __VA_ARGS__)
 
 
 #ifdef WST_DEBUG
@@ -55,6 +58,24 @@ typedef enum {
     WST_LOG_VERBOSE,
 } WstLogPrio;
 
+/** Color mode for log output */
+typedef enum {
+    /** Never use colors */
+    WST_LOG_COLOR_OFF = 0,
+    /** Always use colors */
+    WST_LOG_COLOR_ON,
+    /** Use colors only when logging to a terminal */
+    WST_LOG_COLOR_AUTO,
+} WstLogColorMode;
+
+// static const char *__wst_log_prio_fmt[] = {
+//     [WST_LOG_ERROR] = "[E]",
+//     [WST_LOG_WARN] = "[W]",
+//     [WST_LOG_INFO] = "[I]",
+//     [WST_LOG_DEBUG] = "[D]",
+//     [WST_LOG_VERBOSE] = "[V]",
+// };
+
 /**
  * Open a file and redirect all following logs to it.
  * When `filename` is NULL, prints to stderr.
@@ -68,6 +89,23 @@ bool wst_log_open(const char *filename);
  * @return Number of bytes written to stream.
  */
 int wst_log_print(WstLogPrio prio, const char *fmt, ...);
+
+/**
+ * Print a log line with explicit source location.
+ * File/func/line are rendered (and colored) by the logger itself.
+ *
+ * @param[in] file File name or NULL to omit.
+ * @param[in] func Function name or NULL to omit.
+ * @param[in] line Line number, ignored unless file and func are set.
+ * @return Number of bytes written to stream.
+ */
+int wst_log_print_at(WstLogPrio prio, const char *file, const char *func,
+                     int line, const char *fmt, ...);
+
+/**
+ * Set ANSI color output for logs. Default is auto.
+ */
+void wst_log_enable_color(WstLogColorMode mode);
 
 /**
  * Sets max priority messages of which will be printed.

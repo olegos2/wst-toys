@@ -229,21 +229,19 @@ static void test_mul(void)
             .exp_ret = true,
         },
         {
-            /* 3 * x = 3x */
             .a = { .degree = 0, .coeffs = { 3 } },
             .b = { .degree = 1, .coeffs = { 0, 1 } },
             .expected = { .degree = 1, .coeffs = { 0, 3 } },
             .exp_ret = true,
         },
         {
-            /* zero times poly stays zero */
             .a = { .degree = 0, .coeffs = { 0 } },
             .b = { .degree = 2, .coeffs = { 1, 2, 3 } },
             .expected = { .degree = 0, .coeffs = { 0 } },
             .exp_ret = true,
         },
         {
-            /* degree overflow must fail */
+            /* degree overflow */
             .a = { .degree = WST_POLY_MAX_DEGREE, .coeffs = { 1 } },
             .b = { .degree = 1, .coeffs = { 1, 1 } },
             .expected = { .degree = 0, .coeffs = { 0 } },

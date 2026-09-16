@@ -440,7 +440,7 @@ WstParserErr wst_expr_to_poly(const char *s, WstPoly *out, size_t *err_pos, bool
     Parser p = { .s = s, .len = strlen(s), };
     ret = parse_expr(&p, out);
     if (ret != WST_EXPR_NO_ERR) {
-        LOG_D("Failed to parse expression with error at %zu: %s",
+        LOG_D("Expr error at %zu: %s",
               p.pos, wst_expr_err_string(ret));
         if (err_pos != NULL)
             *err_pos = p.pos;
@@ -450,7 +450,7 @@ WstParserErr wst_expr_to_poly(const char *s, WstPoly *out, size_t *err_pos, bool
     Token tok;
     ret = lex_peek(&p, &tok);
     if (ret != WST_EXPR_NO_ERR) {
-        LOG_D("Failed to parse last token of expression %zu: %s",
+        LOG_D("Bad last token of expr at %zu: %s",
               p.pos, wst_expr_err_string(ret));
         if (err_pos != NULL)
             *err_pos = p.pos;

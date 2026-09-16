@@ -10,13 +10,18 @@
 typedef int (*WstComparator)(const void *a, const void *b);
 
 /**
+ * Function that sorts array `base` with `count` elements each of `size`, using `compar`
+ */
+typedef void (*WstSortFunc)(void *base, size_t count, size_t size, WstComparator compar);
+
+/**
  * Sort array using quick sort.
  *
  * @param[in] base Base address of array.
  * @param[in] count Number of elements in array.
  * @param[in] size Size of a single array element.
  * @param[in] compar Comparator.
- */
+ */ 
 void wst_qsort(void *base, size_t count, size_t size,
                WstComparator compar);
 

@@ -77,4 +77,21 @@ double wst_poly_eval(const WstPoly *poly, double x);
 void wst_poly_print(char *buf, size_t nbuf, const char *name,
                     const WstPoly *poly, bool pretty);
 
+
+#ifdef WST_POLY_SHORT_NAMES
+
+#define poly_trim wst_poly_trim
+#define poly_solve wst_poly_solve
+#define poly_scale wst_poly_scale
+#define poly_add wst_poly_add
+#define poly_sub wst_poly_sub
+#define poly_cmp wst_poly_cmp
+#define poly_mul wst_poly_mul
+#define poly_deriv wst_poly_deriv
+#define poly_integ wst_poly_integ
+#define poly_eval wst_poly_eval
+#define poly_print wst_poly_print
+
+#endif /* WST_POLY_SHORT_NAMES */
+
 #endif /* TOYS_POLY_H */

@@ -122,6 +122,16 @@ bool wst_mtx_mul(const WstMtx *a, const WstMtx *b, WstMtx *res);
 bool wst_mtxs_mul(const WstMtxSym *a, const WstMtxSym *b, WstMtx *res);
 
 /**
+ * Determinant of a square matrix, via Gaussian elimination
+ * with partial pivoting.
+ *
+ * @param[in] mtx Square matrix.
+ * @param[out] out Determinant value on success (0 for singular matrices).
+ * @return `false` when the matrix is not square (or empty), `true` otherwise.
+ */
+bool wst_mtx_det(const WstMtx *mtx, double *out);
+
+/**
  * Duplicate matrix.
  * Free what was in matrix `b`, duplicate `a` data into `b` and
  * copy dimensions of `a` to `b`.
@@ -178,5 +188,34 @@ void wst_mtx_clear(WstMtx *a);
  * Frees array holding symmetrical matrix data and sets size to zero.
  */
 void wst_mtxs_clear(WstMtxSym *a);
+
+
+#ifdef WST_MTX_SHORT_NAMES
+
+#define mtx_idx wst_mtx_idx
+#define mtxs_idx wst_mtxs_idx
+#define mtx_get wst_mtx_get
+#define mtxs_get wst_mtxs_get
+#define mtx_set wst_mtx_set
+#define mtxs_set wst_mtxs_set
+#define mtx_add wst_mtx_add
+#define mtxs_add wst_mtxs_add
+#define mtx_sub wst_mtx_sub
+#define mtxs_sub wst_mtxs_sub
+#define mtx_scale wst_mtx_scale
+#define mtxs_scale wst_mtxs_scale
+#define mtx_neg wst_mtx_neg
+#define mtxs_neg wst_mtxs_neg
+#define mtx_mul wst_mtx_mul
+#define mtxs_mul wst_mtxs_mul
+#define mtx_det wst_mtx_det
+#define mtx_dup wst_mtx_dup
+#define mtxs_dup wst_mtxs_dup
+#define mtx_create wst_mtx_create
+#define mtxs_create wst_mtxs_create
+#define mtx_clear wst_mtx_clear
+#define mtxs_clear wst_mtxs_clear
+
+#endif /* WST_MTX_SHORT_NAMES */
 
 #endif /* TOYS_MTX_H */

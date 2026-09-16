@@ -1,7 +1,12 @@
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE /* for memrchr */
+#endif
+
 #include "tests_common.h"
 
 #include "toys/string.h"
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -227,17 +232,162 @@ void test_strncmp(void)
 
 void test_strcat(void)
 {
+    static const struct {
+        const char *dest;
+        const char *src;
+        const char *result;
+    } cases[] = {
+        {
+            .dest = "Hello, ",
+            .src = "world!",
+            .result = "Hello, world!",
+        },
+        {
+            .dest = "",
+            .src = "abc",
+            .result = "abc",
+        },
+        {
+            .dest = "abc",
+            .src = "",
+            .result = "abc",
+        },
+        {
+            .dest = "",
+            .src = "",
+            .result = "",
+        },
+    };
 
+    for (size_t i = 0; i < ARR_LEN(cases); i++) {
+        char ret[strlen(cases[i].dest) + strlen(cases[i].src) + 1];
+        strcpy(ret, cases[i].dest);
+        wst_strcat(ret, cases[i].src);
+
+        if (strcmp(cases[i].result, ret) != 0)
+            FAIL("#%zu: strcat(%s, %s) -> %s, expected %s",
+                 i, cases[i].dest, cases[i].src, ret, cases[i].result);
+    }
 }
 
 void test_strchr(void)
 {
+    static const struct {
+        const char *str;
+        int c;
+    } cases[] = {
+        { .str = STRINGS_SET_0, .c = 'H' },
+        { .str = STRINGS_SET_0, .c = 'o' },
+        { .str = STRINGS_SET_0, .c = '!' },
+        { .str = STRINGS_SET_0, .c = '\0' },
+        { .str = STRINGS_SET_0, .c = 'z' },
+        { .str = "", .c = '\0' },
+        { .str = "", .c = 'a' },
+    };
 
+    for (size_t i = 0; i < ARR_LEN(cases); i++) {
+        char *wst_ret = wst_strchr(cases[i].str, cases[i].c);
+        const char *ret = strchr(cases[i].str, cases[i].c);
+        CHECK(wst_ret == ret, "#%zu: strchr(%s, %d): Got %p, expected %p",
+              i, cases[i].str, cases[i].c, (void *)wst_ret, (void *)ret);
+
+        char *wst_rret = wst_strrchr(cases[i].str, cases[i].c);
+        const char *rret = strrchr(cases[i].str, cases[i].c);
+        CHECK(wst_rret == rret, "#%zu: strrchr(%s, %d): Got %p, expected %p",
+              i, cases[i].str, cases[i].c, (void *)wst_rret, (void *)rret);
+    }
+}
+
+void test_memchr(void)
+{
+    static const struct {
+        const char *str;
+        int c;
+        size_t nbytes;
+    } cases[] = {
+        { .str = STRINGS_SET_0, .c = 'H', .nbytes = sizeof(STRINGS_SET_0) },
+        { .str = STRINGS_SET_0, .c = 'o', .nbytes = sizeof(STRINGS_SET_0) },
+        { .str = STRINGS_SET_0, .c = '\0', .nbytes = sizeof(STRINGS_SET_0) },
+        { .str = STRINGS_SET_0, .c = 'z', .nbytes = sizeof(STRINGS_SET_0) },
+        /* bounded search must not see past nbytes */
+        { .str = STRINGS_SET_0, .c = 'w', .nbytes = 5 },
+        { .str = STRINGS_SET_0, .c = 'H', .nbytes = 0 },
+    };
+
+    for (size_t i = 0; i < ARR_LEN(cases); i++) {
+        void *wst_ret = wst_memchr(cases[i].str, cases[i].c, cases[i].nbytes);
+        const void *ret = memchr(cases[i].str, cases[i].c, cases[i].nbytes);
+        CHECK(wst_ret == ret, "#%zu: memchr(%s, %d, %zu): Got %p, expected %p",
+              i, cases[i].str, cases[i].c, cases[i].nbytes, wst_ret, ret);
+
+        void *wst_rret = wst_memrchr(cases[i].str, cases[i].c, cases[i].nbytes);
+        void *rret = memrchr(cases[i].str, cases[i].c, cases[i].nbytes);
+        CHECK(wst_rret == rret, "#%zu: memrchr(%s, %d, %zu): Got %p, expected %p",
+              i, cases[i].str, cases[i].c, cases[i].nbytes, wst_rret, rret);
+    }
 }
 
 void test_strtok(void)
 {
+    static const struct {
+        const char *input;
+        const char *delim;
+        const char *expected[4];
+        size_t exp_count;
+    } cases[] = {
+        {
+            .input = "a,b,c",
+            .delim = ",",
+            .expected = { "a", "b", "c" },
+            .exp_count = 3,
+        },
+        {
+            /* leading/trailing/repeated delims are skipped */
+            .input = "  hello   world  ",
+            .delim = " ",
+            .expected = { "hello", "world" },
+            .exp_count = 2,
+        },
+        {
+            .input = "abc",
+            .delim = ",",
+            .expected = { "abc" },
+            .exp_count = 1,
+        },
+        {
+            .input = "",
+            .delim = ",",
+            .expected = { NULL },
+            .exp_count = 0,
+        },
+        {
+            /* string of only delimiters yields no tokens */
+            .input = ",,,",
+            .delim = ",",
+            .expected = { NULL },
+            .exp_count = 0,
+        },
+    };
 
+    for (size_t i = 0; i < ARR_LEN(cases); i++) {
+        char buf[64];
+        strcpy(buf, cases[i].input);
+
+        size_t count = 0;
+        bool ok = true;
+        char *tok = wst_strtok(buf, cases[i].delim);
+        for (; tok != NULL; tok = wst_strtok(NULL, cases[i].delim)) {
+            if (count >= cases[i].exp_count || strcmp(tok, cases[i].expected[count]) != 0) {
+                ok = false;
+                break;
+            }
+            count++;
+        }
+        if (!ok || count != cases[i].exp_count) {
+            FAIL("#%zu: strtok(%s, %s) -> %zu tokens, expected %zu",
+                 i, cases[i].input, cases[i].delim, count, cases[i].exp_count);
+        }
+    }
 }
 
 int main(void)
@@ -250,6 +400,7 @@ int main(void)
     test_strncmp();
     test_strcat();
     test_strchr();
+    test_memchr();
     test_strtok();
 
     return tests_summary();
