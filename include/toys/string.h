@@ -4,14 +4,6 @@
 #include <stddef.h>
 
 /**
- * Sort an array of strings lexicographically (using radix/bucket sort on bytes).
- *
- * @param[in,out] strings Array of `count` null-terminated strings to sort in place.
- * @param[in] count Number of strings in the array.
- */
-void wst_str_sort(const char *strings[], size_t count);
-
-/**
  * Calculate the length of a string.
  *
  * @param[in] str Pointer to the null-terminated string.

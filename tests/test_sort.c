@@ -241,7 +241,7 @@ static void test_sort_strings(void)
         test_sort_str(cases[i].input, cases[i].count, cases[i].expected,
                   wst_bsort, "bsort", i);
 
-        /* specialized bucket sort for strings*/
+        /* specialized bucket sort for strings */
         {
             LOG_D("Test string bucket #%zu", i + 1);
 
