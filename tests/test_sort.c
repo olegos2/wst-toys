@@ -88,7 +88,7 @@ static void test_sort_int(void)
     };
 
     for (size_t i = 0; i < ARR_LEN(cases); i++) {
-        LOG_D("Test int qsort #%zu", i + 1);
+        LOG_D("test int qsort #%zu", i + 1);
 
         int work[TEST_SORT_CAP] = { 0 };
         memcpy(work, cases[i].input, sizeof(work));
@@ -99,7 +99,7 @@ static void test_sort_int(void)
             print_ints(cases[i].expected, cases[i].count, "Expected");
         }
 
-        LOG_D("Test int bsort #%zu", i + 1);
+        LOG_D("test int bsort #%zu", i + 1);
 
         memcpy(work, cases[i].input, sizeof(work));
         wst_bsort(work, cases[i].count, sizeof(int), cmp_int);
@@ -133,7 +133,7 @@ static void test_sort_double(void)
     };
 
     for (size_t i = 0; i < ARR_LEN(cases); i++) {
-        LOG_D("Test double qsort #%zu", i + 1);
+        LOG_D("test double qsort #%zu", i + 1);
 
         double work[TEST_SORT_CAP] = { 0 };
         memcpy(work, cases[i].input, sizeof(work));
@@ -175,7 +175,7 @@ static void test_sort_str(const char *const *input, size_t count,
                           const char *const *expected, WstSortFunc sort,
                           const char *name, size_t test_idx)
 {
-    LOG_D("Test string %s #%zu", name, test_idx + 1);
+    LOG_D("test string %s #%zu", name, test_idx + 1);
 
     char *work[TEST_SORT_CAP] = { 0 };
     for (size_t istr = 0; istr < count; istr++)
@@ -243,7 +243,7 @@ static void test_sort_strings(void)
 
         /* specialized bucket sort for strings */
         {
-            LOG_D("Test string bucket #%zu", i + 1);
+            LOG_D("test string bucket #%zu", i + 1);
 
             const char *work[TEST_SORT_CAP] = { 0 };
             for (size_t j = 0; j < cases[i].count; j++)

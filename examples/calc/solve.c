@@ -122,7 +122,7 @@ static char *concat_args(int argc, char *argv[])
 
     char *expr = malloc(total);
     if (expr == NULL) {
-        LOG_E("Failed to allocate expression: %s", strerror(errno));
+        LOG_E("failed to allocate expression: %s", strerror(errno));
         return NULL;
     }
 
@@ -357,24 +357,24 @@ int main(int argc, char *argv[])
 
     if (!argparse_parse(&parser, argc, argv)) {
         fprintf(stderr, "%s, run '%s --help' for usage\n", parser.error, argv[0]);
-        return 1;
+        return EXIT_FAILURE;
     }
     if (help) {
         argparse_print_help(&parser);
         print_help_commands();
-        return 0;
+        return EXIT_SUCCESS;
     }
 
     if (cfg.verbose)
         wst_log_set_max_prio(WST_LOG_VERBOSE);
 
     if (!wst_log_open(debug_filename))
-        LOG_W("Failed to open log file for writing");
-    LOG_D("Started logger");
+        LOG_W("failed to open log file for writing");
+    LOG_D("started logger");
 
     if (command == NULL) {
         run_interactive(&cfg);
-        return 0;
+        return EXIT_SUCCESS;
     }
 
     if (strcmp(command, "solve") == 0)
@@ -385,5 +385,5 @@ int main(int argc, char *argv[])
         return run_gen(parser.nrest, parser.rest, &cfg);
 
     fprintf(stderr, "Unknown command '%s', run '%s --help' for usage\n", command, argv[0]);
-    return 1;
+    return EXIT_FAILURE;
 }

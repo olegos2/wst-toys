@@ -12,6 +12,7 @@
 
 /**
  * Sorts strings by char at position `pos` (using radix/bucket sort).
+ * Does not work with wide chars.
  *
  * Works by:
  * - counting occurencies of every possible byte in strings,

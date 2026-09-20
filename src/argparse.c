@@ -186,7 +186,7 @@ bool argparse_parse(ArgParser *p, int argc, char **argv)
             err_set(p, "unexpected argument %s", arg);
             return false;
         }
-        LOG_D("Got positional arg %s", arg);
+        LOG_D("got positional arg %s", arg);
         *(const char **)o->dest = arg;
         o->seen = true;
         npos_filled++;

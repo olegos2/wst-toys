@@ -120,7 +120,7 @@ bool wst_poly_integ(const WstPoly *restrict poly, WstPoly *restrict out)
     assert(poly != out);
 
     if (poly->degree < 0 || poly->degree > WST_POLY_MAX_DEGREE - 1) {
-        LOG_E("Cannot integrate poly degree %d", poly->degree);
+        LOG_E("cannot integrate poly degree %d", poly->degree);
         return false;
     }
 
