@@ -190,7 +190,11 @@ int main(int argc, char **argv)
     };
 
     if (!argparse_parse(&parser, argc, argv)) {
-        fprintf(stderr, "%s, run '%s --help' for usage\n", parser.error, argv[0]);
+        /* Check if help flag was parsed, even if other required args are missing. */
+        if (help)
+            argparse_print_help(&parser);
+        else
+            fprintf(stderr, "%s, run '%s --help' for usage\n", parser.error, argv[0]);
         return EXIT_FAILURE;
     }
 

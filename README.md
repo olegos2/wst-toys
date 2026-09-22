@@ -66,6 +66,6 @@ For build-system-less build:
 ```
 
 ```sh
-# Sort a poem in 2 ways, then catenate original contents to outputs
+# Sort a poem in 2 ways, then catenate original contents to output
 ./file_sort --verbose --logfile log.txt poem.txt output.txt
 ```

@@ -31,6 +31,12 @@ export CC=${CC:=gcc}
 export CXX=${CXX:=g++}
 export LD=${LD:=gcc}
 export AR=${AR:=ar}
+export CLAUNCHER=${CLAUNCHER:=ccache}
+
+if ! command -v "$CLAUNCHER" &>/dev/null; then
+    echo "Failed to find CLAUNCHER binary: $CLAUNCHER"
+    CLAUNCHER=""
+fi
 
 print_eval() {
     echo "$@"
@@ -42,7 +48,11 @@ my_cc() {
     for i in "${common_inc[@]}"; do
         args+=(-I"$i")
     done
-    print_eval "$CC" "${args[@]}" "$@"
+    if [[ -z $CLAUNCHER ]]; then
+        print_eval "$CC" "${args[@]}" "$@"
+    else
+        print_eval "$CLAUNCHER" "$CC" "${args[@]}" "$@"
+    fi
 }
 
 my_ld() {
@@ -63,8 +73,8 @@ build_archive() {
 
 build_solve() {
     declare -a solve_deps=(
-        libtoys_poly.a
-        libtoys_common.a
+        "$BUILD_DIR/libtoys_poly.a"
+        "$BUILD_DIR/libtoys_common.a"
     )
     declare -a solve_libs=(
         m
@@ -75,41 +85,66 @@ build_solve() {
         solve_deps+=(-l"$i")
     done
 
+    mkdir -p examples/calc &&
+    pushd examples/calc || return
+
     my_cc -c "$HOME_DIR/examples/calc/solve.c" -o calc_solve.o &&
     my_cc -c "$HOME_DIR/examples/calc/plot.c" -o calc_plot.o &&
-    my_ld calc_solve.o calc_plot.o "${solve_deps[@]}" -o toys_solve
+    my_ld calc_solve.o calc_plot.o "${solve_deps[@]}" -o toys_solve || {
+        popd
+        return 1
+    }
+
+    popd
 }
 
 build_file_sort() {
     declare -a file_sort_deps=(
-        libtoys_common.a
+        "$BUILD_DIR/libtoys_common.a"
     )
 
-    my_cc -c "$HOME_DIR/examples/file_sort.c" -o file_sort.o &&
-    my_ld file_sort.o "${file_sort_deps[@]}" -o file_sort
+    mkdir -p examples/file_sort &&
+    pushd examples/file_sort || return
+
+    my_cc -c "$HOME_DIR/examples/file_sort/file_sort.c" -o file_sort.o &&
+    my_cc -c "$HOME_DIR/examples/file_sort/line.c" -o line.o &&
+    my_ld file_sort.o line.o "${file_sort_deps[@]}" -o file_sort || {
+        popd
+        return 1
+    }
+
+    popd
 }
 
 build_tests() {
+    mkdir -p tests &&
+    pushd tests || return
+
     my_cc -c "$HOME_DIR/tests/test_argparse.c" -o test_argparse.o &&
-    my_ld test_argparse.o libtoys_common.a -o test_argparse &&
+    my_ld test_argparse.o "$BUILD_DIR/libtoys_common.a" -o test_argparse &&
 
     my_cc -c "$HOME_DIR/tests/test_ds.c" -o test_ds.o &&
-    my_ld test_ds.o libtoys_common.a -o test_ds &&
+    my_ld test_ds.o "$BUILD_DIR/libtoys_common.a" -o test_ds &&
 
     my_cc -c "$HOME_DIR/tests/test_expr.c" -o test_expr.o &&
-    my_ld test_expr.o libtoys_poly.a libtoys_common.a -lm -o test_expr &&
+    my_ld test_expr.o "$BUILD_DIR/libtoys_poly.a" "$BUILD_DIR/libtoys_common.a" -lm -o test_expr &&
 
     my_cc -c "$HOME_DIR/tests/test_mtx.c" -o test_mtx.o &&
-    my_ld test_mtx.o libtoys_common.a -o test_mtx &&
+    my_ld test_mtx.o "$BUILD_DIR/libtoys_common.a" -o test_mtx &&
 
     my_cc -c "$HOME_DIR/tests/test_poly.c" -o test_poly.o &&
-    my_ld test_poly.o libtoys_poly.a libtoys_common.a -lm -o test_poly &&
+    my_ld test_poly.o "$BUILD_DIR/libtoys_poly.a" "$BUILD_DIR/libtoys_common.a" -lm -o test_poly &&
 
     my_cc -c "$HOME_DIR/tests/test_sort.c" -o test_sort.o &&
-    my_ld test_sort.o libtoys_common.a -o test_sort &&
+    my_ld test_sort.o "$BUILD_DIR/libtoys_common.a" -o test_sort &&
 
     my_cc -c "$HOME_DIR/tests/test_string.c" -o test_string.o &&
-    my_ld test_string.o libtoys_common.a -o test_string
+    my_ld test_string.o "$BUILD_DIR/libtoys_common.a" -o test_string || {
+        popd
+        return 1
+    }
+
+    popd    
 }
 
 pushd "$BUILD_DIR" &&

@@ -34,7 +34,8 @@ pushd "$BUILD_DIR" &&
     "${common_flags[@]}" -o toys_solve &&
 "$CC" \
     "${common_src[@]}" \
-    "$HOME_DIR/examples/file_sort.c" \
+    "$HOME_DIR/examples/file_sort/line.c" \
+    "$HOME_DIR/examples/file_sort/file_sort.c" \
     "${common_flags[@]}" -o file_sort &&
 "$CC" \
     "${common_src[@]}" \

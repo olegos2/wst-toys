@@ -226,10 +226,15 @@ void argparse_print_help(const ArgParser *p)
 {
     assert(p != NULL);
 
-    printf("Usage: %s [options]", p->prog);
-    for (int i = 0; i < p->nopts; i++)
-        if (p->opts[i].type == ARG_POSITIONAL)
+    printf("Usage:\n  %s [OPTS..]", p->prog);
+    for (int i = 0; i < p->nopts; i++) {
+        if (p->opts[i].type != ARG_POSITIONAL)
+            continue;
+        if (p->opts[i].required)
             printf(" %s", p->opts[i].long_name);
+        else
+            printf(" [%s]", p->opts[i].long_name);
+    }
     printf("\n\nOptions:\n");
 
     char **labels;
