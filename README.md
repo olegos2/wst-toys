@@ -1,6 +1,8 @@
 # wst-toys
 
 C library for polynomial math: expression parsing, arithmetic, solving, calculus.
+Also has its own implementations of string ops, dynamically allocated matrices.
+Has common code for easier debugging and command line argument parsing.
 
 ## Dependencies
 
@@ -29,11 +31,14 @@ For build-system-less build:
 
 ## Library
 
-- `poly.h` — polynomial type, arithmetic (`add`/`sub`/`mul`/`scale`), `eval`, `deriv`, `integ`, `solve`
-- `expr.h` — parse math expressions or raw coefficients into polynomials
 - `argparse.h` — command line option parser
-- `ds.h` — dynamic array (stb-style)
 - `debug.h` — logging with priority levels
+- `ds.h` — dynamic array (stb-style)
+- `expr.h` — parse math expressions or raw coefficients into polynomials
+- `math.h` — internal implementations of `isnan`, `isinf`, `iszero` and other funcs
+- `poly.h` — polynomial type, arithmetic (`add`/`sub`/`mul`/`scale`), `eval`, `deriv`, `integ`, `solve`
+- `sort.h` — generic sorting functions `qsort`, `bsort` and ascii string sorting
+- `string.h` — internal implementations of string ops
 
 ## Example
 
@@ -58,4 +63,9 @@ For build-system-less build:
   "0.2 * x ^ 3 - x ^ 2 + 3" , \
   "-x" , \
   "(x + 5) ** 2 - 4"
+```
+
+```sh
+# Sort a poem in 2 ways, then catenate original contents to outputs
+./file_sort --verbose --logfile log.txt poem.txt output.txt
 ```

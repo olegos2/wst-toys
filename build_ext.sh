@@ -80,6 +80,15 @@ build_solve() {
     my_ld calc_solve.o calc_plot.o "${solve_deps[@]}" -o toys_solve
 }
 
+build_file_sort() {
+    declare -a file_sort_deps=(
+        libtoys_common.a
+    )
+
+    my_cc -c "$HOME_DIR/examples/file_sort.c" -o file_sort.o &&
+    my_ld file_sort.o "${file_sort_deps[@]}" -o file_sort
+}
+
 build_tests() {
     my_cc -c "$HOME_DIR/tests/test_argparse.c" -o test_argparse.o &&
     my_ld test_argparse.o libtoys_common.a -o test_argparse &&
@@ -115,6 +124,7 @@ build_archive src/poly libtoys_poly.a \
     expr \
     poly &&
 build_solve &&
+build_file_sort &&
 build_tests &&
 popd &&
 echo "Build finished"

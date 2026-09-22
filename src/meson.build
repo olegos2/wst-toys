@@ -3,7 +3,7 @@ toys_common_lib = static_library(
     'toys_common',
     sources: files(
         'argparse.c',
-            'debug.c',
+        'debug.c',
         'ds.c',
         'mtx.c',
         'sort.c',
