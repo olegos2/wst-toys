@@ -93,6 +93,27 @@ static void test_corrupt_length(void)
     CHECK(wst_stk_double_free(&s) == WST_STK_NO_ERR, "free ok");
 }
 
+static void test_corrupt_hash(void)
+{
+    WstStkDouble s = { 0 };
+    CHECK(wst_stk_double_push(&s, 1.0) == WST_STK_NO_ERR, "push");
+    CHECK(wst_stk_double_push(&s, 2.0) == WST_STK_NO_ERR, "push");
+    CHECK(wst_stk_double_push(&s, 3.0) == WST_STK_NO_ERR, "push");
+
+    s.length = 1;
+    CHECK(wst_stk_double_verify(&s) == WST_STK_ERR_CORRUPT, "in-bounds length fails");
+    double v = 0;
+    CHECK(wst_stk_double_pop(&s, &v) == WST_STK_ERR_CORRUPT, "pop refused when corrupt");
+
+    s.length = 3;
+    CHECK(wst_stk_double_verify(&s) == WST_STK_NO_ERR, "restored length verifies");
+
+    s.hash ^= 0xFF;
+    CHECK(wst_stk_double_verify(&s) == WST_STK_ERR_CORRUPT, "damaged hash fails");
+    CHECK(wst_stk_double_free(&s) == WST_STK_ERR_CORRUPT, "free reports corruption");
+    CHECK(s.data == NULL, "free still releases buffer");
+}
+
 static void test_int(void)
 {
     WstStkInt s = { 0 };
@@ -128,6 +149,7 @@ int main(void)
     test_reserve();
     test_corrupt_tail();
     test_corrupt_length();
+    test_corrupt_hash();
     test_int();
     test_err_str();
     return tests_summary();

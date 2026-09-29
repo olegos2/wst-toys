@@ -64,6 +64,10 @@ pushd "$BUILD_DIR" &&
     "${common_flags[@]}" -o test_sort &&
 "$CC" \
     "${common_src[@]}" \
+    "$HOME_DIR/tests/test_stk.c" \
+    "${common_flags[@]}" -o test_stk &&
+"$CC" \
+    "${common_src[@]}" \
     "$HOME_DIR/tests/test_string.c" \
     "${common_flags[@]}" -o test_string &&
 popd &&

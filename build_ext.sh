@@ -138,6 +138,9 @@ build_tests() {
     my_cc -c "$HOME_DIR/tests/test_sort.c" -o test_sort.o &&
     my_ld test_sort.o "$BUILD_DIR/libtoys_common.a" -o test_sort &&
 
+    my_cc -c "$HOME_DIR/tests/test_stk.c" -o test_stk.o &&
+    my_ld test_stk.o "$BUILD_DIR/libtoys_common.a" -o test_stk &&
+
     my_cc -c "$HOME_DIR/tests/test_string.c" -o test_string.o &&
     my_ld test_string.o "$BUILD_DIR/libtoys_common.a" -o test_string || {
         popd

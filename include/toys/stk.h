@@ -10,7 +10,7 @@ typedef enum {
     WST_STK_ERR_NOMEM,
     /** Pop from an empty stack. */
     WST_STK_ERR_EMPTY,
-    /** Tail canary or length/capacity invariant is damaged. */
+    /** Tail canary, struct hash, or length/capacity invariant is damaged. */
     WST_STK_ERR_CORRUPT,
     /** Requested capacity does not fit into size_t. */
     WST_STK_ERR_OVERFLOW,
