@@ -7,6 +7,8 @@ toys_hdrs = files(
     'mtx.h',
     'poly.h',
     'sort.h',
+    'stk_internal.h',
+    'stk.h',
     'string.h',
 )
 

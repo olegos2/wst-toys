@@ -87,3 +87,13 @@ test_sort = executable(
 
 test('sort', test_sort)
 
+test_stk = executable(
+    'test_stk',
+    'test_stk.c',
+    dependencies: [
+        toys_common_dep,
+    ],
+)
+
+test('stk', test_stk)
+

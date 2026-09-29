@@ -7,6 +7,7 @@ toys_common_lib = static_library(
         'ds.c',
         'mtx.c',
         'sort.c',
+        'stk.c',
         'string.c',
     ),
     include_directories: inc,
