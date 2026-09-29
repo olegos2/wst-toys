@@ -160,6 +160,7 @@ int wst_log_print(WstLogPrio prio, const char *fmt, ...)
 
 void wst_log_enable_color(WstLogColorMode mode)
 {
+    LOG_V("new mode: %d", mode);
     color_mode = mode;
 }
 

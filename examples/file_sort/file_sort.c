@@ -34,7 +34,6 @@ static bool read_file(const char *path, FileContent *out);
  */
 static bool setup_locale(void);
 
-
 /**
  * Sort previously read and decoded `lines` and write them to
  * previously opened file `out`.
@@ -43,37 +42,7 @@ static bool setup_locale(void);
  * @return `true` if everything was written, `false` on failure.
  */
 static bool write_sorted_output(FILE *out, WstLine *lines, size_t nlines,
-                                const FileContent *content)
-{
-    static const char *separator = "/* ----------------------------- */\n";
-
-    wst_qsort(lines, nlines, sizeof(*lines), cmp_letters_fwd);
-    if (!write_alpha_lines(out, lines, nlines) ||
-        fwrite(separator, 1, strlen(separator), out) != strlen(separator))
-    {
-        LOG_E("failed to write forward sorted lines");
-        return false;
-    }
-    LOG_I("wrote forward sorted lines");
-
-    wst_qsort(lines, nlines, sizeof(*lines), cmp_letters_rev);
-    if (!write_alpha_lines(out, lines, nlines) ||
-        fwrite(separator, 1, strlen(separator), out) != strlen(separator))
-    {
-        LOG_E("failed to write backward sorted lines");
-        return false;
-    }
-    LOG_I("wrote backward sorted lines");
-
-    if (content->size > 0 &&
-        fwrite(content->data, 1, content->size, out) != content->size)
-    {
-        LOG_E("failed to write original input contents to output");
-        return false;
-    }
-    LOG_I("catenated input to output");
-    return true;
-}
+                                const FileContent *content);
 
 
 /**
@@ -140,6 +109,7 @@ int main(int argc, char **argv)
     bool help = false;
     bool verbose = false;
     const char *debug_filename = NULL;
+    const char *debug_color = NULL;
     const char *in_path = NULL;
     /* NULL out_path maps to stdout */
     const char *out_path = NULL;
@@ -167,6 +137,13 @@ int main(int argc, char **argv)
             .short_name = "-l",
             .long_name = "--logfile",
             .description = "redirect log prints to a file path",
+        },
+        {
+            .type = ARG_STRING,
+            .dest = &debug_color,
+            .short_name = "-c",
+            .long_name = "--color",
+            .description = "set debug messages coloring mode (never, always, default: auto)",
         },
         {
             .type = ARG_POSITIONAL,
@@ -203,6 +180,13 @@ int main(int argc, char **argv)
         return EXIT_SUCCESS;
     }
 
+    if (debug_color != NULL) {
+        if (strcmp(debug_color, "always") == 0)
+            wst_log_enable_color(WST_LOG_COLOR_ON);
+        else if (strcmp(debug_color, "never") == 0)
+            wst_log_enable_color(WST_LOG_COLOR_OFF);
+    }
+
     if (verbose)
         wst_log_set_max_prio(WST_LOG_VERBOSE);
 
@@ -215,6 +199,39 @@ int main(int argc, char **argv)
     return run_file_sort(in_path, out_path);
 }
 
+                
+static bool write_sorted_output(FILE *out, WstLine *lines, size_t nlines,
+                                const FileContent *content)
+{
+    static const char *separator = "/* ----------------------------- */\n";
+
+    wst_qsort(lines, nlines, sizeof(*lines), cmp_letters_fwd);
+    if (!write_alpha_lines(out, lines, nlines) ||
+        fwrite(separator, 1, strlen(separator), out) != strlen(separator))
+    {
+        LOG_E("failed to write forward sorted lines");
+        return false;
+    }
+    LOG_I("wrote forward sorted lines");
+
+    wst_qsort(lines, nlines, sizeof(*lines), cmp_letters_rev);
+    if (!write_alpha_lines(out, lines, nlines) ||
+        fwrite(separator, 1, strlen(separator), out) != strlen(separator))
+    {
+        LOG_E("failed to write backward sorted lines");
+        return false;
+    }
+    LOG_I("wrote backward sorted lines");
+
+    if (content->size > 0 &&
+        fwrite(content->data, 1, content->size, out) != content->size)
+    {
+        LOG_E("failed to write original input contents to output");
+        return false;
+    }
+    LOG_I("catenated input to output");
+    return true;
+}
 
 
 static void free_file(FileContent *content)
