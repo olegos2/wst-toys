@@ -1,5 +1,5 @@
-#ifndef TOYS_DS_H
-#define TOYS_DS_H
+#ifndef TOYS_VECTOR_H
+#define TOYS_VECTOR_H
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -44,4 +44,4 @@ void *vec_reserve(void *arr, size_t entry_sz);
         } \
     } while (0)
 
-#endif /* TOYS_DS_H */
+#endif /* TOYS_VECTOR_H */

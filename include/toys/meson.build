@@ -1,7 +1,6 @@
 toys_hdrs = files(
     'argparse.h',
     'debug.h',
-    'ds.h',
     'expr.h',
     'math.h',
     'mtx.h',
@@ -10,6 +9,7 @@ toys_hdrs = files(
     'stk_internal.h',
     'stk.h',
     'string.h',
+    'vector.h',
 )
 
 install_headers(toys_hdrs, subdir: 'toys')

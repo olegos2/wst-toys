@@ -151,10 +151,11 @@ pushd "$BUILD_DIR" &&
 build_archive src libtoys_common.a \
     argparse \
     debug \
-    ds \
     mtx \
     sort \
-    string &&
+    stk \
+    string \
+    vector &&
 build_archive src/poly libtoys_poly.a \
     expr \
     poly &&

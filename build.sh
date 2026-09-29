@@ -11,10 +11,11 @@ declare -a common_src=(
     "$HOME_DIR/src/poly/poly.c"
     "$HOME_DIR/src/argparse.c"
     "$HOME_DIR/src/debug.c"
-    "$HOME_DIR/src/ds.c"
     "$HOME_DIR/src/mtx.c"
     "$HOME_DIR/src/sort.c"
+    "$HOME_DIR/src/stk.c"
     "$HOME_DIR/src/string.c"
+    "$HOME_DIR/src/vector.c"
 )
 
 # should add more flags?

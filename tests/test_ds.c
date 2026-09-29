@@ -1,6 +1,6 @@
 #include "tests_common.h"
 
-#include "toys/ds.h"
+#include "toys/vector.h"
 
 #include <stdbool.h>
 

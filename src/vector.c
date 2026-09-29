@@ -1,4 +1,4 @@
-#include "toys/ds.h"
+#include "toys/vector.h"
 
 #include <stdlib.h>
 
