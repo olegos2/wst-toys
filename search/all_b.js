@@ -1,15 +1,10 @@
 var searchData=
 [
-  ['label_0',['label',['../structPlotFontConfig.html#ad159b353d5c38e3d083e366857659d6c',1,'PlotFontConfig']]],
-  ['len_1',['len',['../structParser.html#ae805d2e9b15aa76aafbe83c663891f1e',1,'Parser']]],
-  ['length_2',['length',['../structWstStkVoid.html#aca16bc37cf2a17724f8488cb8b5d00bb',1,'WstStkVoid::length'],['../structSTK__T.html#ae7f490be29d4132b63e70854a476249b',1,'STK_T::length'],['../structVecHeader.html#a75090c537d8e421069668a00a114a1f4',1,'VecHeader::length']]],
-  ['line_2ec_3',['line.c',['../line_8c.html',1,'']]],
-  ['log_5fd_4',['LOG_D',['../debug_8h.html#a9aea793dae8e54bf6c50e83949b5ada2',1,'debug.h']]],
-  ['log_5fe_5',['LOG_E',['../debug_8h.html#ae2b262793fdae80c5af47d504132b96d',1,'debug.h']]],
-  ['log_5fi_6',['LOG_I',['../debug_8h.html#ac07e375659bd1852ae8b73bf8f973a32',1,'debug.h']]],
-  ['log_5fv_7',['LOG_V',['../debug_8h.html#a771183c36f9b89bc80e322a16baeb93d',1,'debug.h']]],
-  ['log_5fw_8',['LOG_W',['../debug_8h.html#a99c2d490f34937c5ca555c82096e93d0',1,'debug.h']]],
-  ['long_5fname_9',['long_name',['../structArgOption.html#a019b67e785ada86ab0043f4caa9d522c',1,'ArgOption']]],
-  ['lookahead_10',['lookahead',['../structParser.html#a4be829161a99b8e7fee6f63c466cf26a',1,'Parser']]],
-  ['low_5ffreq_11',['low_freq',['../structPlotAudioConfig.html#afcbc8a7ca65cc3b808b19791b67a6202',1,'PlotAudioConfig']]]
+  ['main_0',['main',['../solve_8c.html#a0ddf1224851353fc92bfbff6f499fa97',1,'main(int argc, char *argv[]):&#160;solve.c'],['../file__sort_8c.html#a3c04138a5bfe5d72780bb7e82a18e627',1,'main(int argc, char **argv):&#160;file_sort.c'],['../test__argparse_8c.html#a840291bc02cba5474a4cb46a9b9566fe',1,'main(void):&#160;test_argparse.c'],['../test__ds_8c.html#a840291bc02cba5474a4cb46a9b9566fe',1,'main(void):&#160;test_ds.c'],['../test__expr_8c.html#a840291bc02cba5474a4cb46a9b9566fe',1,'main(void):&#160;test_expr.c'],['../test__mtx_8c.html#a840291bc02cba5474a4cb46a9b9566fe',1,'main(void):&#160;test_mtx.c'],['../test__poly_8c.html#a840291bc02cba5474a4cb46a9b9566fe',1,'main(void):&#160;test_poly.c'],['../test__sort_8c.html#a840291bc02cba5474a4cb46a9b9566fe',1,'main(void):&#160;test_sort.c'],['../test__stk_8c.html#a840291bc02cba5474a4cb46a9b9566fe',1,'main(void):&#160;test_stk.c'],['../test__string_8c.html#a840291bc02cba5474a4cb46a9b9566fe',1,'main(void):&#160;test_string.c']]],
+  ['marks_5fstep_1',['marks_step',['../structPlotGridConfig.html#a4e2d27e67a912c4d4e188c3157ded956',1,'PlotGridConfig']]],
+  ['math_2eh_2',['math.h',['../math_8h.html',1,'']]],
+  ['mtx_2ec_3',['mtx.c',['../mtx_8c.html',1,'']]],
+  ['mtx_2eh_4',['mtx.h',['../mtx_8h.html',1,'']]],
+  ['mtxs_5flen_5',['MTXS_LEN',['../mtx_8c.html#ae0b1bc70532cff19cdc475c48d70c670',1,'mtx.c']]],
+  ['my_5fassert_6',['my_assert',['../debug_8h.html#a0b94a6bdccb3a5e3f3bbefbe7ebb5464',1,'debug.h']]]
 ];

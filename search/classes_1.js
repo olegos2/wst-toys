@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['argoption_0',['ArgOption',['../structArgOption.html',1,'']]],
-  ['argparser_1',['ArgParser',['../structArgParser.html',1,'']]],
-  ['audiosynth_2',['AudioSynth',['../structAudioSynth.html',1,'']]]
+  ['double_5frepr_0',['double_repr',['../uniondouble__repr.html',1,'']]]
 ];
