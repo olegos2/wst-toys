@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['wst_5fexpr_5fdegree_5fexceeded_0',['WST_EXPR_DEGREE_EXCEEDED',['../expr_8h.html#a1f58848482491d98b61e9a33022ce355ad633d436f50461ce43a85c828fe2d9f5',1,'expr.h']]],
+  ['wst_5fexpr_5fdiv_5ferr_1',['WST_EXPR_DIV_ERR',['../expr_8h.html#a1f58848482491d98b61e9a33022ce355a8b1b285589a5a258e62c9a4141184c24',1,'expr.h']]],
+  ['wst_5fexpr_5ffailed_5fto_5fparse_5fnumber_2',['WST_EXPR_FAILED_TO_PARSE_NUMBER',['../expr_8h.html#a1f58848482491d98b61e9a33022ce355acedf64a8a2d64de80f46a3b2c3447034',1,'expr.h']]],
+  ['wst_5fexpr_5fmissing_5frparen_3',['WST_EXPR_MISSING_RPAREN',['../expr_8h.html#a1f58848482491d98b61e9a33022ce355a65debda6ef9988aae3fc265836d2a3c3',1,'expr.h']]],
+  ['wst_5fexpr_5fno_5ferr_4',['WST_EXPR_NO_ERR',['../expr_8h.html#a1f58848482491d98b61e9a33022ce355ae51691a01f93d70fc0c4809ceba69140',1,'expr.h']]],
+  ['wst_5fexpr_5fnon_5finteger_5fpower_5',['WST_EXPR_NON_INTEGER_POWER',['../expr_8h.html#a1f58848482491d98b61e9a33022ce355a15a93fe1a79fd7ed179b6822198e32d1',1,'expr.h']]],
+  ['wst_5fexpr_5funexpected_5fatom_6',['WST_EXPR_UNEXPECTED_ATOM',['../expr_8h.html#a1f58848482491d98b61e9a33022ce355a9e145b2fd2a20992b42de5756ce4089e',1,'expr.h']]],
+  ['wst_5fexpr_5funexpected_5fchar_5fin_5fexpr_7',['WST_EXPR_UNEXPECTED_CHAR_IN_EXPR',['../expr_8h.html#a1f58848482491d98b61e9a33022ce355a7b67e55276eaeccfcb02f06e65722a77',1,'expr.h']]],
+  ['wst_5fexpr_5funexpected_5fchar_5fin_5fnum_8',['WST_EXPR_UNEXPECTED_CHAR_IN_NUM',['../expr_8h.html#a1f58848482491d98b61e9a33022ce355a0e75d6f7f1b940d4cdc25cc40cee88a6',1,'expr.h']]],
+  ['wst_5fexpr_5funexpected_5fend_5fof_5fexpr_9',['WST_EXPR_UNEXPECTED_END_OF_EXPR',['../expr_8h.html#a1f58848482491d98b61e9a33022ce355a07d6c1d14177b9719b5fb0c2538a4c84',1,'expr.h']]],
+  ['wst_5flog_5fcolor_5fauto_10',['WST_LOG_COLOR_AUTO',['../debug_8h.html#a7aaebccee51255a00e2865bb399311cba04de17af6a022395dc2677237ea6080f',1,'debug.h']]],
+  ['wst_5flog_5fcolor_5foff_11',['WST_LOG_COLOR_OFF',['../debug_8h.html#a7aaebccee51255a00e2865bb399311cbaa79d8728ec325aac7d4ed96bcc5d1e01',1,'debug.h']]],
+  ['wst_5flog_5fcolor_5fon_12',['WST_LOG_COLOR_ON',['../debug_8h.html#a7aaebccee51255a00e2865bb399311cba24f6a9f21476f2d70e8a2a27f7963437',1,'debug.h']]],
+  ['wst_5flog_5fdebug_13',['WST_LOG_DEBUG',['../debug_8h.html#a594178a93a82f2700efff6d291a91fefa3605431d5a7941643c15239feff51889',1,'debug.h']]],
+  ['wst_5flog_5ferror_14',['WST_LOG_ERROR',['../debug_8h.html#a594178a93a82f2700efff6d291a91fefaa0f351c485ac8f1f11e5ec00be74c064',1,'debug.h']]],
+  ['wst_5flog_5finfo_15',['WST_LOG_INFO',['../debug_8h.html#a594178a93a82f2700efff6d291a91fefabc279f90f775c9d172eb735d0108da80',1,'debug.h']]],
+  ['wst_5flog_5fverbose_16',['WST_LOG_VERBOSE',['../debug_8h.html#a594178a93a82f2700efff6d291a91fefa8fd1a63fc4b4c638fb5c82a7476b56bc',1,'debug.h']]],
+  ['wst_5flog_5fwarn_17',['WST_LOG_WARN',['../debug_8h.html#a594178a93a82f2700efff6d291a91fefa71cca32c9d7ea007e918bec171107f01',1,'debug.h']]],
+  ['wst_5fsolve_5ferr_18',['WST_SOLVE_ERR',['../poly_8h.html#a9a79525ed1796d466f3f2bbe7ff962dda7c9a1477f7e5e4256b4f1ea7bfe5e1ee',1,'poly.h']]],
+  ['wst_5fsolve_5finf_19',['WST_SOLVE_INF',['../poly_8h.html#a9a79525ed1796d466f3f2bbe7ff962ddad436c36c75617e51f5a446393944d4e9',1,'poly.h']]],
+  ['wst_5fstk_5ferr_5fcorrupt_20',['WST_STK_ERR_CORRUPT',['../stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aaee0e6e32f7f138aba85f8319b2b95bcf',1,'stk_internal.h']]],
+  ['wst_5fstk_5ferr_5fempty_21',['WST_STK_ERR_EMPTY',['../stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aa9e3c618efda1a1e0e9b743cf2b841e17',1,'stk_internal.h']]],
+  ['wst_5fstk_5ferr_5fnomem_22',['WST_STK_ERR_NOMEM',['../stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aa93683b7d5a51536477744a8f5121da86',1,'stk_internal.h']]],
+  ['wst_5fstk_5ferr_5foverflow_23',['WST_STK_ERR_OVERFLOW',['../stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aaef7f0751739ffcce3a3c5ac546d54272',1,'stk_internal.h']]],
+  ['wst_5fstk_5fno_5ferr_24',['WST_STK_NO_ERR',['../stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aafc454d952e2c0236bdf1c55b97d29eb0',1,'stk_internal.h']]]
+];

@@ -1,0 +1,28 @@
+var annotated_dup =
+[
+    [ "ArgOption", "structArgOption.html", "structArgOption" ],
+    [ "ArgParser", "structArgParser.html", "structArgParser" ],
+    [ "AudioSynth", "structAudioSynth.html", "structAudioSynth" ],
+    [ "double_repr", "uniondouble__repr.html", "uniondouble__repr" ],
+    [ "FileContent", "structFileContent.html", "structFileContent" ],
+    [ "Parser", "structParser.html", "structParser" ],
+    [ "PlotAudioConfig", "structPlotAudioConfig.html", "structPlotAudioConfig" ],
+    [ "PlotConfig", "structPlotConfig.html", "structPlotConfig" ],
+    [ "PlotFont", "structPlotFont.html", "structPlotFont" ],
+    [ "PlotFontConfig", "structPlotFontConfig.html", "structPlotFontConfig" ],
+    [ "PlotGridConfig", "structPlotGridConfig.html", "structPlotGridConfig" ],
+    [ "PlotRect", "structPlotRect.html", "structPlotRect" ],
+    [ "PlotWindowConfig", "structPlotWindowConfig.html", "structPlotWindowConfig" ],
+    [ "SolveConfig", "structSolveConfig.html", "structSolveConfig" ],
+    [ "STK_T", "structSTK__T.html", "structSTK__T" ],
+    [ "StkBig", "structStkBig.html", "structStkBig" ],
+    [ "StringPosition", "structStringPosition.html", "structStringPosition" ],
+    [ "Token", "structToken.html", "structToken" ],
+    [ "VecHeader", "structVecHeader.html", "structVecHeader" ],
+    [ "WstLine", "structWstLine.html", "structWstLine" ],
+    [ "WstMtx", "structWstMtx.html", "structWstMtx" ],
+    [ "WstMtxSym", "structWstMtxSym.html", "structWstMtxSym" ],
+    [ "WstPoly", "structWstPoly.html", "structWstPoly" ],
+    [ "WstSolution", "structWstSolution.html", "structWstSolution" ],
+    [ "WstStkVoid", "structWstStkVoid.html", "structWstStkVoid" ]
+];
