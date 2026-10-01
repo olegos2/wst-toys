@@ -6,6 +6,19 @@
 
 #define STK_TEST_N 100
 
+typedef struct {
+    int id;
+    char payload[128];
+} StkBig;
+
+#define STK_ELEM StkBig
+#define STK_T WstStkBig
+#define STK_F(name) wst_stk_test_big_ ## name
+#define STK_REF
+#define STK_IMPL
+#include "toys/stk_internal.h"
+#undef STK_IMPL
+
 static void test_double_lifo(void)
 {
     WstStkDouble s = { 0 };
@@ -74,8 +87,10 @@ static void test_corrupt_tail(void)
     CHECK(wst_stk_double_verify(&s) == WST_STK_NO_ERR, "restored tail verifies");
 
     tail[0] ^= 0xFF;
-    CHECK(wst_stk_double_free(&s) == WST_STK_ERR_CORRUPT, "free reports corruption");
-    CHECK(s.data == NULL, "free still releases buffer");
+    CHECK(wst_stk_double_free(&s) == WST_STK_ERR_CORRUPT, "free refuses corruption");
+    CHECK(s.data != NULL && s.length == 1, "refused free touches nothing");
+    tail[0] = saved;
+    CHECK(wst_stk_double_free(&s) == WST_STK_NO_ERR, "free ok after restore");
 }
 
 static void test_corrupt_length(void)
@@ -111,8 +126,10 @@ static void test_corrupt_hash(void)
 
     s.hash ^= 0xFF;
     CHECK(wst_stk_double_verify(&s) == WST_STK_ERR_CORRUPT, "damaged hash fails");
-    CHECK(wst_stk_double_free(&s) == WST_STK_ERR_CORRUPT, "free reports corruption");
-    CHECK(s.data == NULL, "free still releases buffer");
+    CHECK(wst_stk_double_free(&s) == WST_STK_ERR_CORRUPT, "free refuses corruption");
+    CHECK(s.data != NULL, "refused free touches nothing");
+    s.hash ^= 0xFF;
+    CHECK(wst_stk_double_free(&s) == WST_STK_NO_ERR, "free ok after restore");
 }
 
 static void test_init(void)
@@ -136,9 +153,11 @@ static void test_init(void)
     unsigned char *tail = (unsigned char *)s.data + s.cap * sizeof(double);
     tail[0] ^= 0xFF;
     CHECK(wst_stk_double_init(&s, 16) == WST_STK_ERR_CORRUPT, "init reports prior damage");
-    CHECK(s.data == NULL && s.length == 0 && s.cap == 0, "failed init leaves empty stack");
-    CHECK(wst_stk_double_verify(&s) == WST_STK_NO_ERR, "failed init verifies");
-    CHECK(wst_stk_double_push(&s, 7.0) == WST_STK_NO_ERR, "stack usable after failed init");
+    CHECK(s.length == 1, "refused init touches nothing");
+    CHECK(wst_stk_double_verify(&s) == WST_STK_ERR_CORRUPT, "still corrupt");
+    tail[0] ^= 0xFF;
+    CHECK(wst_stk_double_init(&s, 16) == WST_STK_NO_ERR, "init ok after restore");
+    CHECK(s.length == 0 && s.cap >= 16, "init drops data and grows");
 
     CHECK(wst_stk_double_free(&s) == WST_STK_NO_ERR, "free ok");
 }
@@ -161,6 +180,31 @@ static void test_int(void)
     CHECK(wst_stk_int_free(&s) == WST_STK_NO_ERR, "free ok");
 }
 
+static void test_big(void)
+{
+    WstStkBig s = { 0 };
+    CHECK(wst_stk_test_big_init(&s, 4) == WST_STK_NO_ERR, "big init");
+    CHECK(wst_stk_test_big_verify(&s) == WST_STK_NO_ERR, "big verifies");
+
+    for (int i = 0; i < 10; i++) {
+        StkBig v = { .id = i };
+        memset(v.payload, i, sizeof(v.payload));
+        CHECK(wst_stk_test_big_push(&s, &v) == WST_STK_NO_ERR, "big push %d", i);
+    }
+    CHECK(s.length == 10, "big len");
+
+    bool ok = true;
+    for (int i = 9; i >= 0; i--) {
+        StkBig v = { 0 };
+        if (wst_stk_test_big_pop(&s, &v) != WST_STK_NO_ERR || v.id != i)
+            ok = false;
+        for (size_t k = 0; k < sizeof(v.payload); k++)
+            ok = ok && v.payload[k] == (char)i;
+    }
+    CHECK(ok, "big lifo and payload intact");
+    CHECK(wst_stk_test_big_free(&s) == WST_STK_NO_ERR, "big free");
+}
+
 static void test_err_str(void)
 {
     WstStkErr codes[] = {
@@ -173,7 +217,9 @@ static void test_err_str(void)
 }
 
 int main(void)
-{
+{   
+    wst_log_set_max_prio(WST_LOG_VERBOSE);
+
     test_double_lifo();
     test_init();
     test_reserve();
@@ -181,6 +227,7 @@ int main(void)
     test_corrupt_length();
     test_corrupt_hash();
     test_int();
+    test_big();
     test_err_str();
     return tests_summary();
 }

@@ -59,8 +59,9 @@ Stacks are stamped per element type from one shared implementation, so they
 stay fully type-safe without macro-written bodies. Every operation verifies
 the stack first: length/capacity invariants, an 8-byte canary tail after the
 buffer, and a checksum over the struct fields. Failures are reported with
-`WstStkErr` (`NOMEM`/`EMPTY`/`CORRUPT`/`OVERFLOW`, see `wst_stk_err_str`)
-and never leave a half-mutated stack behind.
+`WstStkErr` (`NOMEM`/`EMPTY`/`CORRUPT`/`OVERFLOW`, see `wst_stk_err_str`).
+A refused operation never mutates the stack — not even `free`, since a
+damaged data pointer can't be trusted.
 
 ```c
 #include "toys/stk.h"
@@ -77,6 +78,10 @@ wst_stk_double_verify(&s);      // explicit check, also runs inside every op
 wst_stk_double_reserve(&s, 64);
 wst_stk_double_free(&s);        // frees stack, zeroes the struct, safe to call twice
 ```
+
+Large elements avoid by-value copies: stamp with `STK_REF` defined and
+`push` takes a pointer instead (`pop` already does) — see `test_stk.c`
+for a stamped example.
 
 ## Tests
 

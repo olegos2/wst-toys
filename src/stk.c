@@ -3,15 +3,18 @@
 #include "toys/stk.h"
 
 
+/** Stack canary data bytes. */
 static const unsigned char stk_canary[STK_CANARY_SIZE] = {
     0xDE, 0xAD, 0xBE, 0xEF, 0xCA, 0xFE, 0xBA, 0xBE,
 };
 
+/** Get pointer to first byte beyond current stack effective capacity. */
 static unsigned char *stk_tail(const WstStkVoid *stk, size_t elem_size)
 {
     return (unsigned char *)stk->data + stk->cap * elem_size;
 }
 
+/** Write canary to stack tail. */
 static void stk_write_canary(WstStkVoid *stk, size_t elem_size)
 {
     memcpy(stk_tail(stk, elem_size), stk_canary, STK_CANARY_SIZE);
@@ -26,6 +29,7 @@ static unsigned long stk_hash_bytes(unsigned long hash, const void *data, size_t
     return hash;
 }
 
+/** Compute djb2 hash over stack struct. */
 static unsigned long stk_compute_hash(const WstStkVoid *stk)
 {
     unsigned long hash = 5381;
@@ -35,6 +39,7 @@ static unsigned long stk_compute_hash(const WstStkVoid *stk)
     return hash;
 }
 
+/** Recompute and save stack hash. */
 void wst_stk_void_seal(WstStkVoid *stk)
 {
     stk->hash = stk_compute_hash(stk);
@@ -55,8 +60,10 @@ WstStkErr wst_stk_void_verify(const WstStkVoid *stk, size_t elem_size)
             LOG_E("null buffer with capacity %zu", stk->cap);
             return WST_STK_ERR_CORRUPT;
         }
+
         if (stk->hash == 0)
-            return WST_STK_NO_ERR; /* fresh zero state: a real seal is never zero */
+            return WST_STK_NO_ERR; /* fresh zero state, a real seal is never zero */
+
         if (stk->hash != stk_compute_hash(stk)) {
             LOG_E("checksum mismatch on empty stack");
             return WST_STK_ERR_CORRUPT;
@@ -84,6 +91,9 @@ WstStkErr wst_stk_void_free(WstStkVoid *stk, size_t elem_size)
     assert(stk != NULL);
 
     WstStkErr err = wst_stk_void_verify(stk, elem_size);
+    if (err != WST_STK_NO_ERR)
+        return err;
+
     free(stk->data);
     stk->data = NULL;
     stk->length = 0;
