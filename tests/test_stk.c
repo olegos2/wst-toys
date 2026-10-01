@@ -9,7 +9,8 @@
 static void test_double_lifo(void)
 {
     WstStkDouble s = { 0 };
-    CHECK(wst_stk_double_init(&s) == WST_STK_NO_ERR, "init ok");
+    CHECK(wst_stk_double_init(&s, 16) == WST_STK_NO_ERR, "init ok");
+    CHECK(s.length == 0 && s.cap >= 16, "init preallocates");
     CHECK(wst_stk_double_verify(&s) == WST_STK_NO_ERR, "empty verifies");
 
     for (int i = 0; i < STK_TEST_N; i++)
@@ -114,10 +115,38 @@ static void test_corrupt_hash(void)
     CHECK(s.data == NULL, "free still releases buffer");
 }
 
+static void test_init(void)
+{
+    WstStkDouble s = { 0 };
+    CHECK(wst_stk_double_init(&s, 32) == WST_STK_NO_ERR, "init reserves");
+    CHECK(s.length == 0 && s.cap >= 32, "init leaves empty stack with cap");
+    CHECK(wst_stk_double_verify(&s) == WST_STK_NO_ERR, "init verifies");
+
+    CHECK(wst_stk_double_push(&s, 1.0) == WST_STK_NO_ERR, "push");
+    CHECK(wst_stk_double_push(&s, 2.0) == WST_STK_NO_ERR, "push");
+    CHECK(wst_stk_double_init(&s, 64) == WST_STK_NO_ERR, "reinit ok");
+    CHECK(s.length == 0 && s.cap >= 64, "reinit drops data and grows");
+    CHECK(wst_stk_double_verify(&s) == WST_STK_NO_ERR, "reinit verifies");
+
+    double v = 0;
+    CHECK(wst_stk_double_push(&s, 5.0) == WST_STK_NO_ERR, "push after reinit");
+    CHECK(wst_stk_double_pop(&s, &v) == WST_STK_NO_ERR && my_iszero(v - 5.0), "old data gone");
+
+    CHECK(wst_stk_double_push(&s, 6.0) == WST_STK_NO_ERR, "push");
+    unsigned char *tail = (unsigned char *)s.data + s.cap * sizeof(double);
+    tail[0] ^= 0xFF;
+    CHECK(wst_stk_double_init(&s, 16) == WST_STK_ERR_CORRUPT, "init reports prior damage");
+    CHECK(s.data == NULL && s.length == 0 && s.cap == 0, "failed init leaves empty stack");
+    CHECK(wst_stk_double_verify(&s) == WST_STK_NO_ERR, "failed init verifies");
+    CHECK(wst_stk_double_push(&s, 7.0) == WST_STK_NO_ERR, "stack usable after failed init");
+
+    CHECK(wst_stk_double_free(&s) == WST_STK_NO_ERR, "free ok");
+}
+
 static void test_int(void)
 {
     WstStkInt s = { 0 };
-    CHECK(wst_stk_int_init(&s) == WST_STK_NO_ERR, "init ok");
+    CHECK(wst_stk_int_init(&s, 0) == WST_STK_NO_ERR, "init ok");
 
     for (int i = 0; i < 20; i++)
         CHECK(wst_stk_int_push(&s, i * 3) == WST_STK_NO_ERR, "push %d", i);
@@ -146,6 +175,7 @@ static void test_err_str(void)
 int main(void)
 {
     test_double_lifo();
+    test_init();
     test_reserve();
     test_corrupt_tail();
     test_corrupt_length();

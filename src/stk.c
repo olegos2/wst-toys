@@ -19,6 +19,7 @@ static void stk_write_canary(WstStkVoid *stk, size_t elem_size)
 
 static unsigned long stk_hash_bytes(unsigned long hash, const void *data, size_t n)
 {
+    /* djb2 */
     const unsigned char *bytes = data;
     for (size_t i = 0; i < n; i++)
         hash = hash * 33 + bytes[i];
@@ -94,14 +95,21 @@ WstStkErr wst_stk_void_free(WstStkVoid *stk, size_t elem_size)
     return err;
 }
 
-WstStkErr wst_stk_void_init(WstStkVoid *stk, size_t elem_size)
+WstStkErr wst_stk_void_init(WstStkVoid *stk, size_t elem_size, size_t count)
 {
     assert(stk != NULL);
 
     WstStkErr err = wst_stk_void_free(stk, elem_size);
-    LOG_D("initialized stack");
+    if (err != WST_STK_NO_ERR)
+        return err;
 
-    return err;
+    err = wst_stk_void_reserve(stk, count, elem_size);
+    if (err != WST_STK_NO_ERR)
+        return err;
+
+    LOG_D("initialized stack with capacity %zu", stk->cap);
+
+    return WST_STK_NO_ERR;
 }
 
 WstStkErr wst_stk_void_reserve(WstStkVoid *stk, size_t count, size_t elem_size)

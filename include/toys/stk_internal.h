@@ -41,8 +41,8 @@ WstStkErr wst_stk_void_verify(const WstStkVoid *stk, size_t elem_size);
 /** Free the buffer and zero out the struct, reports prior damage. */
 WstStkErr wst_stk_void_free(WstStkVoid *stk, size_t elem_size);
 
-/** Drop any previous data, reset to empty. */
-WstStkErr wst_stk_void_init(WstStkVoid *stk, size_t elem_size);
+/** Reset to empty and reserve `count` elements, reports prior damage. */
+WstStkErr wst_stk_void_init(WstStkVoid *stk, size_t elem_size, size_t count);
 
 /** Grow so the stack holds at least `count` elements. */
 WstStkErr wst_stk_void_reserve(WstStkVoid *stk, size_t count, size_t elem_size);
@@ -91,8 +91,8 @@ typedef struct {
 /** Free the stack buffer and zero out length/capacity. */
 WstStkErr stk_free(STK_T *stk);
 
-/** Drop any previous data, reset the stack to empty. */
-WstStkErr stk_init(STK_T *stk);
+/** Drop any previous data, reset to empty and preallocate `count` elements. */
+WstStkErr stk_init(STK_T *stk, size_t count);
 
 /**
  * Grow the stack so it holds at least `count` elements in total.
@@ -130,10 +130,10 @@ WstStkErr stk_free(STK_T *stk)
     return wst_stk_void_free((WstStkVoid *)stk, sizeof(STK_ELEM));
 }
 
-WstStkErr stk_init(STK_T *stk)
+WstStkErr stk_init(STK_T *stk, size_t count)
 {
     assert(stk != NULL);
-    return wst_stk_void_init((WstStkVoid *)stk, sizeof(STK_ELEM));
+    return wst_stk_void_init((WstStkVoid *)stk, sizeof(STK_ELEM), count);
 }
 
 WstStkErr stk_reserve(STK_T *stk, size_t count)
@@ -179,16 +179,16 @@ WstStkErr stk_pop(STK_T *stk, STK_ELEM *out)
     WstStkErr err = stk_verify(stk);
     if (err != WST_STK_NO_ERR)
         return err;
+
     if (stk->length == 0) {
         LOG_E("pop from an empty stack");
         return WST_STK_ERR_EMPTY;
     }
 
-    STK_ELEM value = stk->data[--stk->length];
     if (out != NULL)
-        *out = value;
+        *out = stk->data[--stk->length];
     wst_stk_void_seal((WstStkVoid *)stk);
-    LOG_V("pop " STK_FMT ", length %zu", value, stk->length);
+    LOG_V("pop " STK_FMT ", length %zu", *out, stk->length);
     return WST_STK_NO_ERR;
 }
 
