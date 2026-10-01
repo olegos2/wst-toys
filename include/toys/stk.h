@@ -1,3 +1,16 @@
+/**
+ * @file
+ * Type-safe stacks with integrity verification.
+ *
+ * Stamps the template in `stk_internal.h` once per element type. Each
+ * stamp produces a struct plus `init`/`free`/`reserve`/`push`/`pop`/`verify`
+ * under a per-type prefix. Provided stamps:
+ * - `double`: `WstStkDouble`, `wst_stk_double_*`
+ * - `int`: `WstStkInt`, `wst_stk_int_*`
+ *
+ * Every operation verifies length/capacity invariants, an 8-byte canary
+ * tail after the buffer and a struct checksum, reporting `WstStkErr`.
+ */
 #ifndef TOYS_STK_H
 #define TOYS_STK_H
 

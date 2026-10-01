@@ -5,6 +5,9 @@ solving, calculus), dense matrices, sorting, type-safe stacks, a dynamic
 array, and its own libc-style string ops. All comes with shared logging and CLI
 parsing infrastructure, with tests and examples.
 
+API docs (doxygen, rebuilt automatically on every push to `main`):
+<https://olegos2.github.io/wst-toys/>
+
 ## Dependencies
 
 - C compiler, `meson >= 1.1.0`, `ninja`

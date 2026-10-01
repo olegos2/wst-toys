@@ -1,0 +1,36 @@
+name: docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Doxyfile'
+      - 'include/**'
+      - 'src/**'
+      - 'examples/**'
+      - 'tests/**'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install doxygen
+        run: sudo apt-get update -q && sudo apt-get install -y -q doxygen
+
+      - name: Build docs
+        run: doxygen Doxyfile
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./docs/html
+          commit_message: Render doxygen docs (${{ github.sha }})
