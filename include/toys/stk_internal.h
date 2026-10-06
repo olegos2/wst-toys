@@ -37,11 +37,24 @@
 #  endif
 #endif
 
+#if !defined(STK_USE_CONTENT_HASH)
+#  ifdef WST_DEBUG
+#    define STK_USE_CONTENT_HASH 1
+#  else
+#    define STK_USE_CONTENT_HASH 0
+#  endif
+#endif
+/* Content hashing extends the struct checksum, inert without STK_USE_HASH. */
+
 #if STK_USE_CANARY
+#  define STK_HEAD_SIZE STK_CANARY_SIZE
 #  define STK_TAIL_SIZE STK_CANARY_SIZE
 #else
+#  define STK_HEAD_SIZE 0
 #  define STK_TAIL_SIZE 0
 #endif
+
+#define STK_CANARY_TOTAL (STK_HEAD_SIZE + STK_TAIL_SIZE)
 
 
 /**
@@ -95,7 +108,7 @@ WstStkErr wst_stk_void_init(WstStkVoid *stk, size_t elem_size, size_t count);
 WstStkErr wst_stk_void_reserve(WstStkVoid *stk, size_t count, size_t elem_size);
 
 /** Recompute the stored checksum after a mutation. */
-void wst_stk_void_seal(WstStkVoid *stk);
+void wst_stk_void_seal(WstStkVoid *stk, size_t elem_size);
 
 /** Dump struct fields, checksum pair, canary and buffer contents to stderr. */
 void wst_stk_void_dump(const WstStkVoid *stk, size_t elem_size, const char *st_name);
@@ -215,7 +228,7 @@ static WstStkErr stk_prepare_push(STK_T *stk)
     if (err != WST_STK_NO_ERR || stk->length < stk->cap)
         return err;
 
-    size_t limit = (SIZE_MAX - STK_CANARY_SIZE) / sizeof(STK_ELEM);
+    size_t limit = (SIZE_MAX - STK_CANARY_TOTAL) / sizeof(STK_ELEM);
     size_t cap = (stk->cap == 0) ? STK_INIT_CAP : stk->cap * 2;
     if (cap < stk->cap || cap > limit)
         cap = limit;
@@ -242,7 +255,7 @@ WstStkErr stk_push(STK_T *stk, const STK_ELEM *value)
         return err;
 
     stk->data[stk->length++] = *value;
-    wst_stk_void_seal((WstStkVoid *)stk);
+    wst_stk_void_seal((WstStkVoid *)stk, sizeof(STK_ELEM));
     LOG_V("push [%p], length %zu", (const void *)value, stk->length);
     return WST_STK_NO_ERR;
 }
@@ -256,7 +269,7 @@ WstStkErr stk_push(STK_T *stk, STK_ELEM value)
         return err;
 
     stk->data[stk->length++] = value;
-    wst_stk_void_seal((WstStkVoid *)stk);
+    wst_stk_void_seal((WstStkVoid *)stk, sizeof(STK_ELEM));
     LOG_V("push " STK_FMT ", length %zu", value, stk->length);
     return WST_STK_NO_ERR;
 }
@@ -282,7 +295,7 @@ WstStkErr stk_pop(STK_T *stk, STK_ELEM *out)
     stk->length--;
     if (out != NULL)
         *out = stk->data[stk->length];
-    wst_stk_void_seal((WstStkVoid *)stk);
+    wst_stk_void_seal((WstStkVoid *)stk, sizeof(STK_ELEM));
     LOG_V("pop [%p], length %zu", (const void *)out, stk->length);
 
 #else /* !STK_REF */
@@ -290,7 +303,7 @@ WstStkErr stk_pop(STK_T *stk, STK_ELEM *out)
     STK_ELEM value = stk->data[--stk->length];
     if (out != NULL)
         *out = value;
-    wst_stk_void_seal((WstStkVoid *)stk);
+    wst_stk_void_seal((WstStkVoid *)stk, sizeof(STK_ELEM));
     LOG_V("pop " STK_FMT ", length %zu", value, stk->length);
 
 #endif /* !STK_REF */

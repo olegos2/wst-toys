@@ -97,6 +97,28 @@ static void test_corrupt_tail(void)
 #endif
 }
 
+static void test_corrupt_front(void)
+{
+#if STK_USE_CANARY
+    WstStkDouble s = { 0 };
+    CHECK(wst_stk_double_push(&s, 1.0) == WST_STK_NO_ERR, "push");
+    CHECK(wst_stk_double_verify(&s) == WST_STK_NO_ERR, "intact verifies");
+
+    unsigned char *front = (unsigned char *)s.data - STK_CANARY_SIZE;
+    unsigned char saved = front[0];
+    front[0] ^= 0xFF;
+
+    wst_stk_double_dump(&s);
+    CHECK(wst_stk_double_verify(&s) == WST_STK_ERR_CORRUPT, "damaged front fails verify");
+    CHECK(wst_stk_double_push(&s, 2.0) == WST_STK_ERR_CORRUPT, "push refused when corrupt");
+    CHECK(s.length == 1, "refused push keeps length");
+
+    front[0] = saved;
+    CHECK(wst_stk_double_verify(&s) == WST_STK_NO_ERR, "restored front verifies");
+    CHECK(wst_stk_double_free(&s) == WST_STK_NO_ERR, "free ok after restore");
+#endif
+}
+
 static void test_corrupt_length(void)
 {
     WstStkDouble s = { 0 };
@@ -137,6 +159,26 @@ static void test_corrupt_hash(void)
     CHECK(wst_stk_double_free(&s) == WST_STK_ERR_CORRUPT, "free refuses corruption");
     CHECK(s.data != NULL, "refused free touches nothing");
     s.hash ^= 0xFF;
+    CHECK(wst_stk_double_free(&s) == WST_STK_NO_ERR, "free ok after restore");
+#endif
+}
+
+static void test_corrupt_content(void)
+{
+#if STK_USE_CONTENT_HASH && STK_USE_HASH
+    WstStkDouble s = { 0 };
+    CHECK(wst_stk_double_push(&s, 1.0) == WST_STK_NO_ERR, "push");
+    CHECK(wst_stk_double_push(&s, 2.0) == WST_STK_NO_ERR, "push");
+
+    ((unsigned char *)s.data)[0] ^= 0xFF;
+
+    wst_stk_double_dump(&s);
+    CHECK(wst_stk_double_verify(&s) == WST_STK_ERR_CORRUPT, "damaged content fails verify");
+    double v = 0;
+    CHECK(wst_stk_double_pop(&s, &v) == WST_STK_ERR_CORRUPT, "pop refused when corrupt");
+
+    ((unsigned char *)s.data)[0] ^= 0xFF;
+    CHECK(wst_stk_double_verify(&s) == WST_STK_NO_ERR, "restored content verifies");
     CHECK(wst_stk_double_free(&s) == WST_STK_NO_ERR, "free ok after restore");
 #endif
 }
@@ -246,8 +288,10 @@ int main(void)
     test_init();
     test_reserve();
     test_corrupt_tail();
+    test_corrupt_front();
     test_corrupt_length();
     test_corrupt_hash();
+    test_corrupt_content();
     test_int();
     test_big();
     test_verify_graceful();

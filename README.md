@@ -1,73 +1,74 @@
 # wst-toys
 
-C library and playground: polynomial math (expression parsing, arithmetic,
-solving, calculus), dense matrices, sorting, type-safe stacks, a dynamic
-array, and its own libc-style string ops. All comes with shared logging and CLI
-parsing infrastructure, with tests and examples.
+Small C library and playground. It has polynomial math, matrices,
+sorting, type-safe stacks, a dynamic array and its own string functions.
+Everything shares the same logging and command line parsing code. Tests
+and examples are included.
 
-API docs (doxygen, rebuilt automatically on every push to `main`):
+API docs (doxygen, rebuilt on every push to `main`):
 <https://olegos2.github.io/wst-toys/>
 
-## Dependencies
+## What you need
 
-- C compiler, `meson >= 1.1.0`, `ninja`
-- `raylib` — only for the graphical calculator example
+- A C compiler, `meson >= 1.1.0`, `ninja`
+- `raylib`, only for the graphical calculator example
 
-## Build
+## How to build
 
 ```sh
-# requires meson >= 1.1.0 and ninja
 meson setup builddir
 meson compile -C builddir
 meson test -C builddir
 ```
 
-Without examples (skips raylib dependency) or without tests:
+Leave out examples to skip raylib. Leave out tests to skip test builds.
 
 ```sh
 meson setup builddir -Dexamples=false
 meson setup builddir -Dtests=false
 ```
 
-For build-system-less builds:
+No build system at hand. Use one of the plain scripts instead.
 
 ```sh
 ./build.sh      # Simpler and slower
 ./build_ext.sh  # Still simple, but slightly faster
 ```
 
-## Library (`include/toys`)
+## What is inside (`include/toys`)
 
-- `argparse.h` — command line parser: switches, int/string options, positional
-  args, `--help` generation
-- `debug.h` — leveled logging (`LOG_V`/`LOG_D`/`LOG_W`/`LOG_E`/`LOG_I`),
-  terminal colors (`auto`/`always`/`never`), log redirection to a file,
-  verbose assert
-- `vector.h` — stb-style dynamic array (`vec_push`/`vec_len`/`vec_cap`/`vec_free`)
-- `expr.h` — parse math expressions or raw coefficients into polynomials
-- `math.h` — float helpers (`my_iszero`, `my_isnan`, `my_isinf`)
-- `mtx.h` — dense and symmetric matrices: arithmetic, `mul`, `det`,
-  optional short-name aliases (`WST_MTX_SHORT_NAMES`)
-- `poly.h` — polynomial type, arithmetic (`add`/`sub`/`mul`/`scale`),
-  `eval`, `deriv`, `integ`, `solve` (up to quadratic)
-- `sort.h` — generic `qsort`/`bsort` over a comparator plus byte radix sort
-  for NUL-terminated strings
-- `stk.h` — type-safe stacks (`WstStkInt`, `WstStkDouble`), see below
-- `string.h` — libc-style string and memory ops (`strcpy`, `strtok`,
-  `memswp`, …)
+- `argparse.h` — parses flags and args. Switches, int and string options,
+  positional args and `--help` output
+- `debug.h` — logging with levels (`LOG_V` `LOG_D` `LOG_W` `LOG_E`
+  `LOG_I`). Colored output, file redirect and a chatty assert included
+- `vector.h` — growable array in stb style (`vec_push` `vec_len`
+  `vec_cap` `vec_free`)
+- `expr.h` — turns math expressions or plain coefficients into polynomials
+- `math.h` — small float helpers (`my_iszero`, `my_isnan`, `my_isinf`)
+- `mtx.h` — plain and symmetric matrices. Add, scale, multiply and
+  determinant. Short names with `WST_MTX_SHORT_NAMES`
+- `poly.h` — polynomials. Basic math (`add` `sub` `mul` `scale`) plus
+  `eval` `deriv` `integ` and `solve` for linear and quadratic equations
+- `sort.h` — generic `qsort` and `bsort` that take a comparator, plus a
+  byte radix sort for plain strings
+- `stk.h` — type-safe stacks (`WstStkInt`, `WstStkDouble`), details below
+- `string.h` — string and memory functions in libc style (`strcpy`,
+  `strtok`, `memswp` and the rest)
 
-## Stack (`stk.h`)
+## Stacks (`stk.h`)
 
-Stacks are stamped per element type from one shared implementation, so they
-stay fully type-safe without macro-written bodies. Every operation verifies
-the stack first: length/capacity invariants, an 8-byte canary tail after the
-buffer, and a checksum over the struct fields. Failures are reported with
-`WstStkErr` (`NOMEM`/`EMPTY`/`CORRUPT`/`OVERFLOW`/`NULL`, see `wst_stk_err_str`).
-A refused operation never mutates the stack — not even `free`, since a
-damaged data pointer can't be trusted. Canary and checksum compile in with
-`WST_DEBUG` and out without it; force either way with
-`-DSTK_USE_CANARY=` / `-DSTK_USE_HASH=`. `stk_dump` prints fields,
-checksum pair, canary bytes and buffer contents for diagnosing failures.
+One shared core stamps out a stack per element type. You get full type
+safety with no macro-written function bodies. Each call checks the stack
+first. It looks at length and capacity, at a canary byte block on both
+sides of the buffer, and at a checksum over the struct fields and its
+contents. Problems come back as `WstStkErr` (`NOMEM` `EMPTY` `CORRUPT`
+`OVERFLOW` `NULL`, read them with `wst_stk_err_str`). A failed call never
+touches the stack. Not even `free`, since a broken data pointer can not
+be trusted. Each check has its own switch: `STK_USE_CANARY`,
+`STK_USE_HASH` and `STK_USE_CONTENT_HASH`. They follow `WST_DEBUG` unless
+you set them to 0 or 1 by hand. `stk_dump` prints fields, checksum
+values, canary bytes and buffer contents when you need to see what went
+wrong.
 
 ```c
 #include "toys/stk.h"
@@ -85,9 +86,8 @@ wst_stk_double_reserve(&s, 64);
 wst_stk_double_free(&s);        // frees stack, zeroes the struct, safe to call twice
 ```
 
-Large elements avoid by-value copies: stamp with `STK_REF` defined and
-`push` takes a pointer instead (`pop` already does) — see `test_stk.c`
-for a stamped example.
+Big structs skip by-value copies. Stamp with `STK_REF` and `push` takes
+a pointer instead (`pop` already does). `test_stk.c` shows a full example.
 
 ## Tests
 
