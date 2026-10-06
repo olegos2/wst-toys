@@ -56,6 +56,7 @@ static unsigned long stk_compute_hash(const WstStkVoid *stk, size_t elem_size)
     unsigned long hash = 5381;
     const unsigned char *rest = (const unsigned char *)stk + sizeof(stk->hash);
     hash = stk_hash_bytes(hash, rest, sizeof(*stk) - sizeof(stk->hash));
+
 #if STK_USE_CONTENT_HASH
     const unsigned char *elems = stk->data;
     for (size_t i = 0; i < stk->length; i++)
@@ -63,6 +64,7 @@ static unsigned long stk_compute_hash(const WstStkVoid *stk, size_t elem_size)
 #else
     (void)elem_size;
 #endif
+
     return hash;
 }
 
@@ -189,7 +191,8 @@ WstStkErr wst_stk_void_reserve(WstStkVoid *stk, size_t count, size_t elem_size)
         return WST_STK_ERR_OVERFLOW;
     }
 
-    void *base = realloc(stk_base(stk), count * elem_size + STK_HEAD_SIZE + STK_TAIL_SIZE);
+    void *base = realloc(stk_base(stk),
+                         count * elem_size + STK_HEAD_SIZE + STK_TAIL_SIZE);
     if (base == NULL) {
         LOG_E("cannot reserve %zu elements: %s", count, strerror(errno));
         return WST_STK_ERR_NOMEM;
@@ -202,6 +205,43 @@ WstStkErr wst_stk_void_reserve(WstStkVoid *stk, size_t count, size_t elem_size)
     LOG_D("grew to capacity %zu", count);
 
     return WST_STK_NO_ERR;
+}
+
+static void wst_stk_void_dump_canary(const unsigned char *base, const char *name, bool sane,
+                                     const unsigned char canary_exp[])
+{
+#if STK_USE_CANARY
+    fprintf(stderr, "  %s canary:\n    expected: ", name);
+    for (size_t i = 0; i < STK_CANARY_SIZE; i++)
+        fprintf(stderr, "%02X ", canary_exp[i]);
+    fprintf(stderr, "\n");
+
+    if (!sane) {
+        fprintf(stderr, "    actual: omitted due to sanity check fail\n");
+        return;
+    }
+
+    bool match = memcmp(base, canary_exp, STK_CANARY_SIZE) == 0;
+
+    fprintf(stderr, "    actual:   ");
+    for (size_t i = 0; i < STK_CANARY_SIZE; i++)
+        fprintf(stderr, "%02X ", base[i]);
+
+    fprintf(stderr, "\n    result: %s\n", match ? "OK" : "MISMATCH");
+
+    if (match)
+        return;
+
+    fprintf(stderr, "    damaged at byte: ");
+    for (size_t i = 0; i < STK_CANARY_SIZE; i++) {
+        if (base[i] != canary_exp[i])
+            fprintf(stderr, " %zu", i);
+    }
+    fprintf(stderr, "\n");
+
+#else /* !STK_USE_CANARY */
+    fprintf(stderr, "  %s canary: disabled in build\n", name);
+#endif /* !STK_USE_CANARY */
 }
 
 void wst_stk_void_dump(const WstStkVoid *stk, size_t elem_size, const char *st_name)
@@ -239,57 +279,14 @@ void wst_stk_void_dump(const WstStkVoid *stk, size_t elem_size, const char *st_n
     fprintf(stderr, "  checksum: disabled in build\n");
 #endif
 
-#if STK_USE_CANARY
-    fprintf(stderr, "  front canary:\n    expected: ");
-    for (size_t i = 0; i < STK_CANARY_SIZE; i++)
-        fprintf(stderr, "%02X ", stk_canary_front[i]);
-    fprintf(stderr, "\n");
-    if (sane) {
-        unsigned char *base = stk_base(stk);
-        bool front_match = memcmp(base, stk_canary_front, STK_CANARY_SIZE) == 0;
-        fprintf(stderr, "    actual:   ");
-        for (size_t i = 0; i < STK_CANARY_SIZE; i++)
-            fprintf(stderr, "%02X ", base[i]);
-        fprintf(stderr, "\n    result: %s\n", front_match ? "OK" : "MISMATCH");
-        if (!front_match) {
-            fprintf(stderr, "    damaged at byte: ");
-            for (size_t i = 0; i < STK_CANARY_SIZE; i++) {
-                if (base[i] != stk_canary_front[i])
-                    fprintf(stderr, " %zu", i);
-            }
-            fprintf(stderr, "\n");
-        }
-    } else {
-        fprintf(stderr, "    actual: omitted due to sanity check fail\n");
-    }
-    fprintf(stderr, "  tail canary:\n    expected: ");
-    for (size_t i = 0; i < STK_CANARY_SIZE; i++)
-        fprintf(stderr, "%02X ", stk_canary_tail[i]);
-    fprintf(stderr, "\n");
-    if (sane) {
-        unsigned char *tail = stk_tail(stk, elem_size);
-        bool match = memcmp(tail, stk_canary_tail, STK_CANARY_SIZE) == 0;
-        fprintf(stderr, "    actual:   ");
-        for (size_t i = 0; i < STK_CANARY_SIZE; i++)
-            fprintf(stderr, "%02X ", tail[i]);
-        fprintf(stderr, "\n    result: %s\n", match ? "OK" : "MISMATCH");
-        if (!match) {
-            fprintf(stderr, "    damaged at byte: ");
-            for (size_t i = 0; i < STK_CANARY_SIZE; i++) {
-                if (tail[i] != stk_canary_tail[i])
-                    fprintf(stderr, " %zu", i);
-            }
-            fprintf(stderr, "\n");
-        }
-    } else {
-        fprintf(stderr, "    actual: omitted due to sanity check fail\n");
-    }
-#else
-    fprintf(stderr, "  canary: disabled in build\n");
-#endif
+    wst_stk_void_dump_canary(stk_base(stk), "front",
+                             sane, stk_canary_front);
+    wst_stk_void_dump_canary(stk_tail(stk, elem_size), "tail",
+                             sane, stk_canary_tail);
 
     if (sane) {
         fprintf(stderr, "  buffer [%zu x %zu bytes]:\n", stk->cap, elem_size);
+
         unsigned char *bytes = stk->data;
         for (size_t i = 0; i < stk->cap; i++) {
             fprintf(stderr, "    [%4zu]:", i);

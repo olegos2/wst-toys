@@ -317,7 +317,8 @@ void stk_dump(const STK_T *stk)
 
 #define STK_T_STR_1(type) #type
 #define STK_T_STR_2(type) STK_T_STR_1(type)
-    wst_stk_void_dump((const WstStkVoid *)stk, sizeof(STK_ELEM), STK_T_STR_2(STK_T));
+    wst_stk_void_dump((const WstStkVoid *)stk, sizeof(STK_ELEM),
+                      STK_T_STR_2(STK_T));
 #undef STK_T_STR_1
 #undef STK_T_STR_2
 

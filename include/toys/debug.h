@@ -68,13 +68,6 @@ typedef enum {
     WST_LOG_COLOR_AUTO,
 } WstLogColorMode;
 
-// static const char *__wst_log_prio_fmt[] = {
-//     [WST_LOG_ERROR] = "[E]",
-//     [WST_LOG_WARN] = "[W]",
-//     [WST_LOG_INFO] = "[I]",
-//     [WST_LOG_DEBUG] = "[D]",
-//     [WST_LOG_VERBOSE] = "[V]",
-// };
 
 /**
  * Open a file and redirect all following logs to it.
