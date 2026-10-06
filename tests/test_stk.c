@@ -1,6 +1,7 @@
 #include "tests_common.h"
 
 #include "toys/stk.h"
+#include "toys/stk_internal.h"
 
 #include <string.h>
 
@@ -71,6 +72,7 @@ static void test_reserve(void)
 
 static void test_corrupt_tail(void)
 {
+#if STK_USE_CANARY
     WstStkDouble s = { 0 };
     CHECK(wst_stk_double_push(&s, 1.0) == WST_STK_NO_ERR, "push");
     CHECK(wst_stk_double_verify(&s) == WST_STK_NO_ERR, "intact verifies");
@@ -79,6 +81,7 @@ static void test_corrupt_tail(void)
     unsigned char saved = tail[0];
     tail[0] ^= 0xFF;
 
+    wst_stk_double_dump(&s);
     CHECK(wst_stk_double_verify(&s) == WST_STK_ERR_CORRUPT, "damaged tail fails verify");
     CHECK(wst_stk_double_push(&s, 2.0) == WST_STK_ERR_CORRUPT, "push refused when corrupt");
     CHECK(s.length == 1, "refused push keeps length");
@@ -91,6 +94,7 @@ static void test_corrupt_tail(void)
     CHECK(s.data != NULL && s.length == 1, "refused free touches nothing");
     tail[0] = saved;
     CHECK(wst_stk_double_free(&s) == WST_STK_NO_ERR, "free ok after restore");
+#endif
 }
 
 static void test_corrupt_length(void)
@@ -99,6 +103,7 @@ static void test_corrupt_length(void)
     CHECK(wst_stk_double_push(&s, 1.0) == WST_STK_NO_ERR, "push");
 
     s.length = s.cap + 1;
+    wst_stk_double_dump(&s);
     CHECK(wst_stk_double_verify(&s) == WST_STK_ERR_CORRUPT, "length over cap fails");
 
     double v = 0;
@@ -111,12 +116,14 @@ static void test_corrupt_length(void)
 
 static void test_corrupt_hash(void)
 {
+#if STK_USE_HASH
     WstStkDouble s = { 0 };
     CHECK(wst_stk_double_push(&s, 1.0) == WST_STK_NO_ERR, "push");
     CHECK(wst_stk_double_push(&s, 2.0) == WST_STK_NO_ERR, "push");
     CHECK(wst_stk_double_push(&s, 3.0) == WST_STK_NO_ERR, "push");
 
     s.length = 1;
+    wst_stk_double_dump(&s);
     CHECK(wst_stk_double_verify(&s) == WST_STK_ERR_CORRUPT, "in-bounds length fails");
     double v = 0;
     CHECK(wst_stk_double_pop(&s, &v) == WST_STK_ERR_CORRUPT, "pop refused when corrupt");
@@ -125,11 +132,13 @@ static void test_corrupt_hash(void)
     CHECK(wst_stk_double_verify(&s) == WST_STK_NO_ERR, "restored length verifies");
 
     s.hash ^= 0xFF;
+    wst_stk_double_dump(&s);
     CHECK(wst_stk_double_verify(&s) == WST_STK_ERR_CORRUPT, "damaged hash fails");
     CHECK(wst_stk_double_free(&s) == WST_STK_ERR_CORRUPT, "free refuses corruption");
     CHECK(s.data != NULL, "refused free touches nothing");
     s.hash ^= 0xFF;
     CHECK(wst_stk_double_free(&s) == WST_STK_NO_ERR, "free ok after restore");
+#endif
 }
 
 static void test_init(void)
@@ -150,6 +159,7 @@ static void test_init(void)
     CHECK(wst_stk_double_pop(&s, &v) == WST_STK_NO_ERR && my_iszero(v - 5.0), "old data gone");
 
     CHECK(wst_stk_double_push(&s, 6.0) == WST_STK_NO_ERR, "push");
+#if STK_USE_CANARY
     unsigned char *tail = (unsigned char *)s.data + s.cap * sizeof(double);
     tail[0] ^= 0xFF;
     CHECK(wst_stk_double_init(&s, 16) == WST_STK_ERR_CORRUPT, "init reports prior damage");
@@ -158,6 +168,7 @@ static void test_init(void)
     tail[0] ^= 0xFF;
     CHECK(wst_stk_double_init(&s, 16) == WST_STK_NO_ERR, "init ok after restore");
     CHECK(s.length == 0 && s.cap >= 16, "init drops data and grows");
+#endif
 
     CHECK(wst_stk_double_free(&s) == WST_STK_NO_ERR, "free ok");
 }
@@ -205,11 +216,22 @@ static void test_big(void)
     CHECK(wst_stk_test_big_free(&s) == WST_STK_NO_ERR, "big free");
 }
 
+static void test_verify_graceful(void)
+{
+    CHECK(wst_stk_void_verify(NULL, sizeof(double)) == WST_STK_ERR_NULL, "null stack");
+
+    WstStkVoid empty = { 0 };
+    CHECK(wst_stk_void_verify(&empty, 0) == WST_STK_ERR_NULL, "zero element size");
+    CHECK(wst_stk_void_verify(&empty, sizeof(double)) == WST_STK_NO_ERR, "empty verifies");
+    wst_stk_void_dump(NULL, sizeof(double), "WstStkVoid");
+    wst_stk_void_dump(&empty, sizeof(double), "WstStkVoid");
+}
+
 static void test_err_str(void)
 {
     WstStkErr codes[] = {
         WST_STK_NO_ERR, WST_STK_ERR_NOMEM, WST_STK_ERR_EMPTY,
-        WST_STK_ERR_CORRUPT, WST_STK_ERR_OVERFLOW,
+        WST_STK_ERR_CORRUPT, WST_STK_ERR_OVERFLOW, WST_STK_ERR_NULL,
     };
     for (size_t i = 0; i < ARR_LEN(codes); i++)
         CHECK(wst_stk_err_str(codes[i]) != NULL, "err str %zu", i);
@@ -228,6 +250,7 @@ int main(void)
     test_corrupt_hash();
     test_int();
     test_big();
+    test_verify_graceful();
     test_err_str();
     return tests_summary();
 }

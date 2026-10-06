@@ -62,9 +62,12 @@ Stacks are stamped per element type from one shared implementation, so they
 stay fully type-safe without macro-written bodies. Every operation verifies
 the stack first: length/capacity invariants, an 8-byte canary tail after the
 buffer, and a checksum over the struct fields. Failures are reported with
-`WstStkErr` (`NOMEM`/`EMPTY`/`CORRUPT`/`OVERFLOW`, see `wst_stk_err_str`).
+`WstStkErr` (`NOMEM`/`EMPTY`/`CORRUPT`/`OVERFLOW`/`NULL`, see `wst_stk_err_str`).
 A refused operation never mutates the stack — not even `free`, since a
-damaged data pointer can't be trusted.
+damaged data pointer can't be trusted. Canary and checksum compile in with
+`WST_DEBUG` and out without it; force either way with
+`-DSTK_USE_CANARY=` / `-DSTK_USE_HASH=`. `stk_dump` prints fields,
+checksum pair, canary bytes and buffer contents for diagnosing failures.
 
 ```c
 #include "toys/stk.h"

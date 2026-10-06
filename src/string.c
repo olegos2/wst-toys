@@ -78,6 +78,14 @@ char *wst_strcpy(char *restrict dest, const char *restrict src)
     return dest;
 }
 
+char *wst_strlcpy(char *restrict dest, const char *restrict src, size_t dsize)
+{
+    wst_stpncpy(dest, src, dsize - 1);
+    dest[dsize - 1] = '\0';
+
+    return dest;
+}
+
 char *wst_strncpy(char *restrict dest, const char *restrict src, size_t dsize)
 {
     wst_stpncpy(dest, src, dsize);

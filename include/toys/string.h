@@ -73,6 +73,18 @@ char *wst_strcpy(char *restrict dest, const char *restrict src);
  */
 char *wst_strncpy(char *restrict dest, const char *restrict src, size_t dsize);
 
+
+/**
+ * Copy a fixed-size string and NUL-terminate it.
+ *
+ * @param[out] dest Pointer to the destination buffer.
+ * @param[in] src Pointer to the source string.
+ * @param[in] dsize Number of bytes to write.
+ *
+ * @return A pointer to the destination buffer dest.
+ */
+char *wst_strlcpy(char *restrict dest, const char *restrict src, size_t dsize);
+
 /**
  * Duplicate a string.
  *

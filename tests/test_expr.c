@@ -50,8 +50,6 @@ int main(void)
 {
     assert(WST_EXPR_NO_ERR == 0);
 
-    /* TODO: Finish this refactor. */
-
     struct {
         const char *expr;
         WstParserErr exp_ret;

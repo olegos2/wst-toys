@@ -14,7 +14,6 @@
 #ifndef TOYS_STK_H
 #define TOYS_STK_H
 
-#include <stddef.h>
 
 /** Type to use for stack elements. */
 #define STK_ELEM double

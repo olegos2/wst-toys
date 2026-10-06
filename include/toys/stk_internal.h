@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -20,6 +21,28 @@
 /** Initial capacity on first growth. */
 #define STK_INIT_CAP 8
 
+#if !defined(STK_USE_CANARY)
+#  ifdef WST_DEBUG
+#    define STK_USE_CANARY 1
+#  else
+#    define STK_USE_CANARY 0
+#  endif
+#endif
+
+#if !defined(STK_USE_HASH)
+#  ifdef WST_DEBUG
+#    define STK_USE_HASH 1
+#  else
+#    define STK_USE_HASH 0
+#  endif
+#endif
+
+#if STK_USE_CANARY
+#  define STK_TAIL_SIZE STK_CANARY_SIZE
+#else
+#  define STK_TAIL_SIZE 0
+#endif
+
 
 /**
  * Error that may occur while operating on a stack.
@@ -31,6 +54,8 @@ typedef enum {
     WST_STK_ERR_NOMEM,
     /** Pop from an empty stack. */
     WST_STK_ERR_EMPTY,
+    /** Null stack or zero element size passed for verification. */
+    WST_STK_ERR_NULL,
     /** Tail canary, struct hash, or length/capacity invariant is damaged. */
     WST_STK_ERR_CORRUPT,
     /** Requested capacity does not fit into size_t. */
@@ -44,7 +69,9 @@ const char *wst_stk_err_str(WstStkErr err);
 
 /** Layout-identical untyped stack for generic implementations. */
 typedef struct {
-    /** Buffer elements, followed by a `STK_CANARY_SIZE` byte canary tail. */
+    /** Integrity checksum over the rest of the struct, resealed after every mutation. */
+    unsigned long hash;
+    /** Buffer elements, followed by a canary tail when STK_USE_CANARY is set. */
     void *data;
     /** Number of elements currently in stack. */
     size_t length;
@@ -53,8 +80,6 @@ typedef struct {
      * Does not count in space required to store canary bytes.
      */
     size_t cap;
-    /** Integrity checksum over data/length/cap, resealed after every mutation. */
-    unsigned long hash;
 } WstStkVoid;
 
 /** Check length/capacity invariants, canary tail and checksum. */
@@ -72,21 +97,13 @@ WstStkErr wst_stk_void_reserve(WstStkVoid *stk, size_t count, size_t elem_size);
 /** Recompute the stored checksum after a mutation. */
 void wst_stk_void_seal(WstStkVoid *stk);
 
+/** Dump struct fields, checksum pair, canary and buffer contents to stderr. */
+void wst_stk_void_dump(const WstStkVoid *stk, size_t elem_size, const char *st_name);
+
 #endif /* TOYS_STK_INTERNAL_H */
 
 
-#if !defined(STK_T)
-#  undef STK_ELEM
-#  undef STK_T
-#  undef STK_F
-#  undef STK_FMT
-#  undef STK_REF
-#  define STK_ELEM double
-#  define STK_T WstStkDouble
-#  define STK_F(name) wst_stk_double_ ## name
-#  define STK_FMT "%lg"
-#endif
-
+#ifdef STK_T
 #if !defined(STK_ELEM)
 #  error STK_ELEM must be defined with the name of stack element type
 #endif
@@ -107,11 +124,14 @@ void wst_stk_void_seal(WstStkVoid *stk);
 #define stk_pop STK_F(pop)
 #define stk_verify STK_F(verify)
 #define stk_prepare_push STK_F(prepare_push)
+#define stk_dump STK_F(dump)
 
 
 /** A stack with elements of fixed type. */
 typedef struct {
-    /** Elements of stack, followed by a `STK_CANARY_SIZE` byte canary tail. */
+    /** Integrity checksum over the rest of the struct, resealed after every mutation. */
+    unsigned long hash;
+    /** Elements of stack, followed by a canary tail when STK_USE_CANARY is set. */
     STK_ELEM *data;
     /** Number of elements currently in stack. */
     size_t length;
@@ -120,8 +140,6 @@ typedef struct {
      * Does not count in space required to store canary bytes.
      */
     size_t cap;
-    /** Integrity checksum over data/length/cap, resealed after every mutation. */
-    unsigned long hash;
 } STK_T;
 
 /** Check length/capacity invariants, canary tail and checksum. */
@@ -150,6 +168,9 @@ WstStkErr stk_push(STK_T *stk, STK_ELEM value);
 
 /** Pop value from stack top into `out`, or discard it when `out` is NULL. */
 WstStkErr stk_pop(STK_T *stk, STK_ELEM *out);
+
+/** Dump stack contents, canary and checksum state to stderr. */
+void stk_dump(const STK_T *stk);
 
 
 #ifdef STK_IMPL
@@ -277,6 +298,31 @@ WstStkErr stk_pop(STK_T *stk, STK_ELEM *out)
     return WST_STK_NO_ERR;
 }
 
+void stk_dump(const STK_T *stk)
+{
+    LOG_V("Dumping stack at %p", stk);
+
+#define STK_T_STR_1(type) #type
+#define STK_T_STR_2(type) STK_T_STR_1(type)
+    wst_stk_void_dump((const WstStkVoid *)stk, sizeof(STK_ELEM), STK_T_STR_2(STK_T));
+#undef STK_T_STR_1
+#undef STK_T_STR_2
+
+#ifdef STK_FMT
+    if (stk != NULL &&
+        stk->data != NULL &&
+        stk->length <= stk->cap &&
+        stk->cap <= (SIZE_MAX - STK_TAIL_SIZE) / sizeof(STK_ELEM))
+    {
+        fprintf(stderr, "  formatted repr:\n");
+        for (size_t i = 0; i < stk->length; i++)
+            fprintf(stderr, "    [%4zu]: " STK_FMT "\n", i, stk->data[i]);
+    }
+    else
+        fprintf(stderr, "  <elements omitted due to sanity check fail>\n");
+#endif
+}
+
 #endif /* STK_IMPL */
 
 #undef stk_free
@@ -286,9 +332,11 @@ WstStkErr stk_pop(STK_T *stk, STK_ELEM *out)
 #undef stk_pop
 #undef stk_verify
 #undef stk_prepare_push
+#undef stk_dump
 
 #undef STK_FMT
 #undef STK_REF
 #undef STK_F
 #undef STK_T
 #undef STK_ELEM
+#endif /* STK_T */
