@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['cap_0',['cap',['../structWstStkVoid.html#a5bc8487e6970df923b790defc3fd8876',1,'WstStkVoid::cap'],['../structSTK__T.html#ad37ea580cfbe830c94f17c293071efeb',1,'STK_T::cap'],['../structVecHeader.html#a02f9936715a5ed1155b1524449548585',1,'VecHeader::cap']]],
+  ['cap_0',['cap',['../structWstStkVoid.html#a5bc8487e6970df923b790defc3fd8876',1,'WstStkVoid::cap'],['../structVecHeader.html#a02f9936715a5ed1155b1524449548585',1,'VecHeader::cap']]],
   ['capture_5frest_1',['capture_rest',['../structArgParser.html#af58ffc2e5643c112d3fc635d6ac3b13f',1,'ArgParser']]],
   ['center_2',['center',['../structPlotConfig.html#a3bb2de9efe29099aeb37e9604a6a882b',1,'PlotConfig']]],
   ['coeffs_3',['coeffs',['../structWstPoly.html#aa8a5e96218e1a6393ab8979534d2505e',1,'WstPoly']]],

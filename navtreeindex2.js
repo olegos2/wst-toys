@@ -1,16 +1,5 @@
 var NAVTREEINDEX2 =
 {
-"tests__common_8h.html#aec09b115ba14ee07180282a0c2c87de5":[1,0,3,8,2],
-"tests__common_8h_source.html":[1,0,3,8],
-"uniondouble__repr.html":[0,0,3],
-"uniondouble__repr.html#a33eb2486a441e9812dece9a0f043b9ae":[0,0,3,3],
-"uniondouble__repr.html#ab319fa6482babcdeb052b71555e32af6":[0,0,3,2],
-"uniondouble__repr.html#ad1c3a2b0a2e2fdaf1ebe14a1238ecf36":[0,0,3,1],
-"uniondouble__repr.html#aefc7d6d2433d5d73f67c7103c9a7001a":[0,0,3,0],
-"vector_8c.html":[1,0,2,7],
-"vector_8c.html#a3a14fecf073757dd8879cb3a296e44a1":[1,0,2,7,0],
-"vector_8h.html":[1,0,1,0,10],
-"vector_8h.html#a04c8857e68f2ba404e32ddf6d4e2a51a":[1,0,1,0,10,3],
 "vector_8h.html#a11a171b8b50c44b1b904b0400f25892f":[1,0,1,0,10,1],
 "vector_8h.html#a3a14fecf073757dd8879cb3a296e44a1":[1,0,1,0,10,7],
 "vector_8h.html#a466ef3358b61197cdfb074939a758dc3":[1,0,1,0,10,4],

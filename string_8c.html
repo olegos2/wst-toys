@@ -114,6 +114,8 @@ Functions</h2></td></tr>
 <tr class="separator:a45c17595ab8ea4a7034e22c49d592d22"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a121b88fbdb1b3cf784628a98e925b002" id="r_a121b88fbdb1b3cf784628a98e925b002"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="string_8c.html#a121b88fbdb1b3cf784628a98e925b002">wst_strcpy</a> (char *restrict dest, const char *restrict src)</td></tr>
 <tr class="separator:a121b88fbdb1b3cf784628a98e925b002"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a070264e401dadfc192f412ecbb47db0b" id="r_a070264e401dadfc192f412ecbb47db0b"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="string_8c.html#a070264e401dadfc192f412ecbb47db0b">wst_strlcpy</a> (char *restrict dest, const char *restrict src, size_t dsize)</td></tr>
+<tr class="separator:a070264e401dadfc192f412ecbb47db0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28f3106168a22eb7889547a840f6ebff" id="r_a28f3106168a22eb7889547a840f6ebff"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="string_8c.html#a28f3106168a22eb7889547a840f6ebff">wst_strncpy</a> (char *restrict dest, const char *restrict src, size_t dsize)</td></tr>
 <tr class="separator:a28f3106168a22eb7889547a840f6ebff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c47ffe3f126739eaa5ac2ddd20d05f3" id="r_a4c47ffe3f126739eaa5ac2ddd20d05f3"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="string_8c.html#a4c47ffe3f126739eaa5ac2ddd20d05f3">wst_strdup</a> (const char *str)</td></tr>
@@ -615,6 +617,50 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A pointer to the newly allocated string, or NULL if insufficient memory was available. </dd></dl>
+
+</div>
+</div>
+<a id="a070264e401dadfc192f412ecbb47db0b" name="a070264e401dadfc192f412ecbb47db0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a070264e401dadfc192f412ecbb47db0b">&#9670;&#160;</a></span>wst_strlcpy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char * wst_strlcpy </td>
+          <td>(</td>
+          <td class="paramtype">char *restrict&#160;</td>
+          <td class="paramname"><em>dest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *restrict&#160;</td>
+          <td class="paramname"><em>src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>dsize</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Copy a fixed-size string and NUL-terminate it.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">dest</td><td>Pointer to the destination buffer. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">src</td><td>Pointer to the source string. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dsize</td><td>Number of bytes to write.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A pointer to the destination buffer dest. </dd></dl>
 
 </div>
 </div>

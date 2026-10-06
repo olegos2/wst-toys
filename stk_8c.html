@@ -96,6 +96,7 @@ $(document).ready(function(){initNavTree('stk_8c.html',''); initResizable(); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="stk_8h_source.html">toys/stk.h</a>&quot;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -104,8 +105,8 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a0ba4abf1ae310d0819208b5ff7a566a4" id="r_a0ba4abf1ae310d0819208b5ff7a566a4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk_8c.html#a0ba4abf1ae310d0819208b5ff7a566a4">wst_stk_void_seal</a> (<a class="el" href="structWstStkVoid.html">WstStkVoid</a> *stk)</td></tr>
-<tr class="separator:a0ba4abf1ae310d0819208b5ff7a566a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4e2312a9f993bd4b1bf776ffb2d639b" id="r_ad4e2312a9f993bd4b1bf776ffb2d639b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk_8c.html#ad4e2312a9f993bd4b1bf776ffb2d639b">wst_stk_void_seal</a> (<a class="el" href="structWstStkVoid.html">WstStkVoid</a> *stk, size_t elem_size)</td></tr>
+<tr class="separator:ad4e2312a9f993bd4b1bf776ffb2d639b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aedfb1c8b7df065ef82d98635bbec587e" id="r_aedfb1c8b7df065ef82d98635bbec587e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk_8c.html#aedfb1c8b7df065ef82d98635bbec587e">wst_stk_void_verify</a> (const <a class="el" href="structWstStkVoid.html">WstStkVoid</a> *stk, size_t elem_size)</td></tr>
 <tr class="separator:aedfb1c8b7df065ef82d98635bbec587e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af2d714218e3991a0e856eaa68b00e523" id="r_af2d714218e3991a0e856eaa68b00e523"><td class="memItemLeft" align="right" valign="top"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk_8c.html#af2d714218e3991a0e856eaa68b00e523">wst_stk_void_free</a> (<a class="el" href="structWstStkVoid.html">WstStkVoid</a> *stk, size_t elem_size)</td></tr>
@@ -114,6 +115,8 @@ Functions</h2></td></tr>
 <tr class="separator:a22cff18c6ec7ce3fc582d18e6036e4f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b67b696888a59a58719ae32f001a5ca" id="r_a6b67b696888a59a58719ae32f001a5ca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk_8c.html#a6b67b696888a59a58719ae32f001a5ca">wst_stk_void_reserve</a> (<a class="el" href="structWstStkVoid.html">WstStkVoid</a> *stk, size_t count, size_t elem_size)</td></tr>
 <tr class="separator:a6b67b696888a59a58719ae32f001a5ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26a93926542ce6b2596aa3394f06f0e8" id="r_a26a93926542ce6b2596aa3394f06f0e8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk_8c.html#a26a93926542ce6b2596aa3394f06f0e8">wst_stk_void_dump</a> (const <a class="el" href="structWstStkVoid.html">WstStkVoid</a> *stk, size_t elem_size, const char *st_name)</td></tr>
+<tr class="separator:a26a93926542ce6b2596aa3394f06f0e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3f348235abbab8a53956537b004536b3" id="r_a3f348235abbab8a53956537b004536b3"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk_8c.html#a3f348235abbab8a53956537b004536b3">wst_stk_err_str</a> (<a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a> err)</td></tr>
 <tr class="separator:a3f348235abbab8a53956537b004536b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -149,6 +152,41 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Short human-readable description of a stack error. </p>
+
+</div>
+</div>
+<a id="a26a93926542ce6b2596aa3394f06f0e8" name="a26a93926542ce6b2596aa3394f06f0e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26a93926542ce6b2596aa3394f06f0e8">&#9670;&#160;</a></span>wst_stk_void_dump()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void wst_stk_void_dump </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structWstStkVoid.html">WstStkVoid</a> *&#160;</td>
+          <td class="paramname"><em>stk</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>elem_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>st_name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Dump struct fields, checksum pair, canary and buffer contents to stderr. </p>
 
 </div>
 </div>
@@ -251,8 +289,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a0ba4abf1ae310d0819208b5ff7a566a4" name="a0ba4abf1ae310d0819208b5ff7a566a4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0ba4abf1ae310d0819208b5ff7a566a4">&#9670;&#160;</a></span>wst_stk_void_seal()</h2>
+<a id="ad4e2312a9f993bd4b1bf776ffb2d639b" name="ad4e2312a9f993bd4b1bf776ffb2d639b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad4e2312a9f993bd4b1bf776ffb2d639b">&#9670;&#160;</a></span>wst_stk_void_seal()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -261,12 +299,22 @@ Functions</h2></td></tr>
           <td class="memname">void wst_stk_void_seal </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structWstStkVoid.html">WstStkVoid</a> *&#160;</td>
-          <td class="paramname"><em>stk</em></td><td>)</td>
+          <td class="paramname"><em>stk</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>elem_size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Recompute and save stack hash. </p>
+<p>Recompute the stored checksum after a mutation. </p>
 
 </div>
 </div>

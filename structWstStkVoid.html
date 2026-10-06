@@ -99,14 +99,14 @@ $(document).ready(function(){initNavTree('structWstStkVoid.html',''); initResiza
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
+<tr class="memitem:a5df57f134bf499dedb6713d235203358" id="r_a5df57f134bf499dedb6713d235203358"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structWstStkVoid.html#a5bc8487e6970df923b790defc3fd8876">unsigned</a> <a class="el" href="structWstStkVoid.html#a5bc8487e6970df923b790defc3fd8876">long</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWstStkVoid.html#a5df57f134bf499dedb6713d235203358">hash</a></td></tr>
+<tr class="separator:a5df57f134bf499dedb6713d235203358"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a51b33ce3a80720fd9383c897e73ab4cf" id="r_a51b33ce3a80720fd9383c897e73ab4cf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structWstStkVoid.html#a5bc8487e6970df923b790defc3fd8876">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWstStkVoid.html#a51b33ce3a80720fd9383c897e73ab4cf">data</a></td></tr>
 <tr class="separator:a51b33ce3a80720fd9383c897e73ab4cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aca16bc37cf2a17724f8488cb8b5d00bb" id="r_aca16bc37cf2a17724f8488cb8b5d00bb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structWstStkVoid.html#a5bc8487e6970df923b790defc3fd8876">size_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWstStkVoid.html#aca16bc37cf2a17724f8488cb8b5d00bb">length</a></td></tr>
 <tr class="separator:aca16bc37cf2a17724f8488cb8b5d00bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5bc8487e6970df923b790defc3fd8876" id="r_a5bc8487e6970df923b790defc3fd8876"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWstStkVoid.html#a5bc8487e6970df923b790defc3fd8876">cap</a></td></tr>
 <tr class="separator:a5bc8487e6970df923b790defc3fd8876"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5df57f134bf499dedb6713d235203358" id="r_a5df57f134bf499dedb6713d235203358"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structWstStkVoid.html#a5bc8487e6970df923b790defc3fd8876">unsigned</a> <a class="el" href="structWstStkVoid.html#a5bc8487e6970df923b790defc3fd8876">long</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWstStkVoid.html#a5df57f134bf499dedb6713d235203358">hash</a></td></tr>
-<tr class="separator:a5df57f134bf499dedb6713d235203358"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Layout-identical untyped stack for generic implementations. </p>
@@ -137,7 +137,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Buffer elements, followed by a <code>STK_CANARY_SIZE</code> byte canary tail. </p>
+<p>Buffer elements, followed by a canary tail when STK_USE_CANARY is set. </p>
 
 </div>
 </div>
@@ -152,7 +152,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Integrity checksum over data/length/cap, resealed after every mutation. </p>
+<p>Integrity checksum over the rest of the struct, resealed after every mutation. </p>
 
 </div>
 </div>

@@ -12,6 +12,7 @@ var string_8c =
     [ "wst_strcmp", "string_8c.html#a420c731c0cb27043327abefb231cd266", null ],
     [ "wst_strcpy", "string_8c.html#a121b88fbdb1b3cf784628a98e925b002", null ],
     [ "wst_strdup", "string_8c.html#a4c47ffe3f126739eaa5ac2ddd20d05f3", null ],
+    [ "wst_strlcpy", "string_8c.html#a070264e401dadfc192f412ecbb47db0b", null ],
     [ "wst_strlen", "string_8c.html#a9737943c1c9943640dadb787b603a036", null ],
     [ "wst_strncmp", "string_8c.html#adc405baa4b018cee34aa6896b2953367", null ],
     [ "wst_strncpy", "string_8c.html#a28f3106168a22eb7889547a840f6ebff", null ],

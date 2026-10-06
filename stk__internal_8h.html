@@ -102,6 +102,7 @@ $(document).ready(function(){initNavTree('stk__internal_8h.html',''); initResiza
 <code>#include &lt;errno.h&gt;</code><br />
 <code>#include &lt;stddef.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
+<code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="string_8h_source.html">string.h</a>&gt;</code><br />
 </div>
@@ -111,8 +112,6 @@ $(document).ready(function(){initNavTree('stk__internal_8h.html',''); initResiza
 Data Structures</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWstStkVoid.html">WstStkVoid</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSTK__T.html">STK_T</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -120,28 +119,18 @@ Macros</h2></td></tr>
 <tr class="separator:a193cd3c1e82f338e27d6903ff0cc60e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6ec0ab2be3349a75680936c5dadfb632" id="r_a6ec0ab2be3349a75680936c5dadfb632"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a6ec0ab2be3349a75680936c5dadfb632">STK_INIT_CAP</a>&#160;&#160;&#160;8</td></tr>
 <tr class="separator:a6ec0ab2be3349a75680936c5dadfb632"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a21ebcd7e21a29b567af99f7e99e4235a" id="r_a21ebcd7e21a29b567af99f7e99e4235a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a21ebcd7e21a29b567af99f7e99e4235a">STK_ELEM</a>&#160;&#160;&#160;double</td></tr>
-<tr class="separator:a21ebcd7e21a29b567af99f7e99e4235a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7135bd0bfbc511c6766c321462f14cf9" id="r_a7135bd0bfbc511c6766c321462f14cf9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a7135bd0bfbc511c6766c321462f14cf9">STK_T</a>&#160;&#160;&#160;WstStkDouble</td></tr>
-<tr class="separator:a7135bd0bfbc511c6766c321462f14cf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae8b22e648eb9779925f89568d716d84d" id="r_ae8b22e648eb9779925f89568d716d84d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(name)&#160;&#160;&#160;wst_stk_double_ ## name</td></tr>
-<tr class="separator:ae8b22e648eb9779925f89568d716d84d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a117503d66eb0de887df6f0aca066c96a" id="r_a117503d66eb0de887df6f0aca066c96a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a117503d66eb0de887df6f0aca066c96a">STK_FMT</a>&#160;&#160;&#160;&quot;%lg&quot;</td></tr>
-<tr class="separator:a117503d66eb0de887df6f0aca066c96a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b80caa738224f2402709e0b9834d6e9" id="r_a6b80caa738224f2402709e0b9834d6e9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a6b80caa738224f2402709e0b9834d6e9">stk_free</a>&#160;&#160;&#160;<a class="el" href="stk_8h.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(free)</td></tr>
-<tr class="separator:a6b80caa738224f2402709e0b9834d6e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27d49ab924b3218f140d603043d8a2ce" id="r_a27d49ab924b3218f140d603043d8a2ce"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a27d49ab924b3218f140d603043d8a2ce">stk_init</a>&#160;&#160;&#160;<a class="el" href="stk_8h.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(init)</td></tr>
-<tr class="separator:a27d49ab924b3218f140d603043d8a2ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9dfc6447f81487bf936d6a1512fc5f34" id="r_a9dfc6447f81487bf936d6a1512fc5f34"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a9dfc6447f81487bf936d6a1512fc5f34">stk_reserve</a>&#160;&#160;&#160;<a class="el" href="stk_8h.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(reserve)</td></tr>
-<tr class="separator:a9dfc6447f81487bf936d6a1512fc5f34"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a370c6339750d268dd799694dbc635f49" id="r_a370c6339750d268dd799694dbc635f49"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a370c6339750d268dd799694dbc635f49">stk_push</a>&#160;&#160;&#160;<a class="el" href="stk_8h.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(push)</td></tr>
-<tr class="separator:a370c6339750d268dd799694dbc635f49"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a73cf198f4476165fe41e4932307dbf6b" id="r_a73cf198f4476165fe41e4932307dbf6b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a73cf198f4476165fe41e4932307dbf6b">stk_pop</a>&#160;&#160;&#160;<a class="el" href="stk_8h.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(pop)</td></tr>
-<tr class="separator:a73cf198f4476165fe41e4932307dbf6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a255c9dc99e0d5d4cff00e7a92cadee1a" id="r_a255c9dc99e0d5d4cff00e7a92cadee1a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a255c9dc99e0d5d4cff00e7a92cadee1a">stk_verify</a>&#160;&#160;&#160;<a class="el" href="stk_8h.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(verify)</td></tr>
-<tr class="separator:a255c9dc99e0d5d4cff00e7a92cadee1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a11cebee70e797e27ae24ff1ae0a37acd" id="r_a11cebee70e797e27ae24ff1ae0a37acd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a11cebee70e797e27ae24ff1ae0a37acd">stk_prepare_push</a>&#160;&#160;&#160;<a class="el" href="stk_8h.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(prepare_push)</td></tr>
-<tr class="separator:a11cebee70e797e27ae24ff1ae0a37acd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5bc3a46ef9f417be5f963e9562dade7a" id="r_a5bc3a46ef9f417be5f963e9562dade7a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a5bc3a46ef9f417be5f963e9562dade7a">STK_USE_CANARY</a>&#160;&#160;&#160;0</td></tr>
+<tr class="separator:a5bc3a46ef9f417be5f963e9562dade7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4b8e9eb7d3c77134f9266440e138c54" id="r_ab4b8e9eb7d3c77134f9266440e138c54"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#ab4b8e9eb7d3c77134f9266440e138c54">STK_USE_HASH</a>&#160;&#160;&#160;0</td></tr>
+<tr class="separator:ab4b8e9eb7d3c77134f9266440e138c54"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3a0485046183dbf307151975e23b471" id="r_af3a0485046183dbf307151975e23b471"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#af3a0485046183dbf307151975e23b471">STK_USE_CONTENT_HASH</a>&#160;&#160;&#160;0</td></tr>
+<tr class="separator:af3a0485046183dbf307151975e23b471"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af465fbdd2b158995db312961efb6606f" id="r_af465fbdd2b158995db312961efb6606f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#af465fbdd2b158995db312961efb6606f">STK_HEAD_SIZE</a>&#160;&#160;&#160;0</td></tr>
+<tr class="separator:af465fbdd2b158995db312961efb6606f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8f9f60af982a5c1c9389b62aff9763a" id="r_aa8f9f60af982a5c1c9389b62aff9763a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#aa8f9f60af982a5c1c9389b62aff9763a">STK_TAIL_SIZE</a>&#160;&#160;&#160;0</td></tr>
+<tr class="separator:aa8f9f60af982a5c1c9389b62aff9763a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e5a703e5f214b60fa333d63c63f53f6" id="r_a7e5a703e5f214b60fa333d63c63f53f6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a7e5a703e5f214b60fa333d63c63f53f6">STK_CANARY_TOTAL</a>&#160;&#160;&#160;(<a class="el" href="stk__internal_8h.html#af465fbdd2b158995db312961efb6606f">STK_HEAD_SIZE</a> + <a class="el" href="stk__internal_8h.html#aa8f9f60af982a5c1c9389b62aff9763a">STK_TAIL_SIZE</a>)</td></tr>
+<tr class="separator:a7e5a703e5f214b60fa333d63c63f53f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -149,9 +138,10 @@ Enumerations</h2></td></tr>
 &#160;&#160;<a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aafc454d952e2c0236bdf1c55b97d29eb0">WST_STK_NO_ERR</a> = 0
 , <a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aa93683b7d5a51536477744a8f5121da86">WST_STK_ERR_NOMEM</a>
 , <a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aa9e3c618efda1a1e0e9b743cf2b841e17">WST_STK_ERR_EMPTY</a>
-, <a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aaee0e6e32f7f138aba85f8319b2b95bcf">WST_STK_ERR_CORRUPT</a>
+, <a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aa90d820dcc187f6a3aa8cf6bf8d1c9733">WST_STK_ERR_NULL</a>
 , <br />
-&#160;&#160;<a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aaef7f0751739ffcce3a3c5ac546d54272">WST_STK_ERR_OVERFLOW</a>
+&#160;&#160;<a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aaee0e6e32f7f138aba85f8319b2b95bcf">WST_STK_ERR_CORRUPT</a>
+, <a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aaef7f0751739ffcce3a3c5ac546d54272">WST_STK_ERR_OVERFLOW</a>
 <br />
  }</td></tr>
 <tr class="separator:afcc2f79342f9a32598f7eaff45d3778a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,20 +158,10 @@ Functions</h2></td></tr>
 <tr class="separator:a22cff18c6ec7ce3fc582d18e6036e4f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b67b696888a59a58719ae32f001a5ca" id="r_a6b67b696888a59a58719ae32f001a5ca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a6b67b696888a59a58719ae32f001a5ca">wst_stk_void_reserve</a> (<a class="el" href="structWstStkVoid.html">WstStkVoid</a> *stk, size_t count, size_t elem_size)</td></tr>
 <tr class="separator:a6b67b696888a59a58719ae32f001a5ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ba4abf1ae310d0819208b5ff7a566a4" id="r_a0ba4abf1ae310d0819208b5ff7a566a4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a0ba4abf1ae310d0819208b5ff7a566a4">wst_stk_void_seal</a> (<a class="el" href="structWstStkVoid.html">WstStkVoid</a> *stk)</td></tr>
-<tr class="separator:a0ba4abf1ae310d0819208b5ff7a566a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a70d28ae8e8a6f93ef30804db1736bb" id="r_a3a70d28ae8e8a6f93ef30804db1736bb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a3a70d28ae8e8a6f93ef30804db1736bb">stk_verify</a> (const <a class="el" href="structSTK__T.html">STK_T</a> *stk)</td></tr>
-<tr class="separator:a3a70d28ae8e8a6f93ef30804db1736bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab4e5d4565a90b5443553a9b981638aa3" id="r_ab4e5d4565a90b5443553a9b981638aa3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#ab4e5d4565a90b5443553a9b981638aa3">stk_free</a> (<a class="el" href="structSTK__T.html">STK_T</a> *stk)</td></tr>
-<tr class="separator:ab4e5d4565a90b5443553a9b981638aa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac3ee3d6cf32a4ed841483ac1fb7966bc" id="r_ac3ee3d6cf32a4ed841483ac1fb7966bc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#ac3ee3d6cf32a4ed841483ac1fb7966bc">stk_init</a> (<a class="el" href="structSTK__T.html">STK_T</a> *stk, size_t count)</td></tr>
-<tr class="separator:ac3ee3d6cf32a4ed841483ac1fb7966bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7e9f22b9b63845ecbba404d4616bb9da" id="r_a7e9f22b9b63845ecbba404d4616bb9da"><td class="memItemLeft" align="right" valign="top"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a7e9f22b9b63845ecbba404d4616bb9da">stk_reserve</a> (<a class="el" href="structSTK__T.html">STK_T</a> *stk, size_t count)</td></tr>
-<tr class="separator:a7e9f22b9b63845ecbba404d4616bb9da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad3e55a173a3df38bd24d38f105ce6b0b" id="r_ad3e55a173a3df38bd24d38f105ce6b0b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#ad3e55a173a3df38bd24d38f105ce6b0b">stk_push</a> (<a class="el" href="structSTK__T.html">STK_T</a> *stk, <a class="el" href="stk_8h.html#a21ebcd7e21a29b567af99f7e99e4235a">STK_ELEM</a> value)</td></tr>
-<tr class="separator:ad3e55a173a3df38bd24d38f105ce6b0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a736768987cfb18da18c53f62970c99e9" id="r_a736768987cfb18da18c53f62970c99e9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a736768987cfb18da18c53f62970c99e9">stk_pop</a> (<a class="el" href="structSTK__T.html">STK_T</a> *stk, <a class="el" href="stk_8h.html#a21ebcd7e21a29b567af99f7e99e4235a">STK_ELEM</a> *out)</td></tr>
-<tr class="separator:a736768987cfb18da18c53f62970c99e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4e2312a9f993bd4b1bf776ffb2d639b" id="r_ad4e2312a9f993bd4b1bf776ffb2d639b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#ad4e2312a9f993bd4b1bf776ffb2d639b">wst_stk_void_seal</a> (<a class="el" href="structWstStkVoid.html">WstStkVoid</a> *stk, size_t elem_size)</td></tr>
+<tr class="separator:ad4e2312a9f993bd4b1bf776ffb2d639b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26a93926542ce6b2596aa3394f06f0e8" id="r_a26a93926542ce6b2596aa3394f06f0e8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stk__internal_8h.html#a26a93926542ce6b2596aa3394f06f0e8">wst_stk_void_dump</a> (const <a class="el" href="structWstStkVoid.html">WstStkVoid</a> *stk, size_t elem_size, const char *st_name)</td></tr>
+<tr class="separator:a26a93926542ce6b2596aa3394f06f0e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a193cd3c1e82f338e27d6903ff0cc60e1" name="a193cd3c1e82f338e27d6903ff0cc60e1"></a>
@@ -199,74 +179,28 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a21ebcd7e21a29b567af99f7e99e4235a" name="a21ebcd7e21a29b567af99f7e99e4235a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a21ebcd7e21a29b567af99f7e99e4235a">&#9670;&#160;</a></span>STK_ELEM</h2>
+<a id="a7e5a703e5f214b60fa333d63c63f53f6" name="a7e5a703e5f214b60fa333d63c63f53f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7e5a703e5f214b60fa333d63c63f53f6">&#9670;&#160;</a></span>STK_CANARY_TOTAL</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define STK_ELEM&#160;&#160;&#160;double</td>
+          <td class="memname">#define STK_CANARY_TOTAL&#160;&#160;&#160;(<a class="el" href="stk__internal_8h.html#af465fbdd2b158995db312961efb6606f">STK_HEAD_SIZE</a> + <a class="el" href="stk__internal_8h.html#aa8f9f60af982a5c1c9389b62aff9763a">STK_TAIL_SIZE</a>)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="ae8b22e648eb9779925f89568d716d84d" name="ae8b22e648eb9779925f89568d716d84d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae8b22e648eb9779925f89568d716d84d">&#9670;&#160;</a></span>STK_F</h2>
+<a id="af465fbdd2b158995db312961efb6606f" name="af465fbdd2b158995db312961efb6606f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af465fbdd2b158995db312961efb6606f">&#9670;&#160;</a></span>STK_HEAD_SIZE</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define STK_F</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">name</td><td>)</td>
-          <td>&#160;&#160;&#160;wst_stk_double_ ## name</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a117503d66eb0de887df6f0aca066c96a" name="a117503d66eb0de887df6f0aca066c96a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a117503d66eb0de887df6f0aca066c96a">&#9670;&#160;</a></span>STK_FMT</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STK_FMT&#160;&#160;&#160;&quot;%lg&quot;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a6b80caa738224f2402709e0b9834d6e9" name="a6b80caa738224f2402709e0b9834d6e9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6b80caa738224f2402709e0b9834d6e9">&#9670;&#160;</a></span>stk_free</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define stk_free&#160;&#160;&#160;<a class="el" href="stk_8h.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(free)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a27d49ab924b3218f140d603043d8a2ce" name="a27d49ab924b3218f140d603043d8a2ce"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a27d49ab924b3218f140d603043d8a2ce">&#9670;&#160;</a></span>stk_init</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define stk_init&#160;&#160;&#160;<a class="el" href="stk_8h.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(init)</td>
+          <td class="memname">#define STK_HEAD_SIZE&#160;&#160;&#160;0</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -288,84 +222,56 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a73cf198f4476165fe41e4932307dbf6b" name="a73cf198f4476165fe41e4932307dbf6b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a73cf198f4476165fe41e4932307dbf6b">&#9670;&#160;</a></span>stk_pop</h2>
+<a id="aa8f9f60af982a5c1c9389b62aff9763a" name="aa8f9f60af982a5c1c9389b62aff9763a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa8f9f60af982a5c1c9389b62aff9763a">&#9670;&#160;</a></span>STK_TAIL_SIZE</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define stk_pop&#160;&#160;&#160;<a class="el" href="stk_8h.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(pop)</td>
+          <td class="memname">#define STK_TAIL_SIZE&#160;&#160;&#160;0</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a11cebee70e797e27ae24ff1ae0a37acd" name="a11cebee70e797e27ae24ff1ae0a37acd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a11cebee70e797e27ae24ff1ae0a37acd">&#9670;&#160;</a></span>stk_prepare_push</h2>
+<a id="a5bc3a46ef9f417be5f963e9562dade7a" name="a5bc3a46ef9f417be5f963e9562dade7a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5bc3a46ef9f417be5f963e9562dade7a">&#9670;&#160;</a></span>STK_USE_CANARY</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define stk_prepare_push&#160;&#160;&#160;<a class="el" href="stk_8h.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(prepare_push)</td>
+          <td class="memname">#define STK_USE_CANARY&#160;&#160;&#160;0</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a370c6339750d268dd799694dbc635f49" name="a370c6339750d268dd799694dbc635f49"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a370c6339750d268dd799694dbc635f49">&#9670;&#160;</a></span>stk_push</h2>
+<a id="af3a0485046183dbf307151975e23b471" name="af3a0485046183dbf307151975e23b471"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af3a0485046183dbf307151975e23b471">&#9670;&#160;</a></span>STK_USE_CONTENT_HASH</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define stk_push&#160;&#160;&#160;<a class="el" href="stk_8h.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(push)</td>
+          <td class="memname">#define STK_USE_CONTENT_HASH&#160;&#160;&#160;0</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a9dfc6447f81487bf936d6a1512fc5f34" name="a9dfc6447f81487bf936d6a1512fc5f34"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9dfc6447f81487bf936d6a1512fc5f34">&#9670;&#160;</a></span>stk_reserve</h2>
+<a id="ab4b8e9eb7d3c77134f9266440e138c54" name="ab4b8e9eb7d3c77134f9266440e138c54"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab4b8e9eb7d3c77134f9266440e138c54">&#9670;&#160;</a></span>STK_USE_HASH</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define stk_reserve&#160;&#160;&#160;<a class="el" href="stk_8h.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(reserve)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a7135bd0bfbc511c6766c321462f14cf9" name="a7135bd0bfbc511c6766c321462f14cf9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7135bd0bfbc511c6766c321462f14cf9">&#9670;&#160;</a></span>STK_T</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="structSTK__T.html">STK_T</a>&#160;&#160;&#160;WstStkDouble</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a255c9dc99e0d5d4cff00e7a92cadee1a" name="a255c9dc99e0d5d4cff00e7a92cadee1a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a255c9dc99e0d5d4cff00e7a92cadee1a">&#9670;&#160;</a></span>stk_verify</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define stk_verify&#160;&#160;&#160;<a class="el" href="stk_8h.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(verify)</td>
+          <td class="memname">#define STK_USE_HASH&#160;&#160;&#160;0</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -391,6 +297,8 @@ Functions</h2></td></tr>
 </td></tr>
 <tr><td class="fieldname"><a id="afcc2f79342f9a32598f7eaff45d3778aa9e3c618efda1a1e0e9b743cf2b841e17" name="afcc2f79342f9a32598f7eaff45d3778aa9e3c618efda1a1e0e9b743cf2b841e17"></a>WST_STK_ERR_EMPTY&#160;</td><td class="fielddoc"><p>Pop from an empty stack. </p>
 </td></tr>
+<tr><td class="fieldname"><a id="afcc2f79342f9a32598f7eaff45d3778aa90d820dcc187f6a3aa8cf6bf8d1c9733" name="afcc2f79342f9a32598f7eaff45d3778aa90d820dcc187f6a3aa8cf6bf8d1c9733"></a>WST_STK_ERR_NULL&#160;</td><td class="fielddoc"><p>Null stack or zero element size passed for verification. </p>
+</td></tr>
 <tr><td class="fieldname"><a id="afcc2f79342f9a32598f7eaff45d3778aaee0e6e32f7f138aba85f8319b2b95bcf" name="afcc2f79342f9a32598f7eaff45d3778aaee0e6e32f7f138aba85f8319b2b95bcf"></a>WST_STK_ERR_CORRUPT&#160;</td><td class="fielddoc"><p>Tail canary, struct hash, or length/capacity invariant is damaged. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="afcc2f79342f9a32598f7eaff45d3778aaef7f0751739ffcce3a3c5ac546d54272" name="afcc2f79342f9a32598f7eaff45d3778aaef7f0751739ffcce3a3c5ac546d54272"></a>WST_STK_ERR_OVERFLOW&#160;</td><td class="fielddoc"><p>Requested capacity does not fit into size_t. </p>
@@ -400,160 +308,6 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ab4e5d4565a90b5443553a9b981638aa3" name="ab4e5d4565a90b5443553a9b981638aa3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab4e5d4565a90b5443553a9b981638aa3">&#9670;&#160;</a></span>stk_free()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a> stk_free </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structSTK__T.html">STK_T</a> *&#160;</td>
-          <td class="paramname"><em>stk</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Free the buffer and zero the struct. Refuses on verification failure. </p>
-
-</div>
-</div>
-<a id="ac3ee3d6cf32a4ed841483ac1fb7966bc" name="ac3ee3d6cf32a4ed841483ac1fb7966bc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac3ee3d6cf32a4ed841483ac1fb7966bc">&#9670;&#160;</a></span>stk_init()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a> stk_init </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structSTK__T.html">STK_T</a> *&#160;</td>
-          <td class="paramname"><em>stk</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Reset to empty and reserve <code>count</code> elements, reports prior damage. </p>
-
-</div>
-</div>
-<a id="a736768987cfb18da18c53f62970c99e9" name="a736768987cfb18da18c53f62970c99e9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a736768987cfb18da18c53f62970c99e9">&#9670;&#160;</a></span>stk_pop()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a> stk_pop </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structSTK__T.html">STK_T</a> *&#160;</td>
-          <td class="paramname"><em>stk</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="stk_8h.html#a21ebcd7e21a29b567af99f7e99e4235a">STK_ELEM</a> *&#160;</td>
-          <td class="paramname"><em>out</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Pop value from stack top into <code>out</code>, or discard it when <code>out</code> is NULL. </p>
-
-</div>
-</div>
-<a id="ad3e55a173a3df38bd24d38f105ce6b0b" name="ad3e55a173a3df38bd24d38f105ce6b0b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad3e55a173a3df38bd24d38f105ce6b0b">&#9670;&#160;</a></span>stk_push()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a> stk_push </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structSTK__T.html">STK_T</a> *&#160;</td>
-          <td class="paramname"><em>stk</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="stk_8h.html#a21ebcd7e21a29b567af99f7e99e4235a">STK_ELEM</a>&#160;</td>
-          <td class="paramname"><em>value</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Push a value to stack top, growing when needed. </p>
-
-</div>
-</div>
-<a id="a7e9f22b9b63845ecbba404d4616bb9da" name="a7e9f22b9b63845ecbba404d4616bb9da"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7e9f22b9b63845ecbba404d4616bb9da">&#9670;&#160;</a></span>stk_reserve()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a> stk_reserve </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structSTK__T.html">STK_T</a> *&#160;</td>
-          <td class="paramname"><em>stk</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Grow so the stack holds at least <code>count</code> elements. </p>
-
-</div>
-</div>
-<a id="a3a70d28ae8e8a6f93ef30804db1736bb" name="a3a70d28ae8e8a6f93ef30804db1736bb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3a70d28ae8e8a6f93ef30804db1736bb">&#9670;&#160;</a></span>stk_verify()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778a">WstStkErr</a> stk_verify </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="structSTK__T.html">STK_T</a> *&#160;</td>
-          <td class="paramname"><em>stk</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Check length/capacity invariants, canary tail and checksum. </p>
-
-</div>
-</div>
 <a id="a3f348235abbab8a53956537b004536b3" name="a3f348235abbab8a53956537b004536b3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3f348235abbab8a53956537b004536b3">&#9670;&#160;</a></span>wst_stk_err_str()</h2>
 
@@ -570,6 +324,41 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Short human-readable description of a stack error. </p>
+
+</div>
+</div>
+<a id="a26a93926542ce6b2596aa3394f06f0e8" name="a26a93926542ce6b2596aa3394f06f0e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26a93926542ce6b2596aa3394f06f0e8">&#9670;&#160;</a></span>wst_stk_void_dump()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void wst_stk_void_dump </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structWstStkVoid.html">WstStkVoid</a> *&#160;</td>
+          <td class="paramname"><em>stk</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>elem_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>st_name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Dump struct fields, checksum pair, canary and buffer contents to stderr. </p>
 
 </div>
 </div>
@@ -672,8 +461,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a0ba4abf1ae310d0819208b5ff7a566a4" name="a0ba4abf1ae310d0819208b5ff7a566a4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0ba4abf1ae310d0819208b5ff7a566a4">&#9670;&#160;</a></span>wst_stk_void_seal()</h2>
+<a id="ad4e2312a9f993bd4b1bf776ffb2d639b" name="ad4e2312a9f993bd4b1bf776ffb2d639b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad4e2312a9f993bd4b1bf776ffb2d639b">&#9670;&#160;</a></span>wst_stk_void_seal()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -682,13 +471,22 @@ Functions</h2></td></tr>
           <td class="memname">void wst_stk_void_seal </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structWstStkVoid.html">WstStkVoid</a> *&#160;</td>
-          <td class="paramname"><em>stk</em></td><td>)</td>
+          <td class="paramname"><em>stk</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>elem_size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Recompute the stored checksum after a mutation.</p>
-<p>Recompute and save stack hash. </p>
+<p>Recompute the stored checksum after a mutation. </p>
 
 </div>
 </div>

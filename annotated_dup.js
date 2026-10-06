@@ -14,7 +14,6 @@ var annotated_dup =
     [ "PlotRect", "structPlotRect.html", "structPlotRect" ],
     [ "PlotWindowConfig", "structPlotWindowConfig.html", "structPlotWindowConfig" ],
     [ "SolveConfig", "structSolveConfig.html", "structSolveConfig" ],
-    [ "STK_T", "structSTK__T.html", "structSTK__T" ],
     [ "StkBig", "structStkBig.html", "structStkBig" ],
     [ "StringPosition", "structStringPosition.html", "structStringPosition" ],
     [ "Token", "structToken.html", "structToken" ],
