@@ -90,6 +90,9 @@ void wst_str_sort(const char *strings[], size_t count)
 static size_t wst_qsort_part(
     char *base, size_t count, size_t size, WstComparator compar, int depth)
 {
+#ifndef WST_DEBUG
+    (void)depth;
+#endif
     char *left = base;
     char *right = base + (count - 1) * size;
     char *pivot = base + size * (count / 2);
@@ -103,11 +106,10 @@ static size_t wst_qsort_part(
             right -= size;
 
         size_t left_idx = (size_t)(left - base) / size;
-        size_t right_idx = (size_t)(right - base) / size;
-        size_t pivot_idx = (size_t)(pivot - base) / size;
 
         LOG_V("%*s  scan: left=%zu, right=%zu, pivot=%zu",
-              depth * 2, "", left_idx, right_idx, pivot_idx);
+              depth * 2, "", left_idx, (size_t)(right - base) / size,
+              (size_t)(pivot - base) / size);
 
         if (left >= right) {
             LOG_V("%*s  split at %zu", depth * 2, "", count - left_idx);

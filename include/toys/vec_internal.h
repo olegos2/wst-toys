@@ -55,6 +55,13 @@
 
 #define VEC_CANARY_TOTAL (VEC_HEAD_SIZE + VEC_TAIL_SIZE)
 
+/** Reseal after mutation, compiled out when checksums are off. */
+#if VEC_USE_HASH
+#  define VEC_SEAL(vec, sz) wst_vec_void_seal((vec), (sz))
+#else
+#  define VEC_SEAL(vec, sz) do { (void)(vec); (void)(sz); } while (0)
+#endif
+
 
 /**
  * Error that may occur while operating on a vector.
@@ -275,7 +282,7 @@ WstVecErr vec_push(VEC_T *vec, const VEC_ELEM *value)
         return err;
 
     vec->data[vec->length++] = *value;
-    wst_vec_void_seal((WstVecVoid *)vec, sizeof(VEC_ELEM));
+    VEC_SEAL((WstVecVoid *)vec, sizeof(VEC_ELEM));
     LOG_V("push [%p], length %zu", (const void *)value, vec->length);
     return WST_VEC_NO_ERR;
 }
@@ -289,7 +296,7 @@ WstVecErr vec_push(VEC_T *vec, VEC_ELEM value)
         return err;
 
     vec->data[vec->length++] = value;
-    wst_vec_void_seal((WstVecVoid *)vec, sizeof(VEC_ELEM));
+    VEC_SEAL((WstVecVoid *)vec, sizeof(VEC_ELEM));
     LOG_V("push " VEC_FMT ", length %zu", value, vec->length);
     return WST_VEC_NO_ERR;
 }
@@ -315,7 +322,7 @@ WstVecErr vec_pop(VEC_T *vec, VEC_ELEM *out)
     vec->length--;
     if (out != NULL)
         *out = vec->data[vec->length];
-    wst_vec_void_seal((WstVecVoid *)vec, sizeof(VEC_ELEM));
+    VEC_SEAL((WstVecVoid *)vec, sizeof(VEC_ELEM));
     LOG_V("pop [%p], length %zu", (const void *)out, vec->length);
 
 #else /* !VEC_REF */
@@ -323,7 +330,7 @@ WstVecErr vec_pop(VEC_T *vec, VEC_ELEM *out)
     VEC_ELEM value = vec->data[--vec->length];
     if (out != NULL)
         *out = value;
-    wst_vec_void_seal((WstVecVoid *)vec, sizeof(VEC_ELEM));
+    VEC_SEAL((WstVecVoid *)vec, sizeof(VEC_ELEM));
     LOG_V("pop " VEC_FMT ", length %zu", value, vec->length);
 
 #endif /* !VEC_REF */
@@ -335,20 +342,16 @@ WstVecErr vec_ensure(VEC_T *vec, size_t n)
 {
     assert(vec != NULL);
 
-    WstVecErr err = vec_verify(vec);
+    WstVecErr err = vec_reserve(vec, n);
     if (err != WST_VEC_NO_ERR)
         return err;
 
     if (n <= vec->length)
         return WST_VEC_NO_ERR;
 
-    err = vec_reserve(vec, n);
-    if (err != WST_VEC_NO_ERR)
-        return err;
-
     memset(vec->data + vec->length, 0, n - vec->length);
     vec->length = n;
-    wst_vec_void_seal((WstVecVoid *)vec, sizeof(VEC_ELEM));
+    VEC_SEAL((WstVecVoid *)vec, sizeof(VEC_ELEM));
     return WST_VEC_NO_ERR;
 }
 
@@ -362,7 +365,7 @@ WstVecErr vec_set(VEC_T *vec, size_t i, VEC_ELEM value)
 
     assert(i < vec->length);
     vec->data[i] = value;
-    wst_vec_void_seal((WstVecVoid *)vec, sizeof(VEC_ELEM));
+    VEC_SEAL((WstVecVoid *)vec, sizeof(VEC_ELEM));
     return WST_VEC_NO_ERR;
 }
 
@@ -377,18 +380,14 @@ WstVecErr vec_resize(VEC_T *vec, size_t n)
 {
     assert(vec != NULL);
 
-    WstVecErr err = vec_verify(vec);
+    WstVecErr err = vec_reserve(vec, n);
     if (err != WST_VEC_NO_ERR)
         return err;
 
-    if (n > vec->length) {
-        err = vec_reserve(vec, n);
-        if (err != WST_VEC_NO_ERR)
-            return err;
+    if (n > vec->length)
         memset(vec->data + vec->length, 0, n - vec->length);
-    }
     vec->length = n;
-    wst_vec_void_seal((WstVecVoid *)vec, sizeof(VEC_ELEM));
+    VEC_SEAL((WstVecVoid *)vec, sizeof(VEC_ELEM));
     return WST_VEC_NO_ERR;
 }
 
@@ -401,7 +400,7 @@ WstVecErr vec_clear(VEC_T *vec)
         return err;
 
     vec->length = 0;
-    wst_vec_void_seal((WstVecVoid *)vec, sizeof(VEC_ELEM));
+    VEC_SEAL((WstVecVoid *)vec, sizeof(VEC_ELEM));
     return WST_VEC_NO_ERR;
 }
 

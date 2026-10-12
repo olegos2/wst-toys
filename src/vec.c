@@ -152,7 +152,7 @@ WstVecErr wst_vec_void_free(WstVecVoid *vec, size_t elem_size)
     vec->data = NULL;
     vec->length = 0;
     vec->cap = 0;
-    wst_vec_void_seal(vec, elem_size);
+    VEC_SEAL(vec, elem_size);
 
     LOG_D("freed vector");
 
@@ -203,7 +203,7 @@ WstVecErr wst_vec_void_reserve(WstVecVoid *vec, size_t count, size_t elem_size)
     vec->data = (unsigned char *)base + VEC_HEAD_SIZE;
     vec->cap = count;
     vec_write_canaries(vec, elem_size);
-    wst_vec_void_seal(vec, elem_size);
+    VEC_SEAL(vec, elem_size);
     LOG_D("grew to capacity %zu", count);
 
     return WST_VEC_NO_ERR;
@@ -242,6 +242,9 @@ static void wst_vec_void_dump_canary(const unsigned char *base, const char *name
     fprintf(stderr, "\n");
 
 #else /* !VEC_USE_CANARY */
+    (void)base;
+    (void)sane;
+    (void)canary_exp;
     fprintf(stderr, "  %s canary: disabled in build\n", name);
 #endif /* !VEC_USE_CANARY */
 }
@@ -281,10 +284,15 @@ void wst_vec_void_dump(const WstVecVoid *vec, size_t elem_size, const char *vec_
     fprintf(stderr, "  checksum: disabled in build\n");
 #endif
 
+#if VEC_USE_CANARY
     wst_vec_void_dump_canary(vec_base(vec), "front",
                              sane, vec_canary_front);
     wst_vec_void_dump_canary(vec_tail(vec, elem_size), "tail",
                              sane, vec_canary_tail);
+#else
+    wst_vec_void_dump_canary(NULL, "front", sane, NULL);
+    wst_vec_void_dump_canary(NULL, "tail", sane, NULL);
+#endif
 
     if (sane) {
         fprintf(stderr, "  buffer [%zu x %zu bytes]:\n", vec->cap, elem_size);

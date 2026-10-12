@@ -32,8 +32,8 @@
 
 #else /* !WST_DEBUG */
 
-#define LOG_V(...) 0
-#define LOG_D(...) 0
+#define LOG_V(...) do { } while (0)
+#define LOG_D(...) do { } while (0)
 
 #endif /* WST_DEBUG */
 
