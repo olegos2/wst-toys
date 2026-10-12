@@ -116,7 +116,8 @@ static size_t wst_qsort_part(
             return left_idx;
         }
 
-        LOG_V("%*s  swap: [%zu] <-> [%zu]", depth * 2, "", left_idx, right_idx);
+        LOG_V("%*s  swap: [%zu] <-> [%zu]", depth * 2, "", left_idx,
+              (size_t)(right - base) / size);
 
         /* Keep track of pivot element */
         if (pivot == left)
