@@ -37,16 +37,6 @@ test_argparse = executable(
 
 test('argparse', test_argparse)
 
-test_ds = executable(
-    'test_ds',
-    'test_ds.c',
-    dependencies: [
-        toys_common_dep,
-    ],
-)
-
-test('ds', test_ds)
-
 test_expr = executable(
     'test_expr',
     'test_expr.c',
@@ -87,13 +77,13 @@ test_sort = executable(
 
 test('sort', test_sort)
 
-test_stk = executable(
-    'test_stk',
-    'test_stk.c',
+test_vec = executable(
+    'test_vec',
+    'test_vec.c',
     dependencies: [
         toys_common_dep,
     ],
 )
 
-test('stk', test_stk)
+test('vec', test_vec)
 

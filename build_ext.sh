@@ -123,9 +123,6 @@ build_tests() {
     my_cc -c "$HOME_DIR/tests/test_argparse.c" -o test_argparse.o &&
     my_ld test_argparse.o "$BUILD_DIR/libtoys_common.a" -o test_argparse &&
 
-    my_cc -c "$HOME_DIR/tests/test_ds.c" -o test_ds.o &&
-    my_ld test_ds.o "$BUILD_DIR/libtoys_common.a" -o test_ds &&
-
     my_cc -c "$HOME_DIR/tests/test_expr.c" -o test_expr.o &&
     my_ld test_expr.o "$BUILD_DIR/libtoys_poly.a" "$BUILD_DIR/libtoys_common.a" -lm -o test_expr &&
 
@@ -138,11 +135,11 @@ build_tests() {
     my_cc -c "$HOME_DIR/tests/test_sort.c" -o test_sort.o &&
     my_ld test_sort.o "$BUILD_DIR/libtoys_common.a" -o test_sort &&
 
-    my_cc -c "$HOME_DIR/tests/test_stk.c" -o test_stk.o &&
-    my_ld test_stk.o "$BUILD_DIR/libtoys_common.a" -o test_stk &&
-
     my_cc -c "$HOME_DIR/tests/test_string.c" -o test_string.o &&
-    my_ld test_string.o "$BUILD_DIR/libtoys_common.a" -o test_string || {
+    my_ld test_string.o "$BUILD_DIR/libtoys_common.a" -o test_string &&
+
+    my_cc -c "$HOME_DIR/tests/test_vec.c" -o test_vec.o &&
+    my_ld test_vec.o "$BUILD_DIR/libtoys_common.a" -o test_vec || {
         popd
         return 1
     }
@@ -154,11 +151,11 @@ pushd "$BUILD_DIR" &&
 build_archive src libtoys_common.a \
     argparse \
     debug \
+    file \
     mtx \
     sort \
-    stk \
     string \
-    vector &&
+    vec &&
 build_archive src/poly libtoys_poly.a \
     expr \
     poly &&

@@ -11,11 +11,11 @@ declare -a common_src=(
     "$HOME_DIR/src/poly/poly.c"
     "$HOME_DIR/src/argparse.c"
     "$HOME_DIR/src/debug.c"
+    "$HOME_DIR/src/file.c"
     "$HOME_DIR/src/mtx.c"
     "$HOME_DIR/src/sort.c"
-    "$HOME_DIR/src/stk.c"
     "$HOME_DIR/src/string.c"
-    "$HOME_DIR/src/vector.c"
+    "$HOME_DIR/src/vec.c"
 )
 
 # should add more flags?
@@ -44,10 +44,6 @@ pushd "$BUILD_DIR" &&
     "${common_flags[@]}" -o test_argparse &&
 "$CC" \
     "${common_src[@]}" \
-    "$HOME_DIR/tests/test_ds.c" \
-    "${common_flags[@]}" -o test_ds &&
-"$CC" \
-    "${common_src[@]}" \
     "$HOME_DIR/tests/test_expr.c" \
     "${common_flags[@]}" -o test_expr &&
 "$CC" \
@@ -64,11 +60,11 @@ pushd "$BUILD_DIR" &&
     "${common_flags[@]}" -o test_sort &&
 "$CC" \
     "${common_src[@]}" \
-    "$HOME_DIR/tests/test_stk.c" \
-    "${common_flags[@]}" -o test_stk &&
-"$CC" \
-    "${common_src[@]}" \
     "$HOME_DIR/tests/test_string.c" \
     "${common_flags[@]}" -o test_string &&
+"$CC" \
+    "${common_src[@]}" \
+    "$HOME_DIR/tests/test_vec.c" \
+    "${common_flags[@]}" -o test_vec &&
 popd &&
 echo "Finished"

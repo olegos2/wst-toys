@@ -1,7 +1,7 @@
 # wst-toys
 
 Small C library and playground. It has polynomial math, matrices,
-sorting, type-safe stacks, a dynamic array and its own string functions.
+sorting, type-safe vectors and its own string functions.
 Everything shares the same logging and command line parsing code. Tests
 and examples are included.
 
@@ -41,9 +41,9 @@ No build system at hand. Use one of the plain scripts instead.
   positional args and `--help` output
 - `debug.h` — logging with levels (`LOG_V` `LOG_D` `LOG_W` `LOG_E`
   `LOG_I`). Colored output, file redirect and a chatty assert included
-- `vector.h` — growable array in stb style (`vec_push` `vec_len`
-  `vec_cap` `vec_free`)
 - `expr.h` — turns math expressions or plain coefficients into polynomials
+- `file.h` — maps a whole file into memory (`mmap`, malloc and read
+  fallback)
 - `math.h` — small float helpers (`my_iszero`, `my_isnan`, `my_isinf`)
 - `mtx.h` — plain and symmetric matrices. Add, scale, multiply and
   determinant. Short names with `WST_MTX_SHORT_NAMES`
@@ -51,43 +51,49 @@ No build system at hand. Use one of the plain scripts instead.
   `eval` `deriv` `integ` and `solve` for linear and quadratic equations
 - `sort.h` — generic `qsort` and `bsort` that take a comparator, plus a
   byte radix sort for plain strings
-- `stk.h` — type-safe stacks (`WstStkInt`, `WstStkDouble`), details below
+- `vec.h` — type-safe vectors (`WstVecInt`, `WstVecDouble`, `WstVecU8`),
+  details below
 - `string.h` — string and memory functions in libc style (`strcpy`,
   `strtok`, `memswp` and the rest)
+- `vec.h` — type-safe vectors (`WstVecInt`, `WstVecDouble`, `WstVecU8`),
+  details below
 
-## Stacks (`stk.h`)
+## Vectors (`vec.h`)
 
-One shared core stamps out a stack per element type. You get full type
-safety with no macro-written function bodies. Each call checks the stack
+One shared core stamps out a vector per element type. You get full type
+safety with no macro-written function bodies. Each call checks the vector
 first. It looks at length and capacity, at a canary byte block on both
 sides of the buffer, and at a checksum over the struct fields and its
-contents. Problems come back as `WstStkErr` (`NOMEM` `EMPTY` `CORRUPT`
-`OVERFLOW` `NULL`, read them with `wst_stk_err_str`). A failed call never
-touches the stack. Not even `free`, since a broken data pointer can not
-be trusted. Each check has its own switch: `STK_USE_CANARY`,
-`STK_USE_HASH` and `STK_USE_CONTENT_HASH`. They follow `WST_DEBUG` unless
-you set them to 0 or 1 by hand. `stk_dump` prints fields, checksum
+contents. Problems come back as `WstVecErr` (`NOMEM` `EMPTY` `CORRUPT`
+`OVERFLOW` `NULL`, read them with `wst_vec_err_str`). A failed call never
+touches the vector. Not even `free`, since a broken data pointer can not
+be trusted. Each check has its own switch: `VEC_USE_CANARY`,
+`VEC_USE_HASH` and `VEC_USE_CONTENT_HASH`. They follow `WST_DEBUG` unless
+you set them to 0 or 1 by hand. `vec_dump` prints fields, checksum
 values, canary bytes and buffer contents when you need to see what went
 wrong.
 
 ```c
-#include "toys/stk.h"
+#include "toys/vec.h"
 
-WstStkDouble s = { 0 };
-wst_stk_double_init(&s, 16);    // reinit + reserve 16 elements
+WstVecDouble s = { 0 };
+wst_vec_double_init(&s, 16);    // reinit + reserve 16 elements
 
-wst_stk_double_push(&s, 1.5);
+wst_vec_double_push(&s, 1.5);
 
 double v = 0;
-wst_stk_double_pop(&s, &v);     // pass NULL to discard instead
+wst_vec_double_pop(&s, &v);     // pass NULL to discard instead
 
-wst_stk_double_verify(&s);      // explicit check, also runs inside every op
-wst_stk_double_reserve(&s, 64);
-wst_stk_double_free(&s);        // frees stack, zeroes the struct, safe to call twice
+wst_vec_double_verify(&s);      // explicit check, also runs inside every op
+wst_vec_double_reserve(&s, 64);
+wst_vec_double_free(&s);        // frees vector, zeroes the struct, safe to call twice
+
+wst_vec_double_set(&s, 0, 2.5); // indexed write, reseals afterwards
+wst_vec_double_ensure(&s, 128); // grow length, zero-filling the new part
 ```
 
-Big structs skip by-value copies. Stamp with `STK_REF` and `push` takes
-a pointer instead (`pop` already does). `test_stk.c` shows a full example.
+Big structs skip by-value copies. Stamp with `VEC_REF` and `push` takes
+a pointer instead (`pop` already does). `test_vec.c` shows a full example.
 
 ## Tests
 
@@ -95,8 +101,8 @@ a pointer instead (`pop` already does). `test_stk.c` shows a full example.
 meson test -C builddir
 ```
 
-Covers: `argparse`, `ds`, `expr`, `string`, `mtx`, `poly`,
-`sort`, `stk`. Each is a standalone binary under `builddir/tests/`.
+Covers: `argparse`, `expr`, `string`, `mtx`, `poly`,
+`sort`, `vec`. Each is a standalone binary under `builddir/tests/`.
 
 ## Examples
 
