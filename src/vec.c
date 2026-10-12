@@ -2,7 +2,9 @@
 #define VEC_IMPL
 #include "toys/vec.h"
 
+#include <errno.h>
 #include <stdbool.h>
+#include <string.h>
 
 
 #if VEC_USE_CANARY
