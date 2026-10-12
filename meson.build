@@ -1,4 +1,4 @@
-project('toys', 'c', version: '0.1', meson_version: '>= 1.1.0')
+project('wst-toys', 'c', version: '0.1', meson_version: '>= 1.1.0')
 
 add_project_arguments(
     '-Wall',

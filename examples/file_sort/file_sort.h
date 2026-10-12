@@ -6,19 +6,6 @@
 #define ARR_LEN(arr) (sizeof(arr) / sizeof(*arr))
 
 
-/**
- * A file mapped to memory.
- */
-typedef struct {
-    const char *data;
-    size_t size;
-    /**
-     * Whether memory is backed by mmap and not malloc'd buffer
-     */
-    bool is_mmap;
-} FileContent;
-
-
 /** A utf8 line and decoded wchar repr */
 typedef struct {
     /* UTF-8 encoded bytes ptr */

@@ -1,5 +1,6 @@
 #include "file_sort.h"
 #include "toys/argparse.h"
+#include "toys/file.h"
 #include "toys/sort.h"
 #include "toys/debug.h"
 
@@ -19,17 +20,6 @@
 
 
 /**
- * Unmap/free file content buffer
- */
-static void free_file(FileContent *content);
-
-/**
- * Tries to mmap entire file at `path` to mem, or alloc then read if mmap fails.
- * Does not use text mode.
- */
-static bool read_file(const char *path, FileContent *out);
-
-/** 
  * Find a suitable UTF-8 locale and set it. Prefers current/default.
  */
 static bool setup_locale(void);
@@ -42,7 +32,7 @@ static bool setup_locale(void);
  * @return `true` if everything was written, `false` on failure.
  */
 static bool write_sorted_output(FILE *out, WstLine *lines, size_t nlines,
-                                const FileContent *content);
+                                const WstFile *content);
 
 
 /**
@@ -57,20 +47,20 @@ static int run_file_sort(const char *in_path, const char *out_path)
 {
     assert(in_path != NULL);
 
-    FileContent content = { 0 };
-    if (!read_file(in_path, &content))
+    WstFile content = { 0 };
+    if (!wst_file_open(in_path, &content))
         return EXIT_FAILURE;
 
     size_t nlines = 0;
     WstLine *lines = split_lines(content.data, content.size, &nlines);
     if (nlines > 0 && lines == NULL) {
-        free_file(&content);
+        wst_file_close(&content);
         return EXIT_FAILURE;
     }
 
     if (!decode_lines(lines, nlines)) {
         free_lines(lines, nlines);
-        free_file(&content);
+        wst_file_close(&content);
         return EXIT_FAILURE;
     }
     LOG_I("'%s': %zu bytes, %zu lines",
@@ -80,7 +70,7 @@ static int run_file_sort(const char *in_path, const char *out_path)
     if (out == NULL) {
         LOG_E("cannot open '%s' for writing: %s", out_path, strerror(errno));
         free_lines(lines, nlines);
-        free_file(&content);
+        wst_file_close(&content);
         return EXIT_FAILURE;
     }
     LOG_D("opened '%s' for writing", out_path);
@@ -95,7 +85,7 @@ static int run_file_sort(const char *in_path, const char *out_path)
     }
 
     free_lines(lines, nlines);
-    free_file(&content);
+    wst_file_close(&content);
 
     if (ret == EXIT_SUCCESS && out_path != NULL)
         LOG_I("wrote '%s'", out_path);
@@ -201,7 +191,7 @@ int main(int argc, char **argv)
 
                 
 static bool write_sorted_output(FILE *out, WstLine *lines, size_t nlines,
-                                const FileContent *content)
+                                const WstFile *content)
 {
     static const char *separator = "/* ----------------------------- */\n";
 
@@ -233,96 +223,6 @@ static bool write_sorted_output(FILE *out, WstLine *lines, size_t nlines,
     return true;
 }
 
-
-static void free_file(FileContent *content)
-{
-    if (content == NULL || content->data == NULL)
-        return;
-
-    if (content->is_mmap)
-        munmap((void *)content->data, content->size);
-    else
-        free((void *)content->data);
-
-    content->data = NULL;
-    content->size = 0;
-}
-
-static bool read_file(const char *path, FileContent *out)
-{
-    assert(path != NULL);
-    assert(out != NULL);
-
-    free_file(out);
-
-    int fd = open(path, O_RDONLY | O_CLOEXEC);
-    if (fd < 0) {
-        LOG_E("cannot open '%s': %s", path, strerror(errno));
-        return false;
-    }
-
-    struct stat my_stat = { 0 };
-    if (fstat(fd, &my_stat) != 0) {
-        LOG_E("cannot stat '%s': %s", path, strerror(errno));
-        close(fd);
-        return false;
-    }
-
-    if (!S_ISREG(my_stat.st_mode)) {
-        LOG_E("'%s' is not a regular file", path);
-        close(fd);
-        return false;
-    }
-
-    size_t fsize = (size_t)my_stat.st_size;
-    if (fsize == 0) {
-        LOG_D("'%s' is an empty file", path);
-        close(fd);
-        return true;
-    }
-
-    void *map = mmap(NULL, fsize, PROT_READ, MAP_PRIVATE, fd, 0);
-    if (map != MAP_FAILED) {
-        LOG_D("'%s': %zu bytes via mmap", path, fsize);
-        out->data = (const char *)map;
-        out->size = fsize;
-        out->is_mmap = true;
-        close(fd);
-        return true;
-    }
-    LOG_W("mmap of '%s' failed: %s, falling back to read",
-          path, strerror(errno));
-
-    char *buf = calloc(fsize, sizeof(char));
-    if (buf == NULL) {
-        LOG_E("calloc(%zu) failed: %s", fsize, strerror(errno));
-        close(fd);
-        return false;
-    }
-
-    /* `read` does not guarantee reading all bytes in one go */
-    size_t read_so_far = 0;
-    while (read_so_far < fsize) {
-        ssize_t ret = read(fd, buf + read_so_far, fsize - read_so_far);
-        if (ret < 0) {
-            if (errno == EINTR)
-                continue;
-            LOG_E("read of '%s' failed: %s", path, strerror(errno));
-            free(buf);
-            close(fd);
-            return false;
-        }
-        if (ret == 0)
-            break; /* EOF */
-        read_so_far += (size_t)ret;
-    }
-    close(fd);
-
-    out->data = buf;
-    out->size = read_so_far;
-    out->is_mmap = false;
-    return true;
-}
 
 static bool setup_locale(void)
 {
