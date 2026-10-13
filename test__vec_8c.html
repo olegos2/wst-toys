@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>wst-toys: tests/test_stk.c File Reference</title>
+<title>wst-toys: tests/test_vec.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,7 +63,7 @@ $(function() {
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(document).ready(function(){initNavTree('test__stk_8c.html',''); initResizable(); });
+$(document).ready(function(){initNavTree('test__vec_8c.html',''); initResizable(); });
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -93,122 +93,122 @@ $(document).ready(function(){initNavTree('test__stk_8c.html',''); initResizable(
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
-  <div class="headertitle"><div class="title">test_stk.c File Reference</div></div>
+  <div class="headertitle"><div class="title">test_vec.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="tests__common_8h_source.html">tests_common.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="stk_8h_source.html">toys/stk.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="stk__internal_8h_source.html">toys/stk_internal.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="vec_8h_source.html">toys/vec.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="vec__internal_8h_source.html">toys/vec_internal.h</a>&quot;</code><br />
 <code>#include &lt;<a class="el" href="string_8h_source.html">string.h</a>&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structStkBig.html">StkBig</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structVecBig.html">VecBig</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:ab99ea9e0b1074cc634919e7384a818f3" id="r_ab99ea9e0b1074cc634919e7384a818f3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__stk_8c.html#ab99ea9e0b1074cc634919e7384a818f3">STK_TEST_N</a>&#160;&#160;&#160;100</td></tr>
-<tr class="separator:ab99ea9e0b1074cc634919e7384a818f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a21ebcd7e21a29b567af99f7e99e4235a" id="r_a21ebcd7e21a29b567af99f7e99e4235a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__stk_8c.html#a21ebcd7e21a29b567af99f7e99e4235a">STK_ELEM</a>&#160;&#160;&#160;<a class="el" href="structStkBig.html">StkBig</a></td></tr>
-<tr class="separator:a21ebcd7e21a29b567af99f7e99e4235a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7135bd0bfbc511c6766c321462f14cf9" id="r_a7135bd0bfbc511c6766c321462f14cf9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__stk_8c.html#a7135bd0bfbc511c6766c321462f14cf9">STK_T</a>&#160;&#160;&#160;WstStkBig</td></tr>
-<tr class="separator:a7135bd0bfbc511c6766c321462f14cf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae8b22e648eb9779925f89568d716d84d" id="r_ae8b22e648eb9779925f89568d716d84d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__stk_8c.html#ae8b22e648eb9779925f89568d716d84d">STK_F</a>(name)&#160;&#160;&#160;wst_stk_test_big_ ## name</td></tr>
-<tr class="separator:ae8b22e648eb9779925f89568d716d84d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a16e593d74f28da2da83a375e641ea5ab" id="r_a16e593d74f28da2da83a375e641ea5ab"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__stk_8c.html#a16e593d74f28da2da83a375e641ea5ab">STK_REF</a></td></tr>
-<tr class="separator:a16e593d74f28da2da83a375e641ea5ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a00c849952da3f1ede1ea4fd8ff7825c3" id="r_a00c849952da3f1ede1ea4fd8ff7825c3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__stk_8c.html#a00c849952da3f1ede1ea4fd8ff7825c3">STK_IMPL</a></td></tr>
-<tr class="separator:a00c849952da3f1ede1ea4fd8ff7825c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88c19077acabc0688985611ec1f0059e" id="r_a88c19077acabc0688985611ec1f0059e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__vec_8c.html#a88c19077acabc0688985611ec1f0059e">VEC_TEST_N</a>&#160;&#160;&#160;100</td></tr>
+<tr class="separator:a88c19077acabc0688985611ec1f0059e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a963e0fd21143fd9379dd9780c53ca825" id="r_a963e0fd21143fd9379dd9780c53ca825"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__vec_8c.html#a963e0fd21143fd9379dd9780c53ca825">VEC_ELEM</a>&#160;&#160;&#160;<a class="el" href="structVecBig.html">VecBig</a></td></tr>
+<tr class="separator:a963e0fd21143fd9379dd9780c53ca825"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae847b3cdaaa76cbb65552945fc41f777" id="r_ae847b3cdaaa76cbb65552945fc41f777"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__vec_8c.html#ae847b3cdaaa76cbb65552945fc41f777">VEC_T</a>&#160;&#160;&#160;WstVecBig</td></tr>
+<tr class="separator:ae847b3cdaaa76cbb65552945fc41f777"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef4957b50590b5e779fe5c90902cdde1" id="r_aef4957b50590b5e779fe5c90902cdde1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__vec_8c.html#aef4957b50590b5e779fe5c90902cdde1">VEC_F</a>(name)&#160;&#160;&#160;wst_vec_test_big_ ## name</td></tr>
+<tr class="separator:aef4957b50590b5e779fe5c90902cdde1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3bf6fff3c3b239f20268ec6cb4430fab" id="r_a3bf6fff3c3b239f20268ec6cb4430fab"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__vec_8c.html#a3bf6fff3c3b239f20268ec6cb4430fab">VEC_REF</a></td></tr>
+<tr class="separator:a3bf6fff3c3b239f20268ec6cb4430fab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6052013f5346f7ae5e27a5af9c4a0c91" id="r_a6052013f5346f7ae5e27a5af9c4a0c91"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__vec_8c.html#a6052013f5346f7ae5e27a5af9c4a0c91">VEC_IMPL</a></td></tr>
+<tr class="separator:a6052013f5346f7ae5e27a5af9c4a0c91"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a840291bc02cba5474a4cb46a9b9566fe" id="r_a840291bc02cba5474a4cb46a9b9566fe"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__stk_8c.html#a840291bc02cba5474a4cb46a9b9566fe">main</a> (void)</td></tr>
+<tr class="memitem:a840291bc02cba5474a4cb46a9b9566fe" id="r_a840291bc02cba5474a4cb46a9b9566fe"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test__vec_8c.html#a840291bc02cba5474a4cb46a9b9566fe">main</a> (void)</td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="a21ebcd7e21a29b567af99f7e99e4235a" name="a21ebcd7e21a29b567af99f7e99e4235a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a21ebcd7e21a29b567af99f7e99e4235a">&#9670;&#160;</a></span>STK_ELEM</h2>
+<a id="a963e0fd21143fd9379dd9780c53ca825" name="a963e0fd21143fd9379dd9780c53ca825"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a963e0fd21143fd9379dd9780c53ca825">&#9670;&#160;</a></span>VEC_ELEM</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define STK_ELEM&#160;&#160;&#160;<a class="el" href="structStkBig.html">StkBig</a></td>
+          <td class="memname">#define VEC_ELEM&#160;&#160;&#160;<a class="el" href="structVecBig.html">VecBig</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="ae8b22e648eb9779925f89568d716d84d" name="ae8b22e648eb9779925f89568d716d84d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae8b22e648eb9779925f89568d716d84d">&#9670;&#160;</a></span>STK_F</h2>
+<a id="aef4957b50590b5e779fe5c90902cdde1" name="aef4957b50590b5e779fe5c90902cdde1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef4957b50590b5e779fe5c90902cdde1">&#9670;&#160;</a></span>VEC_F</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define STK_F</td>
+          <td class="memname">#define VEC_F</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">name</td><td>)</td>
-          <td>&#160;&#160;&#160;wst_stk_test_big_ ## name</td>
+          <td>&#160;&#160;&#160;wst_vec_test_big_ ## name</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a00c849952da3f1ede1ea4fd8ff7825c3" name="a00c849952da3f1ede1ea4fd8ff7825c3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a00c849952da3f1ede1ea4fd8ff7825c3">&#9670;&#160;</a></span>STK_IMPL</h2>
+<a id="a6052013f5346f7ae5e27a5af9c4a0c91" name="a6052013f5346f7ae5e27a5af9c4a0c91"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6052013f5346f7ae5e27a5af9c4a0c91">&#9670;&#160;</a></span>VEC_IMPL</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define STK_IMPL</td>
+          <td class="memname">#define VEC_IMPL</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a16e593d74f28da2da83a375e641ea5ab" name="a16e593d74f28da2da83a375e641ea5ab"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a16e593d74f28da2da83a375e641ea5ab">&#9670;&#160;</a></span>STK_REF</h2>
+<a id="a3bf6fff3c3b239f20268ec6cb4430fab" name="a3bf6fff3c3b239f20268ec6cb4430fab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3bf6fff3c3b239f20268ec6cb4430fab">&#9670;&#160;</a></span>VEC_REF</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define STK_REF</td>
+          <td class="memname">#define VEC_REF</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a7135bd0bfbc511c6766c321462f14cf9" name="a7135bd0bfbc511c6766c321462f14cf9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7135bd0bfbc511c6766c321462f14cf9">&#9670;&#160;</a></span>STK_T</h2>
+<a id="ae847b3cdaaa76cbb65552945fc41f777" name="ae847b3cdaaa76cbb65552945fc41f777"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae847b3cdaaa76cbb65552945fc41f777">&#9670;&#160;</a></span>VEC_T</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define STK_T&#160;&#160;&#160;WstStkBig</td>
+          <td class="memname">#define VEC_T&#160;&#160;&#160;WstVecBig</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="ab99ea9e0b1074cc634919e7384a818f3" name="ab99ea9e0b1074cc634919e7384a818f3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab99ea9e0b1074cc634919e7384a818f3">&#9670;&#160;</a></span>STK_TEST_N</h2>
+<a id="a88c19077acabc0688985611ec1f0059e" name="a88c19077acabc0688985611ec1f0059e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a88c19077acabc0688985611ec1f0059e">&#9670;&#160;</a></span>VEC_TEST_N</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define STK_TEST_N&#160;&#160;&#160;100</td>
+          <td class="memname">#define VEC_TEST_N&#160;&#160;&#160;100</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -239,7 +239,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_59425e443f801f1f2fd8bbe4959a3ccf.html">tests</a></li><li class="navelem"><a class="el" href="test__stk_8c.html">test_stk.c</a></li>
+    <li class="navelem"><a class="el" href="dir_59425e443f801f1f2fd8bbe4959a3ccf.html">tests</a></li><li class="navelem"><a class="el" href="test__vec_8c.html">test_vec.c</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
   </ul>
 </div>

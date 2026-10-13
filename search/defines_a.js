@@ -1,9 +1,19 @@
 var searchData=
 [
-  ['vec_5fbase_0',['vec_base',['../vector_8h.html#a11a171b8b50c44b1b904b0400f25892f',1,'vector.h']]],
-  ['vec_5fcap_1',['vec_cap',['../vector_8h.html#ac5148790a18a9dead675967425112baa',1,'vector.h']]],
-  ['vec_5ffree_2',['vec_free',['../vector_8h.html#a04c8857e68f2ba404e32ddf6d4e2a51a',1,'vector.h']]],
-  ['vec_5fheader_3',['vec_header',['../vector_8h.html#a466ef3358b61197cdfb074939a758dc3',1,'vector.h']]],
-  ['vec_5flen_4',['vec_len',['../vector_8h.html#a4be066b41d9902ee05727acf3ebed03e',1,'vector.h']]],
-  ['vec_5fpush_5',['vec_push',['../vector_8h.html#ac6cda2be85857ac1598ac78c949c33f6',1,'vector.h']]]
+  ['vec_5fcanary_5fsize_0',['VEC_CANARY_SIZE',['../vec__internal_8h.html#ab5c41299cd234f0df15a0d1a6f74a0d5',1,'vec_internal.h']]],
+  ['vec_5fcanary_5ftotal_1',['VEC_CANARY_TOTAL',['../vec__internal_8h.html#adeec9a532d674bdd966d584c3362299d',1,'vec_internal.h']]],
+  ['vec_5felem_2',['vec_elem',['../vec_8h.html#a963e0fd21143fd9379dd9780c53ca825',1,'VEC_ELEM:&#160;vec.h'],['../vec_8h.html#a963e0fd21143fd9379dd9780c53ca825',1,'VEC_ELEM:&#160;vec.h'],['../vec_8h.html#a963e0fd21143fd9379dd9780c53ca825',1,'VEC_ELEM:&#160;vec.h'],['../test__vec_8c.html#a963e0fd21143fd9379dd9780c53ca825',1,'VEC_ELEM:&#160;test_vec.c']]],
+  ['vec_5ff_3',['vec_f',['../vec_8h.html#aef4957b50590b5e779fe5c90902cdde1',1,'VEC_F:&#160;vec.h'],['../vec_8h.html#aef4957b50590b5e779fe5c90902cdde1',1,'VEC_F:&#160;vec.h'],['../vec_8h.html#aef4957b50590b5e779fe5c90902cdde1',1,'VEC_F:&#160;vec.h'],['../test__vec_8c.html#aef4957b50590b5e779fe5c90902cdde1',1,'VEC_F:&#160;test_vec.c']]],
+  ['vec_5ffmt_4',['vec_fmt',['../vec_8h.html#a1aecc68d2bec93675ebd48204b1e1b4a',1,'VEC_FMT:&#160;vec.h'],['../vec_8h.html#a1aecc68d2bec93675ebd48204b1e1b4a',1,'VEC_FMT:&#160;vec.h'],['../vec_8h.html#a1aecc68d2bec93675ebd48204b1e1b4a',1,'VEC_FMT:&#160;vec.h']]],
+  ['vec_5fhead_5fsize_5',['VEC_HEAD_SIZE',['../vec__internal_8h.html#a4790c3164c1f175c18248d7dce6ebb16',1,'vec_internal.h']]],
+  ['vec_5fimpl_6',['vec_impl',['../vec_8c.html#a6052013f5346f7ae5e27a5af9c4a0c91',1,'VEC_IMPL:&#160;vec.c'],['../test__vec_8c.html#a6052013f5346f7ae5e27a5af9c4a0c91',1,'VEC_IMPL:&#160;test_vec.c']]],
+  ['vec_5finit_5fcap_7',['VEC_INIT_CAP',['../vec__internal_8h.html#ae61ddbe0d3f1e00dfa4e55b042317b2b',1,'vec_internal.h']]],
+  ['vec_5fref_8',['VEC_REF',['../test__vec_8c.html#a3bf6fff3c3b239f20268ec6cb4430fab',1,'test_vec.c']]],
+  ['vec_5fseal_9',['VEC_SEAL',['../vec__internal_8h.html#afd9b2e21b0c132268eafe5dfe2c347c2',1,'vec_internal.h']]],
+  ['vec_5ft_10',['vec_t',['../vec_8h.html#ae847b3cdaaa76cbb65552945fc41f777',1,'VEC_T:&#160;vec.h'],['../vec_8h.html#ae847b3cdaaa76cbb65552945fc41f777',1,'VEC_T:&#160;vec.h'],['../vec_8h.html#ae847b3cdaaa76cbb65552945fc41f777',1,'VEC_T:&#160;vec.h'],['../test__vec_8c.html#ae847b3cdaaa76cbb65552945fc41f777',1,'VEC_T:&#160;test_vec.c']]],
+  ['vec_5ftail_5fsize_11',['VEC_TAIL_SIZE',['../vec__internal_8h.html#a079da2c8cd7e0e280f43a362a69137b1',1,'vec_internal.h']]],
+  ['vec_5ftest_5fn_12',['VEC_TEST_N',['../test__vec_8c.html#a88c19077acabc0688985611ec1f0059e',1,'test_vec.c']]],
+  ['vec_5fuse_5fcanary_13',['VEC_USE_CANARY',['../vec__internal_8h.html#ab5022ba8d095ed0d2567d723b7e74579',1,'vec_internal.h']]],
+  ['vec_5fuse_5fcontent_5fhash_14',['VEC_USE_CONTENT_HASH',['../vec__internal_8h.html#adbbced08ca1acb9fec18cb0f9d60f0c7',1,'vec_internal.h']]],
+  ['vec_5fuse_5fhash_15',['VEC_USE_HASH',['../vec__internal_8h.html#a715e9c7988fe208d29dbc704d96b1ad4',1,'vec_internal.h']]]
 ];

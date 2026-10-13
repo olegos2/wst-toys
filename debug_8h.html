@@ -111,9 +111,9 @@ Macros</h2></td></tr>
 <tr class="separator:a36fb3da7e47ad06cbacc97c6189253d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abb12be2103fa2744e892b09bb9ec1ea9" id="r_abb12be2103fa2744e892b09bb9ec1ea9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="debug_8h.html#abb12be2103fa2744e892b09bb9ec1ea9">__WST_LOG_LINE</a>(prio,  fmt, ...)&#160;&#160;&#160;    <a class="el" href="debug_8h.html#a7ef4e2a838308330ef02b007412cd7f8">wst_log_print_at</a>(WST_LOG_ ## prio, __FILE_NAME__, __func__, __LINE__, fmt &quot;\n&quot;, ## __VA_ARGS__)</td></tr>
 <tr class="separator:abb12be2103fa2744e892b09bb9ec1ea9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a771183c36f9b89bc80e322a16baeb93d" id="r_a771183c36f9b89bc80e322a16baeb93d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="debug_8h.html#a771183c36f9b89bc80e322a16baeb93d">LOG_V</a>(...)&#160;&#160;&#160;0</td></tr>
+<tr class="memitem:a771183c36f9b89bc80e322a16baeb93d" id="r_a771183c36f9b89bc80e322a16baeb93d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="debug_8h.html#a771183c36f9b89bc80e322a16baeb93d">LOG_V</a>(...)&#160;&#160;&#160;do { } while (0)</td></tr>
 <tr class="separator:a771183c36f9b89bc80e322a16baeb93d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9aea793dae8e54bf6c50e83949b5ada2" id="r_a9aea793dae8e54bf6c50e83949b5ada2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="debug_8h.html#a9aea793dae8e54bf6c50e83949b5ada2">LOG_D</a>(...)&#160;&#160;&#160;0</td></tr>
+<tr class="memitem:a9aea793dae8e54bf6c50e83949b5ada2" id="r_a9aea793dae8e54bf6c50e83949b5ada2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="debug_8h.html#a9aea793dae8e54bf6c50e83949b5ada2">LOG_D</a>(...)&#160;&#160;&#160;do { } while (0)</td></tr>
 <tr class="separator:a9aea793dae8e54bf6c50e83949b5ada2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a99c2d490f34937c5ca555c82096e93d0" id="r_a99c2d490f34937c5ca555c82096e93d0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="debug_8h.html#a99c2d490f34937c5ca555c82096e93d0">LOG_W</a>(...)&#160;&#160;&#160;    <a class="el" href="debug_8h.html#a36fb3da7e47ad06cbacc97c6189253d6">__WST_LOG_FUNC</a>(WARN, __VA_ARGS__)</td></tr>
 <tr class="separator:a99c2d490f34937c5ca555c82096e93d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -305,7 +305,7 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>...</em></td><td>)</td>
-          <td>&#160;&#160;&#160;0</td>
+          <td>&#160;&#160;&#160;do { } while (0)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -361,7 +361,7 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>...</em></td><td>)</td>
-          <td>&#160;&#160;&#160;0</td>
+          <td>&#160;&#160;&#160;do { } while (0)</td>
         </tr>
       </table>
 </div><div class="memdoc">

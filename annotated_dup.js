@@ -4,7 +4,6 @@ var annotated_dup =
     [ "ArgParser", "structArgParser.html", "structArgParser" ],
     [ "AudioSynth", "structAudioSynth.html", "structAudioSynth" ],
     [ "double_repr", "uniondouble__repr.html", "uniondouble__repr" ],
-    [ "FileContent", "structFileContent.html", "structFileContent" ],
     [ "Parser", "structParser.html", "structParser" ],
     [ "PlotAudioConfig", "structPlotAudioConfig.html", "structPlotAudioConfig" ],
     [ "PlotConfig", "structPlotConfig.html", "structPlotConfig" ],
@@ -14,14 +13,14 @@ var annotated_dup =
     [ "PlotRect", "structPlotRect.html", "structPlotRect" ],
     [ "PlotWindowConfig", "structPlotWindowConfig.html", "structPlotWindowConfig" ],
     [ "SolveConfig", "structSolveConfig.html", "structSolveConfig" ],
-    [ "StkBig", "structStkBig.html", "structStkBig" ],
     [ "StringPosition", "structStringPosition.html", "structStringPosition" ],
     [ "Token", "structToken.html", "structToken" ],
-    [ "VecHeader", "structVecHeader.html", "structVecHeader" ],
+    [ "VecBig", "structVecBig.html", "structVecBig" ],
+    [ "WstFile", "structWstFile.html", "structWstFile" ],
     [ "WstLine", "structWstLine.html", "structWstLine" ],
     [ "WstMtx", "structWstMtx.html", "structWstMtx" ],
     [ "WstMtxSym", "structWstMtxSym.html", "structWstMtxSym" ],
     [ "WstPoly", "structWstPoly.html", "structWstPoly" ],
     [ "WstSolution", "structWstSolution.html", "structWstSolution" ],
-    [ "WstStkVoid", "structWstStkVoid.html", "structWstStkVoid" ]
+    [ "WstVecVoid", "structWstVecVoid.html", "structWstVecVoid" ]
 ];

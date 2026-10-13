@@ -20,10 +20,10 @@ var searchData=
   ['wst_5flog_5fwarn_17',['WST_LOG_WARN',['../debug_8h.html#a594178a93a82f2700efff6d291a91fefa71cca32c9d7ea007e918bec171107f01',1,'debug.h']]],
   ['wst_5fsolve_5ferr_18',['WST_SOLVE_ERR',['../poly_8h.html#a99fb83031ce9923c84392b4e92f956b5a7c9a1477f7e5e4256b4f1ea7bfe5e1ee',1,'poly.h']]],
   ['wst_5fsolve_5finf_19',['WST_SOLVE_INF',['../poly_8h.html#a99fb83031ce9923c84392b4e92f956b5ad436c36c75617e51f5a446393944d4e9',1,'poly.h']]],
-  ['wst_5fstk_5ferr_5fcorrupt_20',['WST_STK_ERR_CORRUPT',['../stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aaee0e6e32f7f138aba85f8319b2b95bcf',1,'stk_internal.h']]],
-  ['wst_5fstk_5ferr_5fempty_21',['WST_STK_ERR_EMPTY',['../stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aa9e3c618efda1a1e0e9b743cf2b841e17',1,'stk_internal.h']]],
-  ['wst_5fstk_5ferr_5fnomem_22',['WST_STK_ERR_NOMEM',['../stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aa93683b7d5a51536477744a8f5121da86',1,'stk_internal.h']]],
-  ['wst_5fstk_5ferr_5fnull_23',['WST_STK_ERR_NULL',['../stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aa90d820dcc187f6a3aa8cf6bf8d1c9733',1,'stk_internal.h']]],
-  ['wst_5fstk_5ferr_5foverflow_24',['WST_STK_ERR_OVERFLOW',['../stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aaef7f0751739ffcce3a3c5ac546d54272',1,'stk_internal.h']]],
-  ['wst_5fstk_5fno_5ferr_25',['WST_STK_NO_ERR',['../stk__internal_8h.html#afcc2f79342f9a32598f7eaff45d3778aafc454d952e2c0236bdf1c55b97d29eb0',1,'stk_internal.h']]]
+  ['wst_5fvec_5ferr_5fcorrupt_20',['WST_VEC_ERR_CORRUPT',['../vec__internal_8h.html#af29719862f56ac0c163afea9c281635da90f185dc13f829b907645f05b2e441bb',1,'vec_internal.h']]],
+  ['wst_5fvec_5ferr_5fempty_21',['WST_VEC_ERR_EMPTY',['../vec__internal_8h.html#af29719862f56ac0c163afea9c281635da1c10addb721222e2b5bb1058c6f7aa34',1,'vec_internal.h']]],
+  ['wst_5fvec_5ferr_5fnomem_22',['WST_VEC_ERR_NOMEM',['../vec__internal_8h.html#af29719862f56ac0c163afea9c281635daba54e51e92f7832b79d5f0bffae400ab',1,'vec_internal.h']]],
+  ['wst_5fvec_5ferr_5fnull_23',['WST_VEC_ERR_NULL',['../vec__internal_8h.html#af29719862f56ac0c163afea9c281635da9f1c679e088ceeeb7ceeb4489d6fe936',1,'vec_internal.h']]],
+  ['wst_5fvec_5ferr_5foverflow_24',['WST_VEC_ERR_OVERFLOW',['../vec__internal_8h.html#af29719862f56ac0c163afea9c281635dae873feb975e314cf6a722a7206bfbd10',1,'vec_internal.h']]],
+  ['wst_5fvec_5fno_5ferr_25',['WST_VEC_NO_ERR',['../vec__internal_8h.html#af29719862f56ac0c163afea9c281635dacb6c4abfec3e9234ab99f01dbbd49c63',1,'vec_internal.h']]]
 ];

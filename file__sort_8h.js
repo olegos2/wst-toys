@@ -1,6 +1,5 @@
 var file__sort_8h =
 [
-    [ "FileContent", "structFileContent.html", "structFileContent" ],
     [ "WstLine", "structWstLine.html", "structWstLine" ],
     [ "ARR_LEN", "file__sort_8h.html#ae80f396a17127ce32095c01e4550ea60", null ],
     [ "cmp_letters_fwd", "file__sort_8h.html#a7221487ceff46cc9aca0db8681477c42", null ],

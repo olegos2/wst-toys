@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['payload_0',['payload',['../structStkBig.html#af5e96c7a39c723181d735a952ddd2408',1,'StkBig']]],
+  ['payload_0',['payload',['../structVecBig.html#a3277fcdb688c0a54b74e71543587b51d',1,'VecBig']]],
   ['phase_1',['phase',['../structAudioSynth.html#a4b91b3f931c95a4b5907c0a265eadeb7',1,'AudioSynth']]],
   ['plot_5fsnap_5fpx_2',['plot_snap_px',['../structPlotConfig.html#affa4d498a1095f71110f858f013afcce',1,'PlotConfig']]],
   ['pos_3',['pos',['../structPlotGridConfig.html#a99b3dea01ef1ca1bfc4d5749a6c7756d',1,'PlotGridConfig::pos'],['../structParser.html#aa21095f3404bd3c891edd0a60e66762f',1,'Parser::pos']]],

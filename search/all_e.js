@@ -2,7 +2,7 @@ var searchData=
 [
   ['parser_0',['Parser',['../structParser.html',1,'']]],
   ['parser_5ferr_5flen_1',['PARSER_ERR_LEN',['../argparse_8h.html#a42344ea979dba0515a881c3fdb82d66a',1,'argparse.h']]],
-  ['payload_2',['payload',['../structStkBig.html#af5e96c7a39c723181d735a952ddd2408',1,'StkBig']]],
+  ['payload_2',['payload',['../structVecBig.html#a3277fcdb688c0a54b74e71543587b51d',1,'VecBig']]],
   ['phase_3',['phase',['../structAudioSynth.html#a4b91b3f931c95a4b5907c0a265eadeb7',1,'AudioSynth']]],
   ['plot_2ec_4',['plot.c',['../plot_8c.html',1,'']]],
   ['plot_2eh_5',['plot.h',['../plot_8h.html',1,'']]],

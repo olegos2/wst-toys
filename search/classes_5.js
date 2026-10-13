@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['token_0',['Token',['../structToken.html',1,'']]]
+  ['vecbig_0',['VecBig',['../structVecBig.html',1,'']]]
 ];
