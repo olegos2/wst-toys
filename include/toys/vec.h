@@ -4,7 +4,8 @@
  *
  * Stamps the template in `vec_internal.h` once per element type. Each
  * stamp produces a struct plus `init`/`free`/`reserve`/`push`/`pop`/`verify`
- * and indexed `ensure`/`set`/`get`/`resize`/`clear` under a per-type prefix.
+ * and indexed `ensure`/`set`/`get`/`resize`/`clear`, plus `seal` to recompute
+ * the checksum after direct buffer work, under a per-type prefix.
  * Provided stamps:
  * - `double`: `WstVecDouble`, `wst_vec_double_*`
  * - `int`: `WstVecInt`, `wst_vec_int_*`

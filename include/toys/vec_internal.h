@@ -193,6 +193,7 @@ WstVecErr vec_pop(VEC_T *vec, VEC_ELEM *out);
 #define vec_get VEC_F(get)
 #define vec_resize VEC_F(resize)
 #define vec_clear VEC_F(clear)
+#define vec_seal VEC_F(seal)
 
 /** Grow length to `n`, zero-filling the new part. Smaller requests are a no-op. */
 WstVecErr vec_ensure(VEC_T *vec, size_t n);
@@ -208,6 +209,9 @@ WstVecErr vec_resize(VEC_T *vec, size_t n);
 
 /** Set length to zero, keeping capacity. */
 WstVecErr vec_clear(VEC_T *vec);
+
+/** Recompute the stored checksum after direct buffer work. */
+void vec_seal(VEC_T *vec);
 
 /** Dump vector contents, canary and checksum state to stderr. */
 void vec_dump(const VEC_T *vec);
@@ -404,6 +408,12 @@ WstVecErr vec_clear(VEC_T *vec)
     return WST_VEC_NO_ERR;
 }
 
+void vec_seal(VEC_T *vec)
+{
+    assert(vec != NULL);
+    VEC_SEAL((WstVecVoid *)vec, sizeof(VEC_ELEM));
+}
+
 void vec_dump(const VEC_T *vec)
 {
     LOG_V("Dumping vector at %p", vec);
@@ -444,6 +454,7 @@ void vec_dump(const VEC_T *vec)
 #undef vec_get
 #undef vec_resize
 #undef vec_clear
+#undef vec_seal
 #undef vec_dump
 
 #undef VEC_FMT
