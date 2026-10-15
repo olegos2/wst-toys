@@ -198,11 +198,23 @@ WstVecErr vec_pop(VEC_T *vec, VEC_ELEM *out);
 /** Grow length to `n`, zero-filling the new part. Smaller requests are a no-op. */
 WstVecErr vec_ensure(VEC_T *vec, size_t n);
 
+#ifdef VEC_REF
+
+/** Write `value` at index `i`, resealing afterwards. Index must be below length. */
+WstVecErr vec_set(VEC_T *vec, size_t i, const VEC_ELEM *value);
+
+/** Read value at index `i` into `out`. Index must be below length. */
+void vec_get(const VEC_T *vec, size_t i, VEC_ELEM *out);
+
+#else /* !VEC_REF */
+
 /** Write `value` at index `i`, resealing afterwards. Index must be below length. */
 WstVecErr vec_set(VEC_T *vec, size_t i, VEC_ELEM value);
 
 /** Read value at index `i`. Index must be below length. */
 VEC_ELEM vec_get(const VEC_T *vec, size_t i);
+
+#endif /* !VEC_REF */
 
 /** Set length to `n`, zero-filling growth. */
 WstVecErr vec_resize(VEC_T *vec, size_t n);
@@ -359,6 +371,33 @@ WstVecErr vec_ensure(VEC_T *vec, size_t n)
     return WST_VEC_NO_ERR;
 }
 
+#ifdef VEC_REF
+
+WstVecErr vec_set(VEC_T *vec, size_t i, const VEC_ELEM *value)
+{
+    assert(vec != NULL);
+    assert(value != NULL);
+
+    WstVecErr err = vec_verify(vec);
+    if (err != WST_VEC_NO_ERR)
+        return err;
+
+    assert(i < vec->length);
+    vec->data[i] = *value;
+    VEC_SEAL((WstVecVoid *)vec, sizeof(VEC_ELEM));
+    return WST_VEC_NO_ERR;
+}
+
+void vec_get(const VEC_T *vec, size_t i, VEC_ELEM *out)
+{
+    assert(vec != NULL);
+    assert(out != NULL);
+    assert(i < vec->length);
+    *out = vec->data[i];
+}
+
+#else /* !VEC_REF */
+
 WstVecErr vec_set(VEC_T *vec, size_t i, VEC_ELEM value)
 {
     assert(vec != NULL);
@@ -379,6 +418,8 @@ VEC_ELEM vec_get(const VEC_T *vec, size_t i)
     assert(i < vec->length);
     return vec->data[i];
 }
+
+#endif /* !VEC_REF */
 
 WstVecErr vec_resize(VEC_T *vec, size_t n)
 {
