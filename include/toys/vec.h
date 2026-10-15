@@ -10,6 +10,7 @@
  * - `double`: `WstVecDouble`, `wst_vec_double_*`
  * - `int`: `WstVecInt`, `wst_vec_int_*`
  * - `uint8_t`: `WstVecU8`, `wst_vec_u8_*`
+ * - `uint32_t`: `WstVecU32`, `wst_vec_u32_*``
  *
  * Every operation verifies length/capacity invariants, canary blocks on
  * both sides of the buffer and a struct checksum, reporting `WstVecErr`.
@@ -47,6 +48,13 @@
 #define VEC_T WstVecU8
 #define VEC_F(name) wst_vec_u8_ ## name
 #define VEC_FMT "%hhu"
+#include "vec_internal.h"
+
+
+#define VEC_ELEM uint32_t
+#define VEC_T WstVecU32
+#define VEC_F(name) wst_vec_u32_ ## name
+#define VEC_FMT "%u"
 #include "vec_internal.h"
 
 
