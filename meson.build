@@ -15,6 +15,15 @@ if get_option('debug')
     add_project_arguments('-DWST_DEBUG', language: 'c')
 endif
 
+if get_option('vec-protect')
+    add_project_arguments(
+        '-DVEC_USE_CANARY=1',
+        '-DVEC_USE_HASH=1',
+        '-DVEC_USE_CONTENT_HASH=1',
+        language: 'c',
+    )
+endif
+
 inc = include_directories(
     'include',
 )

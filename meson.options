@@ -1,2 +1,3 @@
 option('examples', type: 'boolean', value: true, description: 'Build example programs')
 option('tests', type: 'boolean', value: true, description: 'Build test programs')
+option('vec-protect', type: 'boolean', value: false, description: 'Build with vector data structure integrity checks')

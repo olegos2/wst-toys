@@ -21,27 +21,15 @@
 #define VEC_INIT_CAP 8
 
 #if !defined(VEC_USE_CANARY)
-#  ifdef WST_DEBUG
-#    define VEC_USE_CANARY 1
-#  else
-#    define VEC_USE_CANARY 0
-#  endif
+#  define VEC_USE_CANARY 0
 #endif
 
 #if !defined(VEC_USE_HASH)
-#  ifdef WST_DEBUG
-#    define VEC_USE_HASH 1
-#  else
-#    define VEC_USE_HASH 0
-#  endif
+#  define VEC_USE_HASH 0
 #endif
 
 #if !defined(VEC_USE_CONTENT_HASH)
-#  ifdef WST_DEBUG
-#    define VEC_USE_CONTENT_HASH 1
-#  else
-#    define VEC_USE_CONTENT_HASH 0
-#  endif
+#  define VEC_USE_CONTENT_HASH 0
 #endif
 /* Content hashing extends the struct checksum, inert without VEC_USE_HASH. */
 
