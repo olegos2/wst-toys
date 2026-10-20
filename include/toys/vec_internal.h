@@ -11,7 +11,7 @@
 #include <string.h>
 
 #ifndef TOYS_VEC_H
-#  error "Internal header must not be used directly"
+#  error Internal header must not be used directly
 #endif
 
 /** Canary tail size in bytes, shared by all instantiations. */
