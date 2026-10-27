@@ -3,6 +3,8 @@ toys_hdrs = files(
     'debug.h',
     'expr.h',
     'file.h',
+    'list_internal.h',
+    'list.h',
     'math.h',
     'mtx.h',
     'poly.h',

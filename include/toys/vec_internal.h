@@ -10,9 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef TOYS_VEC_H
-#  error Internal header must not be used directly
-#endif
 
 /** Canary tail size in bytes, shared by all instantiations. */
 #define VEC_CANARY_SIZE 8
@@ -133,6 +130,13 @@ void wst_vec_void_dump(const WstVecVoid *vec, size_t elem_size, const char *vec_
 #define vec_prepare_push VEC_F(prepare_push)
 #define vec_dump VEC_F(dump)
 
+#define vec_ensure VEC_F(ensure)
+#define vec_set VEC_F(set)
+#define vec_get VEC_F(get)
+#define vec_resize VEC_F(resize)
+#define vec_clear VEC_F(clear)
+#define vec_seal VEC_F(seal)
+
 
 /** A vector with elements of fixed type. */
 typedef struct {
@@ -175,13 +179,6 @@ WstVecErr vec_push(VEC_T *vec, VEC_ELEM value);
 
 /** Pop value from vector top into `out`, or discard it when `out` is NULL. */
 WstVecErr vec_pop(VEC_T *vec, VEC_ELEM *out);
-
-#define vec_ensure VEC_F(ensure)
-#define vec_set VEC_F(set)
-#define vec_get VEC_F(get)
-#define vec_resize VEC_F(resize)
-#define vec_clear VEC_F(clear)
-#define vec_seal VEC_F(seal)
 
 /** Grow length to `n`, zero-filling the new part. Smaller requests are a no-op. */
 WstVecErr vec_ensure(VEC_T *vec, size_t n);

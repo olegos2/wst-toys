@@ -5,6 +5,7 @@ toys_common_lib = library(
         'argparse.c',
         'debug.c',
         'file.c',
+        'list.c',
         'mtx.c',
         'sort.c',
         'string.c',
