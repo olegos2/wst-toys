@@ -9,18 +9,17 @@ var searchData=
   ['vec_5ff_6',['vec_f',['../vec_8h.html#aef4957b50590b5e779fe5c90902cdde1',1,'VEC_F:&#160;vec.h'],['../vec_8h.html#aef4957b50590b5e779fe5c90902cdde1',1,'VEC_F:&#160;vec.h'],['../vec_8h.html#aef4957b50590b5e779fe5c90902cdde1',1,'VEC_F:&#160;vec.h'],['../vec_8h.html#aef4957b50590b5e779fe5c90902cdde1',1,'VEC_F:&#160;vec.h'],['../test__vec_8c.html#aef4957b50590b5e779fe5c90902cdde1',1,'VEC_F:&#160;test_vec.c']]],
   ['vec_5ffmt_7',['vec_fmt',['../vec_8h.html#a1aecc68d2bec93675ebd48204b1e1b4a',1,'VEC_FMT:&#160;vec.h'],['../vec_8h.html#a1aecc68d2bec93675ebd48204b1e1b4a',1,'VEC_FMT:&#160;vec.h'],['../vec_8h.html#a1aecc68d2bec93675ebd48204b1e1b4a',1,'VEC_FMT:&#160;vec.h'],['../vec_8h.html#a1aecc68d2bec93675ebd48204b1e1b4a',1,'VEC_FMT:&#160;vec.h']]],
   ['vec_5fhead_5fsize_8',['VEC_HEAD_SIZE',['../vec__internal_8h.html#a4790c3164c1f175c18248d7dce6ebb16',1,'vec_internal.h']]],
-  ['vec_5fimpl_9',['vec_impl',['../vec_8c.html#a6052013f5346f7ae5e27a5af9c4a0c91',1,'VEC_IMPL:&#160;vec.c'],['../test__vec_8c.html#a6052013f5346f7ae5e27a5af9c4a0c91',1,'VEC_IMPL:&#160;test_vec.c']]],
+  ['vec_5fimpl_9',['vec_impl',['../test__vec_8c.html#a6052013f5346f7ae5e27a5af9c4a0c91',1,'VEC_IMPL:&#160;test_vec.c'],['../vec_8c.html#a6052013f5346f7ae5e27a5af9c4a0c91',1,'VEC_IMPL:&#160;vec.c']]],
   ['vec_5finit_5fcap_10',['VEC_INIT_CAP',['../vec__internal_8h.html#ae61ddbe0d3f1e00dfa4e55b042317b2b',1,'vec_internal.h']]],
   ['vec_5finternal_2eh_11',['vec_internal.h',['../vec__internal_8h.html',1,'']]],
   ['vec_5fref_12',['VEC_REF',['../test__vec_8c.html#a3bf6fff3c3b239f20268ec6cb4430fab',1,'test_vec.c']]],
   ['vec_5fseal_13',['VEC_SEAL',['../vec__internal_8h.html#afd9b2e21b0c132268eafe5dfe2c347c2',1,'vec_internal.h']]],
-  ['vec_5ft_14',['vec_t',['../test__vec_8c.html#ae847b3cdaaa76cbb65552945fc41f777',1,'VEC_T:&#160;test_vec.c'],['../vec_8h.html#ae847b3cdaaa76cbb65552945fc41f777',1,'VEC_T:&#160;vec.h'],['../vec_8h.html#ae847b3cdaaa76cbb65552945fc41f777',1,'VEC_T:&#160;vec.h'],['../vec_8h.html#ae847b3cdaaa76cbb65552945fc41f777',1,'VEC_T:&#160;vec.h'],['../vec_8h.html#ae847b3cdaaa76cbb65552945fc41f777',1,'VEC_T:&#160;vec.h']]],
+  ['vec_5ft_14',['vec_t',['../vec_8h.html#ae847b3cdaaa76cbb65552945fc41f777',1,'VEC_T:&#160;vec.h'],['../vec_8h.html#ae847b3cdaaa76cbb65552945fc41f777',1,'VEC_T:&#160;vec.h'],['../vec_8h.html#ae847b3cdaaa76cbb65552945fc41f777',1,'VEC_T:&#160;vec.h'],['../vec_8h.html#ae847b3cdaaa76cbb65552945fc41f777',1,'VEC_T:&#160;vec.h'],['../test__vec_8c.html#ae847b3cdaaa76cbb65552945fc41f777',1,'VEC_T:&#160;test_vec.c']]],
   ['vec_5ftail_5fsize_15',['VEC_TAIL_SIZE',['../vec__internal_8h.html#a079da2c8cd7e0e280f43a362a69137b1',1,'vec_internal.h']]],
   ['vec_5ftest_5fn_16',['VEC_TEST_N',['../test__vec_8c.html#a88c19077acabc0688985611ec1f0059e',1,'test_vec.c']]],
   ['vec_5fuse_5fcanary_17',['VEC_USE_CANARY',['../vec__internal_8h.html#ab5022ba8d095ed0d2567d723b7e74579',1,'vec_internal.h']]],
   ['vec_5fuse_5fcontent_5fhash_18',['VEC_USE_CONTENT_HASH',['../vec__internal_8h.html#adbbced08ca1acb9fec18cb0f9d60f0c7',1,'vec_internal.h']]],
   ['vec_5fuse_5fhash_19',['VEC_USE_HASH',['../vec__internal_8h.html#a715e9c7988fe208d29dbc704d96b1ad4',1,'vec_internal.h']]],
-  ['vecbig_20',['VecBig',['../structVecBig.html',1,'']]],
-  ['verbose_21',['verbose',['../structSolveConfig.html#a1f7547f1ac54af86398bc19ee0ce989e',1,'SolveConfig']]],
-  ['volume_22',['volume',['../structAudioSynth.html#a403eb612adeaf2230b68c5e228583df3',1,'AudioSynth']]]
+  ['verbose_20',['verbose',['../structSolveConfig.html#a1f7547f1ac54af86398bc19ee0ce989e',1,'SolveConfig']]],
+  ['volume_21',['volume',['../structAudioSynth.html#a403eb612adeaf2230b68c5e228583df3',1,'AudioSynth']]]
 ];

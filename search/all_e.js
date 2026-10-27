@@ -2,7 +2,7 @@ var searchData=
 [
   ['parser_0',['Parser',['../structParser.html',1,'']]],
   ['parser_5ferr_5flen_1',['PARSER_ERR_LEN',['../argparse_8h.html#a42344ea979dba0515a881c3fdb82d66a',1,'argparse.h']]],
-  ['payload_2',['payload',['../structVecBig.html#a3277fcdb688c0a54b74e71543587b51d',1,'VecBig']]],
+  ['payload_2',['payload',['../structElemBig.html#ab8e29398c856e73f636d0c1e51f7c2d0',1,'ElemBig']]],
   ['phase_3',['phase',['../structAudioSynth.html#a4b91b3f931c95a4b5907c0a265eadeb7',1,'AudioSynth']]],
   ['plot_2ec_4',['plot.c',['../plot_8c.html',1,'']]],
   ['plot_2eh_5',['plot.h',['../plot_8h.html',1,'']]],
@@ -20,6 +20,7 @@ var searchData=
   ['poly_5fcap_17',['POLY_CAP',['../plot_8h.html#ac3c2b94a1089d3f4fa7eae42d7b18438',1,'plot.h']]],
   ['pos_18',['pos',['../structPlotGridConfig.html#a99b3dea01ef1ca1bfc4d5749a6c7756d',1,'PlotGridConfig::pos'],['../structParser.html#aa21095f3404bd3c891edd0a60e66762f',1,'Parser::pos']]],
   ['pretty_19',['pretty',['../structSolveConfig.html#a4f4ed4ea6e9f3bbe767c8231f17043ec',1,'SolveConfig']]],
-  ['prog_20',['prog',['../structArgParser.html#a6b5ca8fe0cd3e2878edcdf844203748f',1,'ArgParser']]],
-  ['px_5fpos_21',['px_pos',['../structPlotGridConfig.html#addebf98e5087e3b35fb95319243b555c',1,'PlotGridConfig']]]
+  ['prev_20',['prev',['../structWstListNodeHdr.html#a446130a9258e3c878699a036e8d8fc10',1,'WstListNodeHdr']]],
+  ['prog_21',['prog',['../structArgParser.html#a6b5ca8fe0cd3e2878edcdf844203748f',1,'ArgParser']]],
+  ['px_5fpos_22',['px_pos',['../structPlotGridConfig.html#addebf98e5087e3b35fb95319243b555c',1,'PlotGridConfig']]]
 ];

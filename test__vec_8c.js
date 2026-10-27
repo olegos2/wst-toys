@@ -1,6 +1,6 @@
 var test__vec_8c =
 [
-    [ "VecBig", "structVecBig.html", "structVecBig" ],
+    [ "ElemBig", "structElemBig.html", "structElemBig" ],
     [ "VEC_ELEM", "test__vec_8c.html#a963e0fd21143fd9379dd9780c53ca825", null ],
     [ "VEC_F", "test__vec_8c.html#aef4957b50590b5e779fe5c90902cdde1", null ],
     [ "VEC_IMPL", "test__vec_8c.html#a6052013f5346f7ae5e27a5af9c4a0c91", null ],

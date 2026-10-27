@@ -4,6 +4,7 @@ var dir_68267d1309a1af8e8297ef4c3efbcdba =
     [ "argparse.c", "argparse_8c.html", "argparse_8c" ],
     [ "debug.c", "debug_8c.html", "debug_8c" ],
     [ "file.c", "file_8c.html", "file_8c" ],
+    [ "list.c", "list_8c.html", "list_8c" ],
     [ "mtx.c", "mtx_8c.html", "mtx_8c" ],
     [ "sort.c", "sort_8c.html", "sort_8c" ],
     [ "string.c", "string_8c.html", "string_8c" ],

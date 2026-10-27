@@ -7,6 +7,7 @@ var searchData=
   ['file_5fsort_2ec_4',['file_sort.c',['../file__sort_8c.html',1,'']]],
   ['file_5fsort_2eh_5',['file_sort.h',['../file__sort_8h.html',1,'']]],
   ['font_6',['font',['../structPlotConfig.html#af7bcdbc91047252e8ac65c1c74d7c488',1,'PlotConfig']]],
-  ['free_5flines_7',['free_lines',['../file__sort_8h.html#abd5bee4513ccbd24110b87b227deb8be',1,'free_lines(WstLine *lines, size_t nlines):&#160;line.c'],['../line_8c.html#abd5bee4513ccbd24110b87b227deb8be',1,'free_lines(WstLine *lines, size_t nlines):&#160;line.c']]],
-  ['freq_8',['freq',['../structAudioSynth.html#a33d7acc6121858d0fe8aaf114ee5fa93',1,'AudioSynth']]]
+  ['free_7',['free',['../structWstListHdr.html#a9fb16c67a79c9e84c21d49d0ecce1c22',1,'WstListHdr']]],
+  ['free_5flines_8',['free_lines',['../file__sort_8h.html#abd5bee4513ccbd24110b87b227deb8be',1,'free_lines(WstLine *lines, size_t nlines):&#160;line.c'],['../line_8c.html#abd5bee4513ccbd24110b87b227deb8be',1,'free_lines(WstLine *lines, size_t nlines):&#160;line.c']]],
+  ['freq_9',['freq',['../structAudioSynth.html#a33d7acc6121858d0fe8aaf114ee5fa93',1,'AudioSynth']]]
 ];
