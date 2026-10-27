@@ -1,17 +1,3 @@
-#ifndef TOYS_LIST_INTERNAL_H
-#define TOYS_LIST_INTERNAL_H
-
-#include <assert.h>
-#include <errno.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-
-
 /**
  * A header that generates typed doubly linked lists,
  * Uses macros to describe list element type.
@@ -33,6 +19,8 @@
  *
  * Backing store is organized as vector of chunks (blocks) of nodes.
  * Each chunk has its own capacity and is never reallocated.
+ * Chunk struct stores its flexible array inline instead of allocating
+ * separately.
  * Their individual capacities grow geometrically with every new chunk.
  *
  * Initial state of the list is NULL-ed header and 0 blocks.
@@ -43,8 +31,8 @@
  * Whenever there's no free nodes left and a new element needs to be added,
  * a new block is reserved. Capacity of that block is double the capacity of
  * previously allocated block.
- * After allocating the new block, all nodes in it are linked in one direction,
- * then front of this chain becomes the next free node.
+ * After allocating the new block, all nodes in it are linked in one
+ * direction, then front of this chain becomes the next free node.
  *
  * Whenever a new element needs to be added in the middle, a node is popped from
  * the front of free nodes chain, and linked between two live nodes of the list.
@@ -58,34 +46,21 @@
  * NULL-ing the list header.
  */
 
+#ifndef TOYS_LIST_INTERNAL_H
+#define TOYS_LIST_INTERNAL_H
 
-// /** Canary tail size in bytes, shared by all instantiations. */
-// #define LIST_CANARY_SIZE 8
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <sys/types.h>
+
 
 /** Capacity of the first block of nodes. */
 #define LIST_BLOCK_INIT_CAP 8
 
-// #if !defined(LIST_USE_CANARY)
-// #  define LIST_USE_CANARY 0
-// #endif
-
-// #if !defined(LIST_USE_HASH)
-// #  define LIST_USE_HASH 0
-// #endif
-
 // #if !defined(LIST_USE_CONTENT_HASH)
 // #  define LIST_USE_CONTENT_HASH 0
 // #endif
-
-// #if LIST_USE_CANARY
-// #  define LIST_HEAD_SIZE LIST_CANARY_SIZE
-// #  define LIST_TAIL_SIZE LIST_CANARY_SIZE
-// #else
-// #  define LIST_HEAD_SIZE 0
-// #  define LIST_TAIL_SIZE 0
-// #endif
-
-// #define LIST_CANARY_TOTAL (LIST_HEAD_SIZE + LIST_TAIL_SIZE)
 
 
 /**
@@ -128,6 +103,40 @@ typedef struct {
     WstListNodeHdr *free;
 } WstListHdr;
 
+/** Short human-readable description of a list error. */
+const char *wst_list_err_str(WstListErr err);
+
+#endif /* TOYS_LIST_INTERNAL_H */
+
+
+// /* Temporary for editor. */
+// #ifndef LIST_T
+// #define LIST_T WstListInt
+// #define LIST_ELEM int
+// #define LIST_F(it) wst_list_int_ ## it
+// #define LIST_FMT "%d"
+// #define LIST_IMPL
+// #endif
+
+
+/*
+ * Declarations used only by list implementations. Kept under a separate guard
+ * because LIST_IMPL may become defined between two includes of this header in
+ * the same translation unit.
+ */
+#ifdef LIST_IMPL
+#ifndef TOYS_LIST_INTERNAL_IMPL_H
+#define TOYS_LIST_INTERNAL_IMPL_H
+
+#include "toys/vec_internal.h"
+
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+
+
 /** Get node at `idx`, or `NULL` when out of bounds. */
 WstListNodeHdr *wst_list_hdr_at(const WstListHdr *list, size_t idx);
 
@@ -148,19 +157,20 @@ void wst_list_hdr_reset(WstListHdr *list);
 void wst_list_hdr_add_free(WstListHdr *list, void *nodes, size_t count,
                            size_t stride);
 
-/** Short human-readable description of a list error. */
-const char *wst_list_err_str(WstListErr err);
+/** Find first node whose data at `data_off` matches `value` bytewise. */
+WstListNodeHdr *wst_list_hdr_find(const WstListHdr *list, size_t data_off,
+                                  const void *value, size_t value_size);
 
-#endif /* TOYS_LIST_INTERNAL_H */
+/** Find index of the first bytewise match, or `-1` when not found. */
+ssize_t wst_list_hdr_find_index(const WstListHdr *list, size_t data_off,
+                                const void *value, size_t value_size);
 
-/** Temporary for editor. */
-#ifndef LIST_T
-#define LIST_T WstListInt
-#define LIST_ELEM int
-#define LIST_F(it) wst_list_int_ ## it
-#define LIST_FMT "%d"
-#define LIST_IMPL
-#endif
+/** Translate a block-vector error into a list error. */
+WstListErr wst_list_err_from_vec(WstVecErr err);
+
+#endif /* TOYS_LIST_INTERNAL_IMPL_H */
+#endif /* LIST_IMPL */
+
 
 #ifdef LIST_T
 #if !defined(LIST_ELEM)
@@ -198,7 +208,6 @@ const char *wst_list_err_str(WstListErr err);
 #define list_insert LIST_F(insert)
 
 /* non-public funcs */
-#define list_err_from_vec LIST_F(err_from_vec)
 #define list_drop_blocks LIST_F(drop_blocks)
 #define list_new_block LIST_F(new_block)
 #define list_alloc_node LIST_F(alloc_node)
@@ -360,43 +369,29 @@ WstListErr list_insert(LIST_T *list, size_t idx, LIST_ELEM val);
 
 #ifdef LIST_IMPL
 
-/** Elements are compared bytewise, as the API takes no comparator. */
-#define LIST_EQ(a, b) (memcmp(&(a), (b), sizeof(LIST_ELEM)) == 0)
-
-/** Translate a block-vector error into a list error. */
-static WstListErr list_err_from_vec(WstVecErr err)
-{
-    switch (err) {
-    case WST_VEC_NO_ERR:
-        return WST_LIST_NO_ERR;
-    case WST_VEC_ERR_NOMEM:
-        return WST_LIST_ERR_NOMEM;
-    case WST_VEC_ERR_EMPTY:
-        return WST_LIST_ERR_EMPTY;
-    case WST_VEC_ERR_NULL:
-        return WST_LIST_ERR_NULL;
-    case WST_VEC_ERR_CORRUPT:
-        return WST_LIST_ERR_CORRUPT;
-    case WST_VEC_ERR_OVERFLOW:
-        return WST_LIST_ERR_OVERFLOW;
-    }
-    return WST_LIST_ERR_CORRUPT;
-}
-
 /** Free every node block and the block vector, list must verify. */
 static WstListErr list_drop_blocks(LIST_T *list)
 {
     assert(list != NULL);
 
-    while (list->blocks.length > 0) {
-        LIST_BLOCK_PTR_T block = NULL;
-        WstVecErr verr = BLOCK_VEC_F(pop)(&list->blocks, &block);
-        if (verr != WST_VEC_NO_ERR)
-            return list_err_from_vec(verr);
+    size_t count = list->blocks.length;
+    LOG_D("dropping %zu node blocks", count);
+
+    for (size_t i = 0; i < count; i++) {
+        LIST_BLOCK_T *block = list->blocks.data[i];
+        LOG_V("freeing block %zu/%zu at %p (%zu nodes)", i + 1, count,
+              (const void *)block, block->cap);
         free(block);
     }
 
-    return list_err_from_vec(BLOCK_VEC_F(free)(&list->blocks));
+    WstVecErr verr = BLOCK_VEC_F(free)(&list->blocks);
+    if (verr != WST_VEC_NO_ERR) {
+        LOG_E("cannot free block vector: %s", wst_vec_err_str(verr));
+        return wst_list_err_from_vec(verr);
+    }
+
+    LOG_D("dropped node blocks and block vector");
+    return WST_LIST_NO_ERR;
 }
 
 /** Allocate a new geometrically larger block and chain its nodes. */
@@ -434,11 +429,13 @@ static WstListErr list_new_block(LIST_T *list)
     WstVecErr verr = BLOCK_VEC_F(push)(&list->blocks, &block_ptr);
     if (verr != WST_VEC_NO_ERR) {
         free(block);
-        return list_err_from_vec(verr);
+        return wst_list_err_from_vec(verr);
     }
 
     wst_list_hdr_add_free(&list->hdr, block->nodes, block->cap,
                           sizeof(LIST_NODE_T));
+    LOG_D("allocated block %zu with %zu nodes at %p",
+          list->blocks.length, block->cap, (const void *)block);
     return WST_LIST_NO_ERR;
 }
 
@@ -498,25 +495,16 @@ static WstListErr list_insert_at(LIST_T *list, size_t idx, const LIST_ELEM *val)
 /** Find node holding `val` without verifying the list. */
 static LIST_NODE_T *list_find_value(const LIST_T *list, const LIST_ELEM *val)
 {
-    for (WstListNodeHdr *hdr = list->hdr.head; hdr != NULL; hdr = hdr->next) {
-        LIST_NODE_T *node = (LIST_NODE_T *)hdr;
-        if (LIST_EQ(node->data, val))
-            return node;
-    }
-    return NULL;
+    return (LIST_NODE_T *)wst_list_hdr_find(&list->hdr,
+                                            offsetof(LIST_NODE_T, data), val,
+                                            sizeof(LIST_ELEM));
 }
 
 /** Find index of node holding `val` without verifying the list. */
 static ssize_t list_find_index(const LIST_T *list, const LIST_ELEM *val)
 {
-    size_t idx = 0;
-    for (WstListNodeHdr *hdr = list->hdr.head; hdr != NULL;
-         hdr = hdr->next, idx++) {
-        LIST_NODE_T *node = (LIST_NODE_T *)hdr;
-        if (LIST_EQ(node->data, val))
-            return (ssize_t)idx;
-    }
-    return -1;
+    return wst_list_hdr_find_index(&list->hdr, offsetof(LIST_NODE_T, data),
+                                   val, sizeof(LIST_ELEM));
 }
 
 
@@ -527,6 +515,8 @@ WstListErr list_free(LIST_T *list)
     WstListErr err = list_verify(list);
     if (err != WST_LIST_NO_ERR)
         return err;
+
+    LOG_D("freeing list with %zu node blocks", list->blocks.length);
 
     err = list_drop_blocks(list);
     if (err != WST_LIST_NO_ERR)
@@ -549,6 +539,8 @@ WstListErr list_clear(LIST_T *list)
 
     for (size_t i = 0; i < list->blocks.length; i++) {
         LIST_BLOCK_T *block = list->blocks.data[i];
+        LOG_V("pooling block %zu/%zu at %p (%zu nodes)", i + 1,
+              list->blocks.length, (const void *)block, block->cap);
         wst_list_hdr_add_free(&list->hdr, block->nodes, block->cap,
                               sizeof(LIST_NODE_T));
     }
@@ -573,9 +565,10 @@ WstListErr list_init(LIST_T *list)
 
     WstVecErr verr = BLOCK_VEC_F(reserve)(&list->blocks, 1);
     if (verr != WST_VEC_NO_ERR)
-        return list_err_from_vec(verr);
+        return wst_list_err_from_vec(verr);
 
-    LOG_D("initialized empty list");
+    LOG_D("initialized empty list with block vector capacity %zu",
+          list->blocks.cap);
     return WST_LIST_NO_ERR;
 }
 
@@ -586,7 +579,7 @@ WstListErr list_verify(const LIST_T *list)
         return WST_LIST_ERR_NULL;
     }
 
-    return list_err_from_vec(BLOCK_VEC_F(verify)(&list->blocks));
+    return wst_list_err_from_vec(BLOCK_VEC_F(verify)(&list->blocks));
 }
 
 void list_dump(const LIST_T *list)
@@ -837,8 +830,6 @@ WstListErr list_insert(LIST_T *list, size_t idx, LIST_ELEM val)
 
 #endif /* LIST_REF */
 
-#undef LIST_EQ
-
 #endif /* LIST_IMPL */
 
 #undef list_free
@@ -864,7 +855,6 @@ WstListErr list_insert(LIST_T *list, size_t idx, LIST_ELEM val)
 // #undef list_resize
 // #undef list_seal
 
-#undef list_err_from_vec
 #undef list_drop_blocks
 #undef list_new_block
 #undef list_alloc_node
