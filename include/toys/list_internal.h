@@ -62,7 +62,7 @@
 // /** Canary tail size in bytes, shared by all instantiations. */
 // #define LIST_CANARY_SIZE 8
 
-/** Node capacity of the first block; later blocks double. */
+/** Capacity of the first block of nodes. */
 #define LIST_BLOCK_INIT_CAP 8
 
 // #if !defined(LIST_USE_CANARY)
@@ -383,7 +383,7 @@ static WstListErr list_err_from_vec(WstVecErr err)
     return WST_LIST_ERR_CORRUPT;
 }
 
-/** Free every node block and the block vector; list must verify. */
+/** Free every node block and the block vector, list must verify. */
 static WstListErr list_drop_blocks(LIST_T *list)
 {
     assert(list != NULL);
@@ -399,7 +399,7 @@ static WstListErr list_drop_blocks(LIST_T *list)
     return list_err_from_vec(BLOCK_VEC_F(free)(&list->blocks));
 }
 
-/** Allocate a new geometrically larger block and thread its nodes. */
+/** Allocate a new geometrically larger block and chain its nodes. */
 static WstListErr list_new_block(LIST_T *list)
 {
     assert(list != NULL);

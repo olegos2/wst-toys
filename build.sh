@@ -12,6 +12,7 @@ declare -a common_src=(
     "$HOME_DIR/src/argparse.c"
     "$HOME_DIR/src/debug.c"
     "$HOME_DIR/src/file.c"
+    "$HOME_DIR/src/list.c"
     "$HOME_DIR/src/mtx.c"
     "$HOME_DIR/src/sort.c"
     "$HOME_DIR/src/string.c"
@@ -66,5 +67,9 @@ pushd "$BUILD_DIR" &&
     "${common_src[@]}" \
     "$HOME_DIR/tests/test_vec.c" \
     "${common_flags[@]}" -o test_vec &&
+"$CC" \
+    "${common_src[@]}" \
+    "$HOME_DIR/tests/test_list.c" \
+    "${common_flags[@]}" -o test_list &&
 popd &&
 echo "Finished"

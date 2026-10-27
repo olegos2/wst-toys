@@ -87,3 +87,13 @@ test_vec = executable(
 
 test('vec', test_vec)
 
+test_list = executable(
+    'test_list',
+    'test_list.c',
+    dependencies: [
+        toys_common_dep,
+    ],
+)
+
+test('list', test_list)
+

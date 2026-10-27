@@ -10,11 +10,11 @@
 typedef struct {
     int id;
     char payload[128];
-} VecBig;
+} ElemBig;
 
-#define VEC_ELEM VecBig
+#define VEC_ELEM ElemBig
 #define VEC_T WstVecBig
-#define VEC_F(name) wst_vec_test_big_ ## name
+#define VEC_F(name) wst_vec_big_ ## name
 #define VEC_REF
 #define VEC_IMPL
 #include "toys/vec_internal.h"
@@ -236,26 +236,26 @@ static void test_int(void)
 static void test_big(void)
 {
     WstVecBig s = { 0 };
-    CHECK(wst_vec_test_big_init(&s, 4) == WST_VEC_NO_ERR, "big init");
-    CHECK(wst_vec_test_big_verify(&s) == WST_VEC_NO_ERR, "big verifies");
+    CHECK(wst_vec_big_init(&s, 4) == WST_VEC_NO_ERR, "big init");
+    CHECK(wst_vec_big_verify(&s) == WST_VEC_NO_ERR, "big verifies");
 
     for (int i = 0; i < 10; i++) {
-        VecBig v = { .id = i };
+        ElemBig v = { .id = i };
         memset(v.payload, i, sizeof(v.payload));
-        CHECK(wst_vec_test_big_push(&s, &v) == WST_VEC_NO_ERR, "big push %d", i);
+        CHECK(wst_vec_big_push(&s, &v) == WST_VEC_NO_ERR, "big push %d", i);
     }
     CHECK(s.length == 10, "big len");
 
     bool ok = true;
     for (int i = 9; i >= 0; i--) {
-        VecBig v = { 0 };
-        if (wst_vec_test_big_pop(&s, &v) != WST_VEC_NO_ERR || v.id != i)
+        ElemBig v = { 0 };
+        if (wst_vec_big_pop(&s, &v) != WST_VEC_NO_ERR || v.id != i)
             ok = false;
         for (size_t k = 0; k < sizeof(v.payload); k++)
             ok = ok && v.payload[k] == (char)i;
     }
     CHECK(ok, "big push pop order and payload intact");
-    CHECK(wst_vec_test_big_free(&s) == WST_VEC_NO_ERR, "big free");
+    CHECK(wst_vec_big_free(&s) == WST_VEC_NO_ERR, "big free");
 }
 
 static void test_verify_graceful(void)

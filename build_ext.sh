@@ -126,6 +126,9 @@ build_tests() {
     my_cc -c "$HOME_DIR/tests/test_expr.c" -o test_expr.o &&
     my_ld test_expr.o "$BUILD_DIR/libtoys_poly.a" "$BUILD_DIR/libtoys_common.a" -lm -o test_expr &&
 
+    my_cc -c "$HOME_DIR/tests/test_list.c" -o test_list.o &&
+    my_ld test_list.o "$BUILD_DIR/libtoys_common.a" -o test_list &&
+
     my_cc -c "$HOME_DIR/tests/test_mtx.c" -o test_mtx.o &&
     my_ld test_mtx.o "$BUILD_DIR/libtoys_common.a" -o test_mtx &&
 
@@ -144,7 +147,7 @@ build_tests() {
         return 1
     }
 
-    popd    
+    popd
 }
 
 pushd "$BUILD_DIR" &&
@@ -152,6 +155,7 @@ build_archive src libtoys_common.a \
     argparse \
     debug \
     file \
+    list \
     mtx \
     sort \
     string \
