@@ -1,7 +1,7 @@
 #include "tests_common.h"
 
 #include "toys/vec.h"
-#include "toys/vec_internal.h"
+#include "toys/impl/vec_internal.h"
 
 #include <string.h>
 
@@ -17,7 +17,7 @@ typedef struct {
 #define VEC_F(name) wst_vec_big_ ## name
 #define VEC_REF
 #define VEC_IMPL
-#include "toys/vec_internal.h"
+#include "toys/impl/vec_internal.h"
 #undef VEC_IMPL
 
 static void test_double_push_pop(void)

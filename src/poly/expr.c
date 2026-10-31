@@ -54,8 +54,6 @@ typedef struct {
     size_t len;
     /* Position where parser is stopped now, also used to store where error happened. */
     size_t pos;
-    /* Depth of expr nesting at current pos. */
-    // size_t depth;
     /* Next token lookahead. */
     Token lookahead;
     /* Whether lookahead is already filled. */
@@ -222,9 +220,6 @@ static WstParserErr lex_next(Parser *p, Token *tok)
     case EXPR_TOK_RPAREN:
         tok->type = EXPR_RPAREN;
         break;
-    // case '=':
-    //     tok->type = TOYS_EXPR_EQ;
-    //     break;
     default:
         return WST_EXPR_UNEXPECTED_CHAR_IN_EXPR;
     }

@@ -14,7 +14,7 @@ typedef struct {
 #define LIST_F(name) wst_list_big_ ## name
 #define LIST_REF
 #define LIST_IMPL
-#include "toys/list_internal.h"
+#include "toys/impl/list_internal.h"
 #undef LIST_IMPL
 
 static size_t block_capacity(const WstListInt *list)
@@ -45,7 +45,7 @@ static void test_append_get(void)
         CHECK(wst_list_int_append(&list, i) == WST_LIST_NO_ERR, "append %d", i);
 
     CHECK(list.blocks.length == 4, "100 nodes use four blocks");
-    CHECK(list.blocks.data[0]->cap == LIST_BLOCK_INIT_CAP, "first block size");
+    CHECK(list.blocks.data[0]->cap == WST_LIST_BLOCK_INIT_CAP, "first block size");
     for (size_t i = 1; i < list.blocks.length; i++)
         CHECK(list.blocks.data[i]->cap == list.blocks.data[i - 1]->cap * 2,
               "block %zu doubles", i);

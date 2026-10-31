@@ -97,3 +97,13 @@ test_list = executable(
 
 test('list', test_list)
 
+test_list_idx = executable(
+    'test_list_idx',
+    'test_list_idx.c',
+    dependencies: [
+        toys_common_dep,
+    ],
+)
+
+test('list_idx', test_list_idx)
+

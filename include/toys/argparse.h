@@ -44,8 +44,6 @@ typedef struct {
 typedef struct {
     /** Name of the program that parser will use when showing help */
     const char *prog;
-    // /** A string describing how rest of args will be parsed (if enabled) */
-    // const char *rest_template;
     ArgOption *opts;
     int nopts;
     /** Empty unless the last parse failed */

@@ -6,6 +6,7 @@ toys_common_lib = library(
         'debug.c',
         'file.c',
         'list.c',
+        'list_idx.c',
         'mtx.c',
         'sort.c',
         'string.c',

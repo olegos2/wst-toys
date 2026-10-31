@@ -1,9 +1,16 @@
+toys_impl_hdrs = files(
+    'impl/list_api_internal.h',
+    'impl/list_common_internal.h',
+    'impl/list_idx_internal.h',
+    'impl/list_internal.h',
+    'impl/vec_internal.h',
+)
+
 toys_hdrs = files(
     'argparse.h',
     'debug.h',
     'expr.h',
     'file.h',
-    'list_internal.h',
     'list.h',
     'math.h',
     'mtx.h',
@@ -11,7 +18,7 @@ toys_hdrs = files(
     'sort.h',
     'string.h',
     'vec.h',
-    'vec_internal.h',
 )
 
 install_headers(toys_hdrs, subdir: 'toys')
+install_headers(toys_impl_hdrs, subdir: 'toys/impl')

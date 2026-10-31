@@ -276,9 +276,6 @@ static void draw_plot_deriv(const PlotConfig *cfg, const WstPoly *poly,
     Vector2 screen_point = pos_to_screen(cfg, plot_point);
     Vector2 jitter = { .x = cfg->plot_snap_px / cfg->grid.size.x, .y = cfg->plot_snap_px / cfg->grid.size.y };
 
-    // LOG_V("min_y %f, max_y %f, start_x %f, end_x %f, mouse %f %f, jitter %f %f",
-    //       min_y, max_y, start_x, end_x, mouse_grid_pos.x, mouse_grid_pos.y, jitter.x, jitter.y);
-
     if (!point_rect_intersection((PlotRect){
         .start = { .x = start_x - jitter.x, .y = min_y - jitter.y },
         .end = { .x = end_x + jitter.x, .y = max_y + jitter.y },
@@ -383,12 +380,6 @@ int solve_run_plot(size_t npolys, const WstPoly *polys, const WstSolution *sols)
     AudioStream stream = LoadAudioStream(AUDIO_SAMPLE_RATE, 32, 1);
     SetAudioStreamCallback(stream, plot_audio_callback);
     PlayAudioStream(stream);
-
-    // cfg.font.title.face = LoadFontEx("assets/consola.ttf", 32, NULL, 0);
-    //  DrawTextEx(monoFont, "Hello with Consolas-like font!", (Vector2){ 50.0f, 50.0f }, 24.0f, 1.0f, DARKGRAY);
-
-    // // Set texture filter for smooth scaling
-    // SetTextureFilter(monoFont.texture, TEXTURE_FILTER_BILINEAR);
 
     while (!WindowShouldClose()) {
         if (IsWindowResized()) {

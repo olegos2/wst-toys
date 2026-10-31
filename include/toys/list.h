@@ -1,19 +1,9 @@
 /**
  * @file
- * Type-safe doubly linked lists backed by geometric node blocks.
+ * Public stamp for the pointer/block list backend.
  *
- * Live nodes are linked through `next`/`prev`; removed nodes form a singly
- * linked free pool inside the node blocks. Blocks are allocated on demand and
- * never resized, so node addresses stay stable across insertions. Public
- * operations cover lifecycle, node-handle access and mutation, index/value
- * access, and tail `append`/`pop`.
- *
- * Provided stamps:
- * - `int`: `WstListInt`, `wst_list_int_*`
- *
- * Every operation verifies the block-pointer vector, reporting `WstListErr`.
- * Node pointers are invalidated by `list_free` and become stale after
- * `list_clear`.
+ * Provides `WstListInt` and `wst_list_int_*`. Every operation reports
+ * `WstListErr`. See `impl/list_internal.h` for storage and lifetime details.
  */
 #ifndef TOYS_LIST_H
 #define TOYS_LIST_H
@@ -31,6 +21,6 @@
 #define LIST_FMT "%d"
 
 /** Generate list for this element type. */
-#include "list_internal.h"
+#include "impl/list_internal.h"
 
 #endif /* TOYS_LIST_H */

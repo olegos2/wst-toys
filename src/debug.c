@@ -176,7 +176,6 @@ static void print_stack_trace(void)
     char **syms = backtrace_symbols(buffer, cur_len);
     if (syms == NULL) {
         LOG_E("backtrace_symbols: %s", strerror(errno));
-        // perror("backtrace_symbols");
         return;
     }
     fprintf(stderr, "Stack trace:\n");

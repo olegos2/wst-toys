@@ -126,9 +126,6 @@ static size_t wst_qsort_part(
             pivot = left;
 
         wst_memswp(left, right, size);
-        // memcpy(temp, right, size);
-        // memcpy(right, left, size);
-        // memcpy(left, temp, size);
 
         left += size;
         right -= size;

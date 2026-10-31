@@ -95,6 +95,41 @@ wst_vec_double_ensure(&s, 128); // grow length, zero-filling the new part
 Big structs skip by-value copies. Stamp with `VEC_REF` and `push` takes
 a pointer instead (`pop` already does). `test_vec.c` shows a full example.
 
+## Lists
+
+There are two doubly linked list backends. Both use the same stamped header
+style and expose the same names, so switching is mostly a matter of swapping
+the include.
+
+- `impl/list_internal.h` keeps nodes in heap blocks. Node addresses stay stable
+  across insertions, which makes node handles safe to hold for a long time.
+- `impl/list_idx_internal.h` keeps nodes in one flat array. Links are 32-bit
+  indices, which makes nodes smaller and more cache friendly. Slot 0 is a
+  sentinel that links the head and tail, so insertion and removal need no
+  head/tail special cases. Insertions may grow and move the array, so fetch a
+  node again after growth instead of holding on to its pointer.
+
+Both backends share the typed API template in `impl/list_api_internal.h`.
+Only their storage primitives and lifecycle functions differ. Both accept a
+zero-initialized list. Stamp the chosen backend in one source file with
+`LIST_IMPL`, and include it without `LIST_IMPL` where only the type and
+declarations are needed:
+
+```c
+#define LIST_ELEM int
+#define LIST_T MyIntList
+#define LIST_F(name) my_int_list_ ## name
+#define LIST_FMT "%d"
+#define LIST_IMPL
+#include "toys/impl/list_idx_internal.h"
+
+MyIntList list = { 0 };
+my_int_list_append(&list, 7);
+my_int_list_free(&list);
+```
+
+`test_list.c` and `test_list_idx.c` show the full API.
+
 ## Tests
 
 ```sh
@@ -102,7 +137,8 @@ meson test -C builddir
 ```
 
 Covers: `argparse`, `expr`, `string`, `mtx`, `poly`,
-`sort`, `vec`. Each is a standalone binary under `builddir/tests/`.
+`sort`, `vec`, `list`, `list_idx`. Each is a standalone binary under
+`builddir/tests/`.
 
 ## Examples
 

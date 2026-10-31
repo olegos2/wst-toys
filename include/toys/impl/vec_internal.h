@@ -1,14 +1,7 @@
 #ifndef TOYS_VEC_INTERNAL_H
 #define TOYS_VEC_INTERNAL_H
 
-#include "toys/debug.h"
-
-#include <assert.h>
 #include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 /** Canary tail size in bytes, shared by all instantiations. */
@@ -215,6 +208,14 @@ void vec_dump(const VEC_T *vec);
 
 
 #ifdef VEC_IMPL
+
+#include "toys/debug.h"
+
+#include <assert.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* Typed and untyped layouts must stay identical, wrappers cast between them. */
 static_assert(sizeof(VEC_T) == sizeof(WstVecVoid), "vector layout mismatch");
@@ -488,4 +489,5 @@ void vec_dump(const VEC_T *vec)
 #undef VEC_F
 #undef VEC_T
 #undef VEC_ELEM
+
 #endif /* VEC_T */
