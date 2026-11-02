@@ -218,20 +218,28 @@ static char *record_label(const char *label)
     if (stream == NULL)
         return NULL;
 
-    fputs("{ ", stream);
     const char *line = label;
-    bool first = true;
-    while (*line != '\0') {
-        const char *end = strchr(line, '\n');
-        size_t len = end != NULL ? (size_t)(end - line) : strlen(line);
-        if (!first)
-            fputs(" | ", stream);
-        record_row(stream, line, len);
-        first = false;
-        if (end == NULL)
-            break;
-        line = end + 1;
+    fputs("{ ", stream);
+    record_row(stream, line, strcspn(line, "\n"));
+
+    const char *next = strchr(line, '\n');
+    if (next != NULL) {
+        fputs(" | { ", stream);
+        line = next + 1;
+        bool first = true;
+        while (*line != '\0') {
+            size_t len = strcspn(line, "\n");
+            if (!first)
+                fputs(" | ", stream);
+            record_row(stream, line, len);
+            first = false;
+            if (line[len] == '\0')
+                break;
+            line += len + 1;
+        }
+        fputs(" }", stream);
     }
+
     fputs(" }", stream);
 
     if (fclose(stream) != 0) {
