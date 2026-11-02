@@ -83,11 +83,11 @@ static void list_dump_graph(const LIST_T *list)
 
 #ifdef LIST_FMT
         wst_list_graph_node(graph, i, node_state,
-                            "#%u\nprev=%u\tnext=%u\ndata=" LIST_FMT, i,
+                            "#%u\nprev\t%u\nnext\t%u\ndata\t" LIST_FMT, i,
                             node->hdr.prev, node->hdr.next, node->data);
 #else
         wst_list_graph_node(graph, i, node_state,
-                            "#%u\nprev=%u\tnext=%u\ndata@%p", i,
+                            "#%u\nprev\t%u\nnext\t%u\ndata\t%p", i,
                             node->hdr.prev, node->hdr.next,
                             (const void *)&node->data);
 #endif

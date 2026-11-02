@@ -154,11 +154,11 @@ static void list_dump_graph(const LIST_T *list)
 
 #ifdef LIST_FMT
             wst_list_graph_node(graph, slot, node_state,
-                                "#%zu\nprev=%s\tnext=%s\ndata=" LIST_FMT,
+                                "#%zu\nprev\t%s\nnext\t%s\ndata\t" LIST_FMT,
                                 slot, prev_ref, next_ref, node->data);
 #else
             wst_list_graph_node(graph, slot, node_state,
-                                "#%zu\nprev=%s\tnext=%s\ndata@%p", slot,
+                                "#%zu\nprev\t%s\nnext\t%s\ndata\t%p", slot,
                                 prev_ref, next_ref, (const void *)&node->data);
 #endif
 

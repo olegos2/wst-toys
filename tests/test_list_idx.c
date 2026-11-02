@@ -447,9 +447,11 @@ static void test_dump_html(void)
 
     char *dot_path = test_path_join(dir, "list.dot");
     char *dot = dot_path != NULL ? test_read_file(dot_path) : NULL;
-    CHECK(dot != NULL && strstr(dot, "data=19") != NULL, "graph data");
-    CHECK(dot != NULL && strstr(dot, "next=") != NULL, "graph next field");
-    CHECK(dot != NULL && strstr(dot, "prev=") != NULL, "graph prev field");
+    CHECK(dot != NULL && strstr(dot, "{ len | 20 }") != NULL,
+          "graph header table");
+    CHECK(dot != NULL && strstr(dot, "{ data | 19 }") != NULL, "graph data");
+    CHECK(dot != NULL && strstr(dot, "{ next | ") != NULL, "graph next field");
+    CHECK(dot != NULL && strstr(dot, "{ prev | ") != NULL, "graph prev field");
     CHECK(dot != NULL && strstr(dot, "bgcolor=\"#1c1b1f\"") != NULL,
           "dark graph background");
     CHECK(dot != NULL && strstr(dot, "shape=record") != NULL,

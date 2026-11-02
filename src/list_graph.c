@@ -46,7 +46,7 @@
 /* DOT styles. */
 
 static const char graph_attrs[] =
-    "rankdir=TB, bgcolor=" DOT_QUOTE(DOT_BG) ", pad=0.25, "
+    "rankdir=LR, bgcolor=" DOT_QUOTE(DOT_BG) ", pad=0.25, "
     "nodesep=0.25, ranksep=0.35";
 
 static const char node_attrs[] =
