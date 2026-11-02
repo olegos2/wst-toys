@@ -112,7 +112,8 @@ static void list_dump_graph(const LIST_T *list)
 
     WstListGraph *graph = wst_list_graph_new(
         WST_LIST_STR(LIST_T),
-        "blocks=%zu slots=%zu live=%zu pooled=%zu orphan=%zu free=%s",
+        "blocks\t%zu\nslots\t%zu\nlive\t%zu\npooled\t%zu\n"
+        "orphan\t%zu\nfree\t%s",
         list->blocks.length, total, counts.live, counts.pooled,
         counts.orphan, free_ref);
     if (graph == NULL) {

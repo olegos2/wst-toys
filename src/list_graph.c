@@ -46,8 +46,8 @@
 /* DOT styles. */
 
 static const char graph_attrs[] =
-    "rankdir=LR, bgcolor=" DOT_QUOTE(DOT_BG) ", pad=0.25, "
-    "nodesep=0.25, ranksep=0.4";
+    "rankdir=TB, bgcolor=" DOT_QUOTE(DOT_BG) ", pad=0.25, "
+    "nodesep=0.25, ranksep=0.35";
 
 static const char node_attrs[] =
     "shape=box, style=\"rounded,filled\", " DOT_FONT
@@ -206,7 +206,7 @@ static void record_row(FILE *stream, const char *text, size_t len)
     fputs(" }", stream);
 }
 
-/* Turn newline-separated label text into a two-column record card. */
+/* Turn newline-separated label text into stacked record rows. */
 static char *record_label(const char *label)
 {
     if (label == NULL)
@@ -218,31 +218,20 @@ static char *record_label(const char *label)
     if (stream == NULL)
         return NULL;
 
-    const char *end = strchr(label, '\n');
-    size_t first_len = end != NULL ? (size_t)(end - label) : strlen(label);
-
     fputs("{ ", stream);
-    record_row(stream, label, first_len);
-
-    if (end != NULL) {
-        const char *rest = end + 1;
-        bool first = true;
-
-        fputs(" | { ", stream);
-        while (*rest != '\0') {
-            end = strchr(rest, '\n');
-            size_t len = end != NULL ? (size_t)(end - rest) : strlen(rest);
-            if (!first)
-                fputs(" | ", stream);
-            record_row(stream, rest, len);
-            first = false;
-            if (end == NULL)
-                break;
-            rest = end + 1;
-        }
-        fputs(" }", stream);
+    const char *line = label;
+    bool first = true;
+    while (*line != '\0') {
+        const char *end = strchr(line, '\n');
+        size_t len = end != NULL ? (size_t)(end - line) : strlen(line);
+        if (!first)
+            fputs(" | ", stream);
+        record_row(stream, line, len);
+        first = false;
+        if (end == NULL)
+            break;
+        line = end + 1;
     }
-
     fputs(" }", stream);
 
     if (fclose(stream) != 0) {
@@ -308,7 +297,7 @@ WstListGraph *wst_list_graph_new(const char *type, const char *detail_fmt, ...)
         size_t label_len = strlen(label_type) + strlen(details) + 2;
         char *label = malloc(label_len);
         if (label != NULL) {
-            snprintf(label, label_len, "%s\t%s", label_type, details);
+            snprintf(label, label_len, "%s\n%s", label_type, details);
             graph_record_node(graph->graph, HEADER_ID, label, header_style);
             free(label);
         }

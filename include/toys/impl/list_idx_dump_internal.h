@@ -63,7 +63,8 @@ static void list_dump_graph(const LIST_T *list)
 
     WstListGraph *graph = wst_list_graph_new(
         WST_LIST_STR(LIST_T),
-        "len=%u cap=%zu live=%zu pooled=%zu orphan=%zu free=%u",
+        "len\t%u\ncap\t%zu\nlive\t%zu\npooled\t%zu\n"
+        "orphan\t%zu\nfree\t%u",
         len, list->hdr.cap, counts.live, counts.pooled, counts.orphan,
         list->hdr.free);
     if (graph == NULL) {
