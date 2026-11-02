@@ -20,12 +20,6 @@ static inline WstListiNodeHdr *index_node_at(const WstListiHdr *hdr,
                                (size_t)link * stride);
 }
 
-WstListiNodeHdr *wst_listi_hdr_node_at(const WstListiHdr *hdr, size_t stride,
-                                       uint32_t link)
-{
-    return index_node_at(hdr, stride, link);
-}
-
 WstListiNodeHdr *wst_listi_hdr_at(const WstListiHdr *hdr, size_t stride,
                                   size_t idx)
 {
@@ -65,16 +59,6 @@ uint32_t wst_listi_hdr_index_of(const WstListiHdr *hdr, size_t stride,
     size_t idx = diff / stride;
     assert(idx <= hdr->len);
     return (uint32_t)idx;
-}
-
-uint32_t wst_listi_hdr_head(const WstListiHdr *hdr, size_t stride)
-{
-    assert(hdr != NULL);
-
-    if (hdr->len == 0)
-        return 0;
-
-    return index_node_at(hdr, stride, 0)->next;
 }
 
 uint32_t wst_listi_hdr_tail(const WstListiHdr *hdr, size_t stride)

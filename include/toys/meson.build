@@ -1,6 +1,9 @@
 toys_impl_hdrs = files(
     'impl/list_api_internal.h',
     'impl/list_common_internal.h',
+    'impl/list_dump_internal.h',
+    'impl/list_graph_internal.h',
+    'impl/list_idx_dump_internal.h',
     'impl/list_idx_internal.h',
     'impl/list_internal.h',
     'impl/vec_internal.h',
@@ -11,6 +14,8 @@ toys_hdrs = files(
     'debug.h',
     'expr.h',
     'file.h',
+    'graph.h',
+    'graphviz.h',
     'list.h',
     'math.h',
     'mtx.h',

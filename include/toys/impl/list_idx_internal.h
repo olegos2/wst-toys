@@ -2,23 +2,18 @@
  * Flat-array list backend using 32-bit index links.
  *
  * Nodes live in one array and `next`/`prev` are 0-based `uint32_t` links.
- * Slot 0 is a sentinel pseudo-node linking the head and tail, so insertion
- * and removal need no head/tail special cases.
+ * Slot 0 is a special node linking the head and tail, so insertion
+ * and removal do not need head/tail edge cases.
  *
  * Public node pointers point into the array and become invalid when a later
  * insertion grows it. Fetch the node again after growth.
  *
- * See `list_internal.h` for the pointer/block backend and
- * `list_common_internal.h` for the stamp macro contract.
+ * See `list_common_internal.h` for the stamp macro contract.
  */
 
 #include "list_common_internal.h"
 
 
-/*
- * Only the constants are guarded. The stamp below expands again for each
- * LIST_T include.
- */
 #ifndef TOYS_LIST_IDX_INTERNAL_H
 #define TOYS_LIST_IDX_INTERNAL_H
 
@@ -30,10 +25,14 @@
 
 #endif /* TOYS_LIST_IDX_INTERNAL_H */
 
+
 #ifdef LIST_T
 
-/* Backend-specific helpers, kept in the generated namespace. */
+/* Backend-specific helpers. */
 #define list_insert_after_link LIST_F(insert_after_link)
+#define list_dump_len LIST_F(dump_len)
+#define list_dump_states LIST_F(dump_states)
+#define list_dump_graph LIST_F(dump_graph)
 
 /** Typed view of the untyped node array. */
 #define LIST_NODES(list) ((LIST_NODE_T *)(list)->hdr.nodes)
@@ -48,14 +47,15 @@ typedef struct {
     WstListiHdr hdr;
 } LIST_T;
 
-/*
- * Raw primitives consumed by the shared typed API. They precede the API
- * include because its common wrappers call them.
- */
+
 #ifdef LIST_IMPL
+
+#include "list_graph_internal.h"
+#include "toys/debug.h"
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /** Get a node without verifying the list. */
 static LIST_NODE_T *list_node_at_raw(const LIST_T *list, size_t idx)
@@ -125,6 +125,8 @@ static WstListErr list_append_raw(LIST_T *list, const LIST_ELEM *val)
     return list_insert_after_link(list, prev, val);
 }
 
+#include "list_idx_dump_internal.h"
+
 #endif /* LIST_IMPL */
 
 #include "list_api_internal.h"
@@ -176,44 +178,99 @@ WstListErr list_verify(const LIST_T *list)
 
 void list_dump(const LIST_T *list)
 {
+    if (list == NULL) {
+        LOG_E("list: <null>");
+        return;
+    }
+
+    WstListErr verr = list_verify(list);
+    const LIST_NODE_T *nodes = (const LIST_NODE_T *)list->hdr.nodes;
+    uint32_t len = list_dump_len(list);
+    bool has_sentinel = nodes != NULL && list->hdr.cap > 0;
+
     uint32_t head = WST_LISTI_NIL;
     uint32_t tail = WST_LISTI_NIL;
-    if (list != NULL && list->hdr.cap > 0 && list->hdr.len > 0 &&
-        list->hdr.nodes != NULL) {
-        head = wst_listi_hdr_head(&list->hdr, sizeof(LIST_NODE_T));
-        tail = wst_listi_hdr_tail(&list->hdr, sizeof(LIST_NODE_T));
+    if (has_sentinel) {
+        head = nodes[0].hdr.next;
+        tail = nodes[0].hdr.prev;
     }
 
-    fprintf(stderr, "list <%p>: head=%u tail=%u free=%u len=%u cap=%zu\n",
-            (const void *)list, head, tail,
-            list == NULL ? WST_LISTI_NIL : list->hdr.free,
-            list == NULL ? 0 : list->hdr.len,
-            list == NULL ? 0 : list->hdr.cap);
+    WstListSlotState *state = NULL;
+    WstListSlotCounts counts = { 0 };
 
-    if (list == NULL)
-        return;
+    if (has_sentinel && len > 0) {
+        state = calloc((size_t)len + 1, sizeof(*state));
+        if (state != NULL) {
+            list_dump_states(list, state, len);
+            counts = wst_list_slot_counts(state + 1, len);
+        }
+    }
 
-    if (list_verify(list) != WST_LIST_NO_ERR) {
-        fprintf(stderr, "  raw nodes: omitted due to verification failure\n");
+    char *buf = NULL;
+    size_t buf_len = 0;
+    FILE *out = open_memstream(&buf, &buf_len);
+    if (out == NULL) {
+        LOG_E("list: cannot allocate dump buffer");
+        free(state);
         return;
     }
 
-    if (list->hdr.len == 0)
-        return;
+#define P(...) fprintf(out, __VA_ARGS__)
+    P("list %s @%p\n", WST_LIST_STR(LIST_T), (const void *)list);
+    P("  %-8s %s\n", "check",
+      verr == WST_LIST_NO_ERR ? "ok" : wst_list_err_str(verr));
+    P("  %-8s %u\n", "head", head);
+    P("  %-8s %u\n", "tail", tail);
+    P("  %-8s %u\n", "free", list->hdr.free);
+    P("  %-8s %u\n", "len", list->hdr.len);
+    P("  %-8s %zu\n", "cap", list->hdr.cap);
 
-    const LIST_NODE_T *nodes = (const LIST_NODE_T *)list->hdr.nodes;
-    fprintf(stderr, "  [   0] sentinel next=%u prev=%u\n",
-            nodes[0].hdr.next, nodes[0].hdr.prev);
+    if (state != NULL) {
+        P("  %-8s %zu\n", "live", counts.live);
+        P("  %-8s %zu\n", "pooled", counts.pooled);
+        P("  %-8s %zu\n", "orphan", counts.orphan);
+    }
 
-    for (uint32_t i = 0; i < list->hdr.len; i++) {
-        const LIST_NODE_T *node = &nodes[i + 1];
-        fprintf(stderr, "  [%4u] next=%u prev=%u",
-                i + 1, node->hdr.next, node->hdr.prev);
+    if (!has_sentinel) {
+        P("\nraw slots omitted, node array is null\n");
+    } else if (len == 0) {
+        P("\nraw slots empty\n");
+    } else {
+        P("\n  idx  state     next  prev  data\n");
+
+        for (uint32_t i = 1; i <= len; i++) {
+            const LIST_NODE_T *node = &nodes[i];
+            WstListSlotState slot_state =
+                state != NULL ? state[i] : WST_LIST_SLOT_ORPHAN;
+            P("  [%3u] %-6s  %4u  %4u", i,
+              wst_list_slot_state_name(slot_state), node->hdr.next,
+              node->hdr.prev);
+            if (slot_state == WST_LIST_SLOT_FREE) {
+                P("  -");
+            } else {
 #ifdef LIST_FMT
-        fprintf(stderr, " data=" LIST_FMT, node->data);
+                P("  " LIST_FMT, node->data);
+#else
+                P("  data@%p", (const void *)&node->data);
 #endif
-        fprintf(stderr, "\n");
+            }
+            fputc('\n', out);
+        }
+
+        if ((size_t)list->hdr.len > list->hdr.cap) {
+            P("\nraw slots truncated at cap %zu, header len=%u\n",
+              list->hdr.cap, list->hdr.len);
+        }
     }
+#undef P
+
+    fclose(out);
+    wst_log_print(WST_LOG_INFO, "%s", buf);
+    free(buf);
+    free(state);
+
+    if (has_sentinel)
+        list_dump_graph(list);
 }
 
 bool list_remove_node(LIST_T *list, const LIST_NODE_T *node)
@@ -274,6 +331,9 @@ WstListErr list_pop(LIST_T *list, LIST_ELEM *out)
 #undef list_insert
 
 #undef list_insert_after_link
+#undef list_dump_len
+#undef list_dump_states
+#undef list_dump_graph
 #undef list_node_at_raw
 #undef list_find_node_raw
 #undef list_find_index_raw

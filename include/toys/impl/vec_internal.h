@@ -453,17 +453,27 @@ void vec_dump(const VEC_T *vec)
 #undef VEC_T_STR_2
 
 #ifdef VEC_FMT
-    if (vec != NULL &&
-        vec->data != NULL &&
-        vec->length <= vec->cap &&
-        vec->cap <= (SIZE_MAX - VEC_TAIL_SIZE) / sizeof(VEC_ELEM))
-    {
-        fprintf(stderr, "  formatted repr:\n");
-        for (size_t i = 0; i < vec->length; i++)
-            fprintf(stderr, "    [%4zu]: " VEC_FMT "\n", i, vec->data[i]);
+    char *buf = NULL;
+    size_t len = 0;
+    FILE *out = open_memstream(&buf, &len);
+    if (out != NULL) {
+#define P(...) fprintf(out, __VA_ARGS__)
+        if (vec != NULL &&
+            vec->data != NULL &&
+            vec->length <= vec->cap &&
+            vec->cap <= (SIZE_MAX - VEC_TAIL_SIZE) / sizeof(VEC_ELEM))
+        {
+            P("  formatted repr:\n");
+            for (size_t i = 0; i < vec->length; i++)
+                P("    [%4zu]: " VEC_FMT "\n", i, vec->data[i]);
+        } else {
+            P("  <elements omitted due to sanity check fail>\n");
+        }
+#undef P
+        fclose(out);
+        wst_log_print(WST_LOG_INFO, "%s", buf);
+        free(buf);
     }
-    else
-        fprintf(stderr, "  <elements omitted due to sanity check fail>\n");
 #endif
 }
 

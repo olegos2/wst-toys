@@ -7,17 +7,12 @@
  * after `list_clear` or `list_free`. The first insertion allocates the first
  * block.
  *
- * See `list_idx_internal.h` for the flat-array backend and
- * `list_common_internal.h` for the stamp macro contract.
+ * See `list_common_internal.h` for the stamp macro contract.
  */
 
 #include "list_common_internal.h"
 
 
-/*
- * Only the constants are guarded. The stamp below expands again for each
- * LIST_T include.
- */
 #ifndef TOYS_LIST_INTERNAL_H
 #define TOYS_LIST_INTERNAL_H
 
@@ -26,15 +21,16 @@
 
 #endif /* TOYS_LIST_INTERNAL_H */
 
-/*
- * Private declarations for list implementation.
- */
+
 #ifdef LIST_IMPL
 
 #include "vec_internal.h"
+#include "list_graph_internal.h"
+#include "toys/debug.h"
 
 #include <assert.h>
 #include <errno.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,12 +40,19 @@ WstListErr wst_list_err_from_vec(WstVecErr err);
 
 #endif /* LIST_IMPL */
 
+
 #ifdef LIST_T
 
-/* Backend-specific helpers, kept in the generated namespace. */
+/* Backend-specific helpers. */
 #define list_drop_blocks LIST_F(drop_blocks)
 #define list_new_block LIST_F(new_block)
 #define list_alloc_node LIST_F(alloc_node)
+
+#define list_dump_total LIST_F(dump_total)
+#define list_dump_slot_of LIST_F(dump_slot_of)
+#define list_dump_mark_live LIST_F(dump_mark_live)
+#define list_dump_mark_free LIST_F(dump_mark_free)
+#define list_dump_graph LIST_F(dump_graph)
 
 #define LIST_BLOCK_T WST_LIST_CAT(LIST_T, Block)
 #define LIST_BLOCK_PTR_T WST_LIST_CAT(LIST_T, BlockPtr)
@@ -78,10 +81,7 @@ typedef LIST_BLOCK_T *LIST_BLOCK_PTR_T;
 #define IMPL_BLOCK_VEC_F(elem, name) IMPL2_BLOCK_VEC_F(elem, name)
 #define BLOCK_VEC_F(name) IMPL_BLOCK_VEC_F(LIST_ELEM, name)
 
-/*
- * Stamp a vector of block pointers. LIST_IMPL and VEC_IMPL are forwarded so
- * both templates emit definitions when needed.
- */
+
 #define VEC_ELEM LIST_BLOCK_PTR_T
 #define VEC_T BLOCK_VEC_T
 #define VEC_F(name) BLOCK_VEC_F(name)
@@ -99,6 +99,7 @@ typedef LIST_BLOCK_T *LIST_BLOCK_PTR_T;
 #  include "vec_internal.h"
 #endif /* LIST_IMPL ^ VEC_IMPL */
 
+
 /** Doubly linked list. */
 typedef struct {
     WstListHdr hdr;
@@ -110,6 +111,7 @@ typedef struct {
  * include because its common wrappers call them.
  */
 #ifdef LIST_IMPL
+
 
 /** Get a node without verifying the list. */
 static LIST_NODE_T *list_node_at_raw(const LIST_T *list, size_t idx)
@@ -246,6 +248,8 @@ static WstListErr list_append_raw(LIST_T *list, const LIST_ELEM *val)
         list, (const LIST_NODE_T *)list->hdr.tail, val);
 }
 
+#include "list_dump_internal.h"
+
 #endif /* LIST_IMPL */
 
 #include "list_api_internal.h"
@@ -329,45 +333,103 @@ WstListErr list_verify(const LIST_T *list)
 
 void list_dump(const LIST_T *list)
 {
-    LOG_V("Dumping list at %p", (const void *)list);
-
     if (list == NULL) {
-        fprintf(stderr, "list: <null>\n");
+        LOG_E("list: <null>");
         return;
     }
 
-    fprintf(stderr, "list <%p>:\n"
-            "  head: %p\n"
-            "  tail: %p\n"
-            "  free: %p\n",
-            (const void *)list, (const void *)list->hdr.head,
-            (const void *)list->hdr.tail, (const void *)list->hdr.free);
+    WstListErr verr = list_verify(list);
+    bool vector_ok = verr == WST_LIST_NO_ERR;
+    size_t total = vector_ok ? list_dump_total(list) : 0;
 
-    bool sane = list_verify(list) == WST_LIST_NO_ERR;
+    WstListSlotState *state = NULL;
+    WstListSlotCounts counts = { 0 };
 
+    if (vector_ok) {
+        state = calloc(total > 0 ? total : 1, sizeof(*state));
+        if (state != NULL) {
+            list_dump_mark_live(list, state, total);
+            list_dump_mark_free(list, state, total);
+            counts = wst_list_slot_counts(state, total);
+        }
+    }
+
+    char *buf = NULL;
+    size_t len = 0;
+    FILE *out = open_memstream(&buf, &len);
+    if (out == NULL) {
+        LOG_E("list: cannot allocate dump buffer");
+        free(state);
+        return;
+    }
+
+#define P(...) fprintf(out, __VA_ARGS__)
+    P("list %s @%p\n", WST_LIST_STR(LIST_T), (const void *)list);
+    P("  %-8s %s\n", "check",
+      vector_ok ? "ok" : wst_list_err_str(verr));
+    P("  %-8s %p\n", "head", (const void *)list->hdr.head);
+    P("  %-8s %p\n", "tail", (const void *)list->hdr.tail);
+    P("  %-8s %p\n", "free", (const void *)list->hdr.free);
+    P("  %-8s %zu\n", "blocks", list->blocks.length);
+    P("  %-8s %zu\n", "slots", total);
+
+    if (state != NULL) {
+        P("  %-8s %zu\n", "live", counts.live);
+        P("  %-8s %zu\n", "pooled", counts.pooled);
+        P("  %-8s %zu\n", "orphan", counts.orphan);
+    }
+
+    if (!vector_ok) {
+        P("\nraw slots omitted, block vector is corrupt\n");
+    } else if (total == 0) {
+        P("\nraw slots empty\n");
+    } else {
+        size_t base = 0;
+        for (size_t b = 0; b < list->blocks.length; b++) {
+            const LIST_BLOCK_T *block = list->blocks.data[b];
+            if (block == NULL) {
+                P("\nblock[%zu] <null>\n", b);
+                continue;
+            }
+
+            P("\nblock[%zu] @%p cap=%zu\n", b, (const void *)block,
+              block->cap);
+            P("  slot  state   node              prev              "
+              "next              data\n");
+
+            for (size_t j = 0; j < block->cap; j++) {
+                const LIST_NODE_T *node = &block->nodes[j];
+                WstListSlotState slot_state =
+                    state != NULL ? state[base + j] : WST_LIST_SLOT_ORPHAN;
+                P("  [%3zu] %-6s  %-16p  %-16p  %-16p", base + j,
+                  wst_list_slot_state_name(slot_state), (const void *)node,
+                  (const void *)node->hdr.prev,
+                  (const void *)node->hdr.next);
+                if (slot_state == WST_LIST_SLOT_FREE) {
+                    P(" -");
+                } else {
 #ifdef LIST_FMT
-    if (sane) {
-        fprintf(stderr, "  elements:\n");
-        size_t i = 0;
-        for (const WstListNodeHdr *hdr = list->hdr.head; hdr != NULL;
-             hdr = hdr->next, i++)
-            fprintf(stderr, "    [%4zu]: " LIST_FMT "\n", i,
-                    ((const LIST_NODE_T *)hdr)->data);
-    } else {
-        fprintf(stderr, "  elements: omitted due to verification failure\n");
-    }
+                    P(" " LIST_FMT, node->data);
+#else
+                    P(" data@%p", (const void *)&node->data);
 #endif
-
-    if (sane) {
-        fprintf(stderr, "  blocks (%zu):\n", list->blocks.length);
-        for (size_t i = 0; i < list->blocks.length; i++)
-            fprintf(stderr, "    [%4zu]: %zu nodes\n", i,
-                    list->blocks.data[i]->cap);
-    } else {
-        fprintf(stderr, "  blocks: omitted due to verification failure\n");
+                }
+                fputc('\n', out);
+            }
+            base += block->cap;
+        }
     }
+#undef P
 
-    BLOCK_VEC_F(dump)(&list->blocks);
+    fclose(out);
+    wst_log_print(WST_LOG_INFO, "%s", buf);
+    free(buf);
+    free(state);
+
+    if (vector_ok)
+        list_dump_graph(list);
+    else
+        BLOCK_VEC_F(dump)(&list->blocks);
 }
 
 bool list_remove_node(LIST_T *list, const LIST_NODE_T *node)
@@ -429,6 +491,11 @@ WstListErr list_pop(LIST_T *list, LIST_ELEM *out)
 #undef list_drop_blocks
 #undef list_new_block
 #undef list_alloc_node
+#undef list_dump_total
+#undef list_dump_slot_of
+#undef list_dump_mark_live
+#undef list_dump_mark_free
+#undef list_dump_graph
 #undef list_node_at_raw
 #undef list_find_node_raw
 #undef list_find_index_raw

@@ -13,9 +13,11 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-/** Token-pasting helpers. */
+/** Token-pasting and stringifying helpers. */
 #define WST_LIST_CAT2(a, b) a ## b
 #define WST_LIST_CAT(a, b) WST_LIST_CAT2(a, b)
+#define WST_LIST_STR2(x) #x
+#define WST_LIST_STR(x) WST_LIST_STR2(x)
 
 /**
  * Error that may occur while working with a list.
@@ -75,6 +77,27 @@ typedef struct {
     /** First free real node, or 0 when the free list is empty. */
     uint32_t free;
 } WstListiHdr;
+
+/** State of a slot in a list dump. */
+typedef enum {
+    WST_LIST_SLOT_ORPHAN = 0,
+    WST_LIST_SLOT_LIVE,
+    WST_LIST_SLOT_FREE,
+} WstListSlotState;
+
+/** Counts for each slot state. */
+typedef struct {
+    size_t live;
+    size_t pooled;
+    size_t orphan;
+} WstListSlotCounts;
+
+/** Short state name for dump tables. */
+const char *wst_list_slot_state_name(WstListSlotState state);
+
+/** Count live, pooled and orphan slots. */
+WstListSlotCounts wst_list_slot_counts(const WstListSlotState *state,
+                                       size_t count);
 
 #endif /* TOYS_LIST_COMMON_INTERNAL_H */
 
@@ -166,10 +189,6 @@ ssize_t wst_list_hdr_find_index(const WstListHdr *list, size_t data_off,
 
 /* Index backend helpers. */
 
-/** Get node header for a 0-based link, where slot 0 is the sentinel. */
-WstListiNodeHdr *wst_listi_hdr_node_at(const WstListiHdr *hdr, size_t stride,
-                                       uint32_t link);
-
 /** Get node header at a logical index, or `NULL` when out of bounds. */
 WstListiNodeHdr *wst_listi_hdr_at(const WstListiHdr *hdr, size_t stride,
                                   size_t idx);
@@ -177,9 +196,6 @@ WstListiNodeHdr *wst_listi_hdr_at(const WstListiHdr *hdr, size_t stride,
 /** Get the 0-based link for a node header. */
 uint32_t wst_listi_hdr_index_of(const WstListiHdr *hdr, size_t stride,
                                 const WstListiNodeHdr *node);
-
-/** Get the first live link, or 0 when the list is empty. */
-uint32_t wst_listi_hdr_head(const WstListiHdr *hdr, size_t stride);
 
 /** Get the last live link, or 0 when the list is empty. */
 uint32_t wst_listi_hdr_tail(const WstListiHdr *hdr, size_t stride);

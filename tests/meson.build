@@ -37,6 +37,16 @@ test_argparse = executable(
 
 test('argparse', test_argparse)
 
+test_debug = executable(
+    'test_debug',
+    'test_debug.c',
+    dependencies: [
+        toys_common_dep,
+    ],
+)
+
+test('debug', test_debug)
+
 test_expr = executable(
     'test_expr',
     'test_expr.c',

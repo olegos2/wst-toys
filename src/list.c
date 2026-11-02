@@ -1,7 +1,9 @@
 #define LIST_IMPL
 #include "toys/list.h"
 
-/* Node header-only operations, shared by every typed list. */
+#include <string.h>
+
+/* Untyped list helpers shared by every typed list. */
 
 WstListNodeHdr *wst_list_hdr_at(const WstListHdr *list, size_t idx)
 {
@@ -145,6 +147,44 @@ WstListErr wst_list_err_from_vec(WstVecErr err)
         return WST_LIST_ERR_OVERFLOW;
     }
     return WST_LIST_ERR_CORRUPT;
+}
+
+const char *wst_list_slot_state_name(WstListSlotState state)
+{
+    switch (state) {
+    case WST_LIST_SLOT_LIVE:
+        return "live";
+    case WST_LIST_SLOT_FREE:
+        return "free";
+    case WST_LIST_SLOT_ORPHAN:
+    default:
+        return "orphan";
+    }
+}
+
+WstListSlotCounts wst_list_slot_counts(const WstListSlotState *state,
+                                       size_t count)
+{
+    WstListSlotCounts counts = { 0 };
+    if (state == NULL)
+        return counts;
+
+    for (size_t i = 0; i < count; i++) {
+        switch (state[i]) {
+        case WST_LIST_SLOT_LIVE:
+            counts.live++;
+            break;
+        case WST_LIST_SLOT_FREE:
+            counts.pooled++;
+            break;
+        case WST_LIST_SLOT_ORPHAN:
+        default:
+            counts.orphan++;
+            break;
+        }
+    }
+
+    return counts;
 }
 
 const char *wst_list_err_str(WstListErr err)

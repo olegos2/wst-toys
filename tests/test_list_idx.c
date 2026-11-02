@@ -1,8 +1,10 @@
 #include "tests_common.h"
+#include "log_util.h"
 
 #include "toys/impl/list_idx_internal.h"
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define LIST_ELEM int
@@ -403,6 +405,67 @@ static void test_big_ref(void)
     CHECK(wst_list_idx_big_free(&list) == WST_LIST_NO_ERR, "big free");
 }
 
+static void test_dump_html(void)
+{
+    char *dir = test_tmpdir("wst-list-idx-html");
+    CHECK(dir != NULL, "dump dir");
+    if (dir == NULL)
+        return;
+
+    CHECK(wst_log_open(dir, WST_LOG_FORMAT_HTML), "open dump log");
+    wst_log_set_max_prio(WST_LOG_VERBOSE);
+
+    WstListIdxInt list = { 0 };
+    CHECK(wst_list_idx_int_init(&list) == WST_LIST_NO_ERR, "dump init");
+    for (int i = 0; i < 20; i++)
+        CHECK(wst_list_idx_int_append(&list, i) == WST_LIST_NO_ERR,
+              "dump append");
+    CHECK(wst_list_idx_int_remove(&list, 3), "dump remove");
+
+    wst_list_idx_int_dump(&list);
+
+    char *path = wst_log_path() != NULL ? strdup(wst_log_path()) : NULL;
+    wst_log_close();
+
+    char *data = path != NULL ? test_read_file(path) : NULL;
+    CHECK(data != NULL, "read dump log");
+    if (data != NULL) {
+        CHECK(strstr(data, "list WstListIdxInt @") != NULL, "dump header");
+        CHECK(strstr(data, "sentinel") == NULL, "no sentinel row");
+        CHECK(strstr(data, "idx  state") != NULL, "slot table header");
+        CHECK(strstr(data, "  live     19") != NULL, "live count");
+        CHECK(strstr(data, "  pooled   1") != NULL, "pooled count");
+        CHECK(strstr(data, "  [  1] live") != NULL, "live row");
+        CHECK(strstr(data, "  [  4] free") != NULL, "free row");
+
+        CHECK(strstr(data, "<span class=\"image-wrap\">") != NULL,
+              "dump graph scroll wrapper");
+        CHECK(strstr(data, "<img class=\"log-image\"") != NULL,
+              "dump graph image");
+        CHECK(strstr(data, ".svg\"") != NULL, "dump graph path");
+    }
+
+    char *dot_path = test_path_join(dir, "list.dot");
+    char *dot = dot_path != NULL ? test_read_file(dot_path) : NULL;
+    CHECK(dot != NULL && strstr(dot, "data=19") != NULL, "graph data");
+    CHECK(dot != NULL && strstr(dot, "next=") != NULL, "graph next field");
+    CHECK(dot != NULL && strstr(dot, "prev=") != NULL, "graph prev field");
+    CHECK(dot != NULL && strstr(dot, "bgcolor=\"#1c1b1f\"") != NULL,
+          "dark graph background");
+    CHECK(dot != NULL && strstr(dot, "shape=record") != NULL,
+          "graph card nodes");
+    CHECK(dot != NULL && strstr(dot, "fillcolor=\"#4a4458\"") != NULL,
+          "live graph style");
+    free(dot);
+    free(dot_path);
+
+    CHECK(wst_list_idx_int_free(&list) == WST_LIST_NO_ERR, "dump free");
+    free(data);
+    free(path);
+    test_rm_rf(dir);
+    free(dir);
+}
+
 int main(void)
 {
     test_lifecycle();
@@ -414,5 +477,6 @@ int main(void)
     test_clear_reinit();
     test_corrupt();
     test_big_ref();
+    test_dump_html();
     return tests_summary();
 }

@@ -209,50 +209,62 @@ WstVecErr wst_vec_void_reserve(WstVecVoid *vec, size_t count, size_t elem_size)
     return WST_VEC_NO_ERR;
 }
 
-static void wst_vec_void_dump_canary(const unsigned char *base, const char *name, bool sane,
+static void wst_vec_void_dump_canary(FILE *out, const unsigned char *base,
+                                     const char *name, bool sane,
                                      const unsigned char canary_exp[])
 {
+#define P(...) fprintf(out, __VA_ARGS__)
 #if VEC_USE_CANARY
-    fprintf(stderr, "  %s canary:\n    expected: ", name);
+    P("  %s canary:\n    expected: ", name);
     for (size_t i = 0; i < VEC_CANARY_SIZE; i++)
-        fprintf(stderr, "%02X ", canary_exp[i]);
-    fprintf(stderr, "\n");
+        P("%02X ", canary_exp[i]);
+    P("\n");
 
     if (!sane) {
-        fprintf(stderr, "    actual: omitted due to sanity check fail\n");
+        P("    actual: omitted due to sanity check fail\n");
         return;
     }
 
     bool match = memcmp(base, canary_exp, VEC_CANARY_SIZE) == 0;
 
-    fprintf(stderr, "    actual:   ");
+    P("    actual:   ");
     for (size_t i = 0; i < VEC_CANARY_SIZE; i++)
-        fprintf(stderr, "%02X ", base[i]);
+        P("%02X ", base[i]);
 
-    fprintf(stderr, "\n    result: %s\n", match ? "OK" : "MISMATCH");
+    P("\n    result: %s\n", match ? "OK" : "MISMATCH");
 
     if (match)
         return;
 
-    fprintf(stderr, "    damaged at byte: ");
+    P("    damaged at byte: ");
     for (size_t i = 0; i < VEC_CANARY_SIZE; i++) {
         if (base[i] != canary_exp[i])
-            fprintf(stderr, " %zu", i);
+            P(" %zu", i);
     }
-    fprintf(stderr, "\n");
+    P("\n");
 
 #else /* !VEC_USE_CANARY */
     (void)base;
     (void)sane;
     (void)canary_exp;
-    fprintf(stderr, "  %s canary: disabled in build\n", name);
+    P("  %s canary: disabled in build\n", name);
 #endif /* !VEC_USE_CANARY */
+#undef P
 }
 
 void wst_vec_void_dump(const WstVecVoid *vec, size_t elem_size, const char *vec_name)
 {
     if (vec == NULL || elem_size == 0) {
-        fprintf(stderr, "vector (%s): <null>\n", vec_name);
+        wst_log_print(WST_LOG_INFO, "vector (%s): <null>\n", vec_name);
+        return;
+    }
+
+    char *buf = NULL;
+    size_t len = 0;
+    FILE *out = open_memstream(&buf, &len);
+    if (out == NULL) {
+        wst_log_print(WST_LOG_INFO,
+                      "vector (%s): cannot allocate dump buffer\n", vec_name);
         return;
     }
 
@@ -260,53 +272,59 @@ void wst_vec_void_dump(const WstVecVoid *vec, size_t elem_size, const char *vec_
                 vec->length <= vec->cap &&
                 vec->cap <= (SIZE_MAX - VEC_CANARY_TOTAL) / elem_size;
 
-    fprintf(stderr, "vector (%s) <%p>:\n"
-            "  data:   <%p>\n"
-            "  length: %zu\n"
-            "  cap:    %zu\n",
-            vec_name, (const void *)vec, vec->data, vec->length, vec->cap);
+#define P(...) fprintf(out, __VA_ARGS__)
+    P("vector (%s) <%p>:\n"
+      "  data:   <%p>\n"
+      "  length: %zu\n"
+      "  cap:    %zu\n",
+      vec_name, (const void *)vec, vec->data, vec->length, vec->cap);
 
 #if VEC_USE_HASH
     if (sane) {
         unsigned long computed = vec_compute_hash(vec, elem_size);
-        fprintf(stderr, "  checksum:\n"
-                "    stored:   0x%016lx\n"
-                "    computed: 0x%016lx\n"
-                "    result: %s\n",
-                vec->hash, computed, vec->hash == computed ? "OK" : "MISMATCH");
+        P("  checksum:\n"
+          "    stored:   0x%016lx\n"
+          "    computed: 0x%016lx\n"
+          "    result: %s\n",
+          vec->hash, computed, vec->hash == computed ? "OK" : "MISMATCH");
     } else {
-        fprintf(stderr, "  checksum:\n"
-                "    stored:   0x%016lx\n"
-                "    computed: <omitted>\n",
-                vec->hash);
+        P("  checksum:\n"
+          "    stored:   0x%016lx\n"
+          "    computed: <omitted>\n",
+          vec->hash);
     }
 #else
-    fprintf(stderr, "  checksum: disabled in build\n");
+    P("  checksum: disabled in build\n");
 #endif
 
 #if VEC_USE_CANARY
-    wst_vec_void_dump_canary(vec_base(vec), "front",
+    wst_vec_void_dump_canary(out, vec_base(vec), "front",
                              sane, vec_canary_front);
-    wst_vec_void_dump_canary(vec_tail(vec, elem_size), "tail",
+    wst_vec_void_dump_canary(out, vec_tail(vec, elem_size), "tail",
                              sane, vec_canary_tail);
 #else
-    wst_vec_void_dump_canary(NULL, "front", sane, NULL);
-    wst_vec_void_dump_canary(NULL, "tail", sane, NULL);
+    wst_vec_void_dump_canary(out, NULL, "front", sane, NULL);
+    wst_vec_void_dump_canary(out, NULL, "tail", sane, NULL);
 #endif
 
     if (sane) {
-        fprintf(stderr, "  buffer [%zu x %zu bytes]:\n", vec->cap, elem_size);
+        P("  buffer [%zu x %zu bytes]:\n", vec->cap, elem_size);
 
         unsigned char *bytes = vec->data;
         for (size_t i = 0; i < vec->cap; i++) {
-            fprintf(stderr, "    [%4zu]:", i);
+            P("    [%4zu]:", i);
             for (size_t j = 0; j < elem_size; j++)
-                fprintf(stderr, " %02X", bytes[i * elem_size + j]);
-            fprintf(stderr, "\n");
+                P(" %02X", bytes[i * elem_size + j]);
+            P("\n");
         }
     } else {
-        fprintf(stderr, "  buffer: omitted due to sanity check fail\n");
+        P("  buffer: omitted due to sanity check fail\n");
     }
+#undef P
+
+    fclose(out);
+    wst_log_print(WST_LOG_INFO, "%s", buf);
+    free(buf);
 }
 
 const char *wst_vec_err_str(WstVecErr err)

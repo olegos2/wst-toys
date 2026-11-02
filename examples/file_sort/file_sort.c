@@ -98,7 +98,8 @@ int main(int argc, char **argv)
 {
     bool help = false;
     bool verbose = false;
-    const char *debug_filename = NULL;
+    bool log_html = false;
+    const char *log_dir = NULL;
     const char *debug_color = NULL;
     const char *in_path = NULL;
     /* NULL out_path maps to stdout */
@@ -123,10 +124,16 @@ int main(int argc, char **argv)
 #endif
         {
             .type = ARG_STRING,
-            .dest = &debug_filename,
+            .dest = &log_dir,
             .short_name = "-l",
-            .long_name = "--logfile",
-            .description = "redirect log prints to a file path",
+            .long_name = "--logdir",
+            .description = "write a timestamped log into this directory",
+        },
+        {
+            .type = ARG_SWITCH,
+            .dest = &log_html,
+            .long_name = "--log-html",
+            .description = "write an HTML log instead of plain text",
         },
         {
             .type = ARG_STRING,
@@ -180,8 +187,9 @@ int main(int argc, char **argv)
     if (verbose)
         wst_log_set_max_prio(WST_LOG_VERBOSE);
 
-    if (!wst_log_open(debug_filename))
-        LOG_W("failed to open log file for writing");
+    if (!wst_log_open(log_dir,
+                      log_html ? WST_LOG_FORMAT_HTML : WST_LOG_FORMAT_TEXT))
+        LOG_W("failed to open log for writing");
 
     if (!setup_locale())
         return EXIT_FAILURE;
