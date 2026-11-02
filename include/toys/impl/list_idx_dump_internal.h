@@ -63,8 +63,8 @@ static void list_dump_graph(const LIST_T *list)
 
     WstListGraph *graph = wst_list_graph_new(
         WST_LIST_STR(LIST_T),
-        "len\t%u\ncap\t%zu\nlive\t%zu\npooled\t%zu\n"
-        "orphan\t%zu\nfree\t%u",
+        "len=%u\ncap=%zu\nlive=%zu\npooled=%zu\n"
+        "orphan=%zu\nfree=%u",
         len, list->hdr.cap, counts.live, counts.pooled, counts.orphan,
         list->hdr.free);
     if (graph == NULL) {
@@ -83,11 +83,11 @@ static void list_dump_graph(const LIST_T *list)
 
 #ifdef LIST_FMT
         wst_list_graph_node(graph, i, node_state,
-                            "#%u\nprev\t%u\nnext\t%u\ndata\t" LIST_FMT, i,
+                            "#%u\nprev=%u\nnext=%u\ndata=" LIST_FMT, i,
                             node->hdr.prev, node->hdr.next, node->data);
 #else
         wst_list_graph_node(graph, i, node_state,
-                            "#%u\nprev\t%u\nnext\t%u\ndata\t%p", i,
+                            "#%u\nprev=%u\nnext=%u\ndata=%p", i,
                             node->hdr.prev, node->hdr.next,
                             (const void *)&node->data);
 #endif

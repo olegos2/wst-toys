@@ -190,22 +190,6 @@ static void record_field(FILE *stream, const char *text, size_t len)
     }
 }
 
-/* A tab splits one label row into side-by-side record fields. */
-static void record_row(FILE *stream, const char *text, size_t len)
-{
-    const char *tab = memchr(text, '\t', len);
-    if (tab == NULL) {
-        record_field(stream, text, len);
-        return;
-    }
-
-    fputs("{ ", stream);
-    record_field(stream, text, (size_t)(tab - text));
-    fputs(" | ", stream);
-    record_field(stream, tab + 1, len - (size_t)(tab - text) - 1);
-    fputs(" }", stream);
-}
-
 /* Turn newline-separated label text into stacked record rows. */
 static char *record_label(const char *label)
 {
@@ -220,7 +204,7 @@ static char *record_label(const char *label)
 
     const char *line = label;
     fputs("{ ", stream);
-    record_row(stream, line, strcspn(line, "\n"));
+    record_field(stream, line, strcspn(line, "\n"));
 
     const char *next = strchr(line, '\n');
     if (next != NULL) {
@@ -231,7 +215,7 @@ static char *record_label(const char *label)
             size_t len = strcspn(line, "\n");
             if (!first)
                 fputs(" | ", stream);
-            record_row(stream, line, len);
+            record_field(stream, line, len);
             first = false;
             if (line[len] == '\0')
                 break;
