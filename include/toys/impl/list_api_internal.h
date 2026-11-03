@@ -30,6 +30,9 @@ WstListErr list_clear(LIST_T *list);
 /** Initialize list as empty, dropping any previous allocation. */
 WstListErr list_init(LIST_T *list);
 
+/** Ensure storage for at least `count` elements. */
+WstListErr list_reserve(LIST_T *list, size_t count);
+
 /** Check the list invariants. */
 WstListErr list_verify(const LIST_T *list);
 
@@ -85,7 +88,7 @@ LIST_NODE_T *list_get_node(const LIST_T *list, size_t idx)
 {
     assert(list != NULL);
 
-    if (list_verify(list) != WST_LIST_NO_ERR)
+    if (WST_LIST_CHECK(list) != WST_LIST_NO_ERR)
         return NULL;
 
     return list_node_at_raw(list, idx);
@@ -115,7 +118,7 @@ LIST_NODE_T *list_find_node(const LIST_T *list, WST_LIST_ARG_TYPE val)
     assert(list != NULL);
     WST_LIST_ARG_ASSERT(val);
 
-    if (list_verify(list) != WST_LIST_NO_ERR)
+    if (WST_LIST_CHECK(list) != WST_LIST_NO_ERR)
         return NULL;
 
     return list_find_node_raw(list, WST_LIST_ARG_DEREF(val));
@@ -126,7 +129,7 @@ ssize_t list_find(const LIST_T *list, WST_LIST_ARG_TYPE val)
     assert(list != NULL);
     WST_LIST_ARG_ASSERT(val);
 
-    if (list_verify(list) != WST_LIST_NO_ERR)
+    if (WST_LIST_CHECK(list) != WST_LIST_NO_ERR)
         return -1;
 
     return list_find_index_raw(list, WST_LIST_ARG_DEREF(val));
@@ -148,7 +151,7 @@ WstListErr list_append(LIST_T *list, WST_LIST_ARG_TYPE val)
     assert(list != NULL);
     WST_LIST_ARG_ASSERT(val);
 
-    WstListErr err = list_verify(list);
+    WstListErr err = WST_LIST_CHECK(list);
     if (err != WST_LIST_NO_ERR)
         return err;
 
@@ -161,7 +164,7 @@ WstListErr list_insert_by_node(LIST_T *list, const LIST_NODE_T *node,
     assert(list != NULL);
     WST_LIST_ARG_ASSERT(val);
 
-    WstListErr err = list_verify(list);
+    WstListErr err = WST_LIST_CHECK(list);
     if (err != WST_LIST_NO_ERR)
         return err;
 
@@ -173,7 +176,7 @@ WstListErr list_insert(LIST_T *list, size_t idx, WST_LIST_ARG_TYPE val)
     assert(list != NULL);
     WST_LIST_ARG_ASSERT(val);
 
-    WstListErr err = list_verify(list);
+    WstListErr err = WST_LIST_CHECK(list);
     if (err != WST_LIST_NO_ERR)
         return err;
 

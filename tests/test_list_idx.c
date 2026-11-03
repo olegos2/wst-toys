@@ -288,6 +288,32 @@ static void test_clear_reinit(void)
     CHECK(wst_list_idx_int_free(&list) == WST_LIST_NO_ERR, "free ok");
 }
 
+static void test_reserve(void)
+{
+    WstListIdxInt list = { 0 };
+    CHECK(wst_list_idx_int_init(&list) == WST_LIST_NO_ERR, "reserve init");
+
+    CHECK(wst_list_idx_int_reserve(&list, 100) == WST_LIST_NO_ERR,
+          "reserve slots");
+    size_t cap = list.hdr.cap;
+    CHECK(cap >= 100, "reserve covers requested capacity");
+    CHECK(list.hdr.len == 0, "reserve leaves slots unallocated");
+    CHECK(list.hdr.free == WST_LISTI_NIL, "reserve does not build a free list");
+
+    for (int i = 0; i < 100; i++)
+        CHECK(wst_list_idx_int_append(&list, i) == WST_LIST_NO_ERR,
+              "append after reserve");
+    CHECK(list.hdr.cap == cap, "reserve avoids array growth");
+    CHECK(list.hdr.len == 100, "append allocates reserved slots");
+    CHECK(wst_list_idx_int_verify(&list) == WST_LIST_NO_ERR,
+          "reserved list verifies");
+
+    CHECK(wst_list_idx_int_reserve(&list, 10) == WST_LIST_NO_ERR,
+          "smaller reserve is a no-op");
+    CHECK(list.hdr.cap == cap, "no-op reserve keeps storage");
+    CHECK(wst_list_idx_int_free(&list) == WST_LIST_NO_ERR, "reserve free");
+}
+
 static void test_corrupt(void)
 {
     CHECK(wst_list_idx_int_verify(NULL) == WST_LIST_ERR_NULL, "null list");
@@ -529,6 +555,7 @@ int main(void)
     test_find();
     test_pop();
     test_clear_reinit();
+    test_reserve();
     test_corrupt();
     test_big_ref();
     test_dump_html();

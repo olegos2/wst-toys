@@ -267,7 +267,7 @@ WstListErr list_free(LIST_T *list)
 {
     assert(list != NULL);
 
-    WstListErr err = list_verify(list);
+    WstListErr err = WST_LIST_CHECK(list);
     if (err != WST_LIST_NO_ERR)
         return err;
 
@@ -286,7 +286,7 @@ WstListErr list_clear(LIST_T *list)
 {
     assert(list != NULL);
 
-    WstListErr err = list_verify(list);
+    WstListErr err = WST_LIST_CHECK(list);
     if (err != WST_LIST_NO_ERR)
         return err;
 
@@ -308,7 +308,7 @@ WstListErr list_init(LIST_T *list)
 {
     assert(list != NULL);
 
-    WstListErr err = list_verify(list);
+    WstListErr err = WST_LIST_CHECK(list);
     if (err != WST_LIST_NO_ERR)
         return err;
 
@@ -324,6 +324,30 @@ WstListErr list_init(LIST_T *list)
 
     LOG_D("initialized empty list with block vector capacity %zu",
           list->blocks.cap);
+    return WST_LIST_NO_ERR;
+}
+
+WstListErr list_reserve(LIST_T *list, size_t count)
+{
+    assert(list != NULL);
+
+    WstListErr err = WST_LIST_CHECK(list);
+    if (err != WST_LIST_NO_ERR)
+        return err;
+
+    size_t cap = list_dump_total(list);
+    while (cap < count) {
+        err = list_new_block(list);
+        if (err != WST_LIST_NO_ERR)
+            return err;
+
+        size_t added = list->blocks.data[list->blocks.length - 1]->cap;
+        if (added > SIZE_MAX - cap)
+            return WST_LIST_ERR_OVERFLOW;
+        cap += added;
+    }
+
+    LOG_D("reserved %zu node slots, capacity %zu", count, cap);
     return WST_LIST_NO_ERR;
 }
 
@@ -465,7 +489,7 @@ bool list_remove_node(LIST_T *list, const LIST_NODE_T *node)
     if (node == NULL)
         return false;
 
-    if (list_verify(list) != WST_LIST_NO_ERR)
+    if (WST_LIST_CHECK(list) != WST_LIST_NO_ERR)
         return false;
 
     wst_list_hdr_remove(&list->hdr, (WstListNodeHdr *)node);
@@ -477,7 +501,7 @@ WstListErr list_pop(LIST_T *list, LIST_ELEM *out)
 {
     assert(list != NULL);
 
-    WstListErr err = list_verify(list);
+    WstListErr err = WST_LIST_CHECK(list);
     if (err != WST_LIST_NO_ERR)
         return err;
 
@@ -500,6 +524,7 @@ WstListErr list_pop(LIST_T *list, LIST_ELEM *out)
 #undef list_free
 #undef list_clear
 #undef list_init
+#undef list_reserve
 #undef list_verify
 #undef list_dump
 #undef list_get_node
@@ -533,6 +558,8 @@ WstListErr list_pop(LIST_T *list, LIST_ELEM *out)
 #undef list_find_index_raw
 #undef list_append_raw
 #undef list_insert_after_node_raw
+
+#undef WST_LIST_CHECK
 
 #undef LIST_NODE_T
 #undef LIST_BLOCK_T

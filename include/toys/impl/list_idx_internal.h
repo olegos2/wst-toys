@@ -142,7 +142,7 @@ WstListErr list_free(LIST_T *list)
 {
     assert(list != NULL);
 
-    WstListErr err = list_verify(list);
+    WstListErr err = WST_LIST_CHECK(list);
     if (err != WST_LIST_NO_ERR)
         return err;
 
@@ -154,7 +154,7 @@ WstListErr list_clear(LIST_T *list)
 {
     assert(list != NULL);
 
-    WstListErr err = list_verify(list);
+    WstListErr err = WST_LIST_CHECK(list);
     if (err != WST_LIST_NO_ERR)
         return err;
 
@@ -170,6 +170,17 @@ WstListErr list_clear(LIST_T *list)
 WstListErr list_init(LIST_T *list)
 {
     return list_free(list);
+}
+
+WstListErr list_reserve(LIST_T *list, size_t count)
+{
+    assert(list != NULL);
+
+    WstListErr err = WST_LIST_CHECK(list);
+    if (err != WST_LIST_NO_ERR)
+        return err;
+
+    return wst_listi_hdr_reserve(&list->hdr, sizeof(LIST_NODE_T), count);
 }
 
 WstListErr list_verify(const LIST_T *list)
@@ -305,7 +316,7 @@ bool list_remove_node(LIST_T *list, const LIST_NODE_T *node)
     if (node == NULL)
         return false;
 
-    if (list_verify(list) != WST_LIST_NO_ERR || list->hdr.len == 0)
+    if (WST_LIST_CHECK(list) != WST_LIST_NO_ERR || list->hdr.len == 0)
         return false;
 
     uint32_t link = wst_listi_hdr_index_of(
@@ -321,7 +332,7 @@ WstListErr list_pop(LIST_T *list, LIST_ELEM *out)
 {
     assert(list != NULL);
 
-    WstListErr err = list_verify(list);
+    WstListErr err = WST_LIST_CHECK(list);
     if (err != WST_LIST_NO_ERR)
         return err;
 
@@ -341,6 +352,7 @@ WstListErr list_pop(LIST_T *list, LIST_ELEM *out)
 #undef list_free
 #undef list_clear
 #undef list_init
+#undef list_reserve
 #undef list_verify
 #undef list_dump
 #undef list_get_node
@@ -368,6 +380,8 @@ WstListErr list_pop(LIST_T *list, LIST_ELEM *out)
 #undef list_find_index_raw
 #undef list_append_raw
 #undef list_insert_after_node_raw
+
+#undef WST_LIST_CHECK
 
 #undef LIST_NODES
 #undef LIST_NODE_T

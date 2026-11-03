@@ -24,6 +24,10 @@ if get_option('vec-protect')
     )
 endif
 
+if get_option('list-verify')
+    add_project_arguments('-DLIST_USE_VERIFY=1', language: 'c')
+endif
+
 inc = include_directories(
     'include',
 )

@@ -124,9 +124,16 @@ declarations are needed:
 #include "toys/impl/list_idx_internal.h"
 
 MyIntList list = { 0 };
+my_int_list_reserve(&list, 1024); // capacity for 1024 elements
 my_int_list_append(&list, 7);
 my_int_list_free(&list);
 ```
+
+Every mutation verifies the list first when `LIST_USE_VERIFY` is enabled. The
+macro follows `WST_DEBUG` unless set to 0 or 1. Explicit `list_verify` calls
+always check the storage, and `-Dlist-verify=true` forces per-operation checks
+in release builds. `list_reserve` keeps contents and pooled nodes, and only
+allocates the missing capacity.
 
 `test_list.c` and `test_list_idx.c` show the full API.
 
@@ -175,11 +182,11 @@ and loops the tail back to the head:
 ```
 
 `examples/list_bench/list_bench.c` compiles into two binaries, one per backend.
-The workload appends 50k nodes, then runs 4k rounds of get, set, find, insert,
-remove, pop and append. Build it in release mode and compare:
+The workload reserves 100k slots, then runs 50 rounds of appending and popping
+100k nodes. Build it in release mode and compare:
 
 ```sh
-meson setup builddir-release --buildtype=release -Dtests=false
+meson setup builddir-release --buildtype=release -Dtests=false -Db_ndebug=true
 meson compile -C builddir-release
 hyperfine \
   builddir-release/examples/list_bench/list_bench_block \
@@ -187,7 +194,9 @@ hyperfine \
 ```
 
 Override `LIST_BENCH_SIZE` or `LIST_BENCH_ROUNDS` through `c_args` or
-`CPPFLAGS` when a shorter or longer run is useful.
+`CPPFLAGS` when a shorter or longer run is useful. Add
+`-Dlist-verify=true` to the setup command to measure automatic integrity
+checks as well.
 
 ## Tests
 

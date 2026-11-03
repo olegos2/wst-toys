@@ -1,11 +1,3 @@
-/*
- * Compare the two list backends on the same mixed workload.
- *
- * Build once without defines for the block backend and once with
- * `-DLIST_BENCH_INDEX` for the index backend. The defaults are intentionally
- * large enough to dominate process startup in a release build.
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -34,18 +26,12 @@
 #endif /* LIST_BENCH_INDEX */
 
 #ifndef LIST_BENCH_SIZE
-#define LIST_BENCH_SIZE 50000
+#define LIST_BENCH_SIZE 100000
 #endif
 
 #ifndef LIST_BENCH_ROUNDS
-#define LIST_BENCH_ROUNDS 4000
+#define LIST_BENCH_ROUNDS 50
 #endif
-
-static void fail(const char *what)
-{
-    fprintf(stderr, "%s failed\n", what);
-    exit(EXIT_FAILURE);
-}
 
 static void require(WstListErr err, const char *what)
 {
@@ -60,29 +46,17 @@ int main(void)
     BENCH_T list = { 0 };
 
     require(BENCH_F(init)(&list), "init");
-    for (size_t i = 0; i < LIST_BENCH_SIZE; i++)
-        require(BENCH_F(append)(&list, (int)i), "append");
+    require(BENCH_F(reserve)(&list, LIST_BENCH_SIZE), "reserve");
 
     for (size_t round = 0; round < LIST_BENCH_ROUNDS; round++) {
-        size_t index = (round * 7919) % LIST_BENCH_SIZE;
-        int value = 0;
+        for (size_t i = 0; i < LIST_BENCH_SIZE; i++) {
+            require(BENCH_F(append)(&list, (int)i), "append");
+        }
 
-        if (!BENCH_F(get)(&list, index, &value))
-            fail("get");
-
-        int marker = (int)LIST_BENCH_SIZE + (int)round;
-        if (!BENCH_F(set)(&list, index, marker))
-            fail("set");
-        if (BENCH_F(find)(&list, marker) < 0)
-            fail("find");
-
-        require(BENCH_F(insert)(&list, index, (int)round), "insert");
-        if (!BENCH_F(remove)(&list, index))
-            fail("remove");
-
-        int popped = 0;
-        require(BENCH_F(pop)(&list, &popped), "pop");
-        require(BENCH_F(append)(&list, popped), "append");
+        for (size_t i = 0; i < LIST_BENCH_SIZE; i++) {
+            int popped = 0;
+            require(BENCH_F(pop)(&list, &popped), "pop");
+        }
     }
 
     require(BENCH_F(free)(&list), "free");

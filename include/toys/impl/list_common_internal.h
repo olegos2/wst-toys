@@ -14,6 +14,15 @@
 #include <stdio.h>
 #include <sys/types.h>
 
+
+#if !defined(LIST_USE_VERIFY)
+#  ifdef WST_DEBUG
+#    define LIST_USE_VERIFY 1
+#  else
+#    define LIST_USE_VERIFY 0
+#  endif
+#endif
+
 /** Token-pasting and stringifying helpers. */
 #define WST_LIST_CAT2(a, b) a ## b
 #define WST_LIST_CAT(a, b) WST_LIST_CAT2(a, b)
@@ -132,8 +141,15 @@ void wst_list_diag_add(WstListDiag *diag, const char *fmt, ...);
 #define list_free LIST_F(free)
 #define list_clear LIST_F(clear)
 #define list_init LIST_F(init)
+#define list_reserve LIST_F(reserve)
 #define list_verify LIST_F(verify)
 #define list_dump LIST_F(dump)
+
+#if LIST_USE_VERIFY
+#  define WST_LIST_CHECK(list) list_verify(list)
+#else
+#  define WST_LIST_CHECK(list) WST_LIST_NO_ERR
+#endif
 
 #define list_get_node LIST_F(get_node)
 #define list_get LIST_F(get)
@@ -213,6 +229,10 @@ uint32_t wst_listi_hdr_tail(const WstListiHdr *hdr, size_t stride);
 /** Allocate a free slot or grow the array, returning the new link in `out`. */
 WstListErr wst_listi_hdr_alloc(WstListiHdr *hdr, size_t stride,
                                size_t init_cap, uint32_t *out);
+
+/** Grow the node array to at least `count` real slots. */
+WstListErr wst_listi_hdr_reserve(WstListiHdr *hdr, size_t stride,
+                                 size_t count);
 
 /** Link an already allocated node after `prev`, where slot 0 prepends. */
 void wst_listi_hdr_insert_after(WstListiHdr *hdr, size_t stride, uint32_t prev,

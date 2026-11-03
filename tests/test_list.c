@@ -230,6 +230,32 @@ static void test_clear_reinit(void)
     CHECK(wst_list_int_free(&list) == WST_LIST_NO_ERR, "free ok");
 }
 
+static void test_reserve(void)
+{
+    WstListInt list = { 0 };
+    CHECK(wst_list_int_init(&list) == WST_LIST_NO_ERR, "reserve init");
+
+    CHECK(wst_list_int_reserve(&list, 100) == WST_LIST_NO_ERR, "reserve nodes");
+    size_t blocks = list.blocks.length;
+    size_t cap = block_capacity(&list);
+    CHECK(cap >= 100, "reserve covers requested capacity");
+    CHECK(list.hdr.head == NULL && list.hdr.free != NULL,
+          "reserve only pools nodes");
+
+    for (int i = 0; i < 100; i++)
+        CHECK(wst_list_int_append(&list, i) == WST_LIST_NO_ERR,
+              "append after reserve");
+    CHECK(list.blocks.length == blocks && block_capacity(&list) == cap,
+          "reserve avoids block growth");
+    CHECK(wst_list_int_verify(&list) == WST_LIST_NO_ERR, "reserved list verifies");
+
+    CHECK(wst_list_int_reserve(&list, 10) == WST_LIST_NO_ERR,
+          "smaller reserve is a no-op");
+    CHECK(list.blocks.length == blocks && block_capacity(&list) == cap,
+          "no-op reserve keeps blocks");
+    CHECK(wst_list_int_free(&list) == WST_LIST_NO_ERR, "reserve free");
+}
+
 static void test_corrupt(void)
 {
     WstListInt list = { 0 };
@@ -455,6 +481,7 @@ int main(void)
     test_find();
     test_pop();
     test_clear_reinit();
+    test_reserve();
     test_corrupt();
     test_big_ref();
     test_verify_graceful();

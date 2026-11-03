@@ -261,6 +261,37 @@ ssize_t wst_listi_hdr_find_index(const WstListiHdr *hdr, size_t stride,
     return -1;
 }
 
+WstListErr wst_listi_hdr_reserve(WstListiHdr *hdr, size_t stride,
+                                 size_t count)
+{
+    if (hdr == NULL)
+        return WST_LIST_ERR_NULL;
+
+    if (stride < sizeof(WstListiNodeHdr))
+        return WST_LIST_ERR_CORRUPT;
+
+    if (count <= hdr->cap)
+        return WST_LIST_NO_ERR;
+
+    if (count > UINT32_MAX || count > SIZE_MAX / stride - 1)
+        return WST_LIST_ERR_OVERFLOW;
+
+    void *nodes = realloc(hdr->nodes, (count + 1) * stride);
+    if (nodes == NULL)
+        return WST_LIST_ERR_NOMEM;
+
+    hdr->nodes = nodes;
+    hdr->cap = count;
+
+    if (hdr->len == 0) {
+        WstListiNodeHdr *sentinel = index_node_at(hdr, stride, 0);
+        sentinel->next = 0;
+        sentinel->prev = 0;
+    }
+
+    return WST_LIST_NO_ERR;
+}
+
 WstListErr wst_listi_hdr_verify(const WstListiHdr *hdr, size_t stride)
 {
     if (hdr == NULL)
@@ -281,8 +312,15 @@ WstListErr wst_listi_hdr_verify(const WstListiHdr *hdr, size_t stride)
         return WST_LIST_NO_ERR;
     }
 
-    if (hdr->nodes == NULL || hdr->len == 0)
+    if (hdr->nodes == NULL)
         return WST_LIST_ERR_CORRUPT;
+
+    if (hdr->len == 0) {
+        WstListiNodeHdr *sentinel = index_node_at(hdr, stride, 0);
+        if (hdr->free != 0 || sentinel->next != 0 || sentinel->prev != 0)
+            return WST_LIST_ERR_CORRUPT;
+        return WST_LIST_NO_ERR;
+    }
 
     uint32_t head = index_node_at(hdr, stride, 0)->next;
     uint32_t tail = index_node_at(hdr, stride, 0)->prev;

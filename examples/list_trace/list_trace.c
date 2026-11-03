@@ -79,13 +79,13 @@ static void pointer_corruption(void)
     if (first == NULL || second == NULL || third == NULL || last == NULL)
         fail("corrupt nodes");
 
-    LOG_I("corruption: live prev link points nowhere");
+    LOG_I("live prev link points nowhere");
     WstListNodeHdr *saved_prev = second->hdr.prev;
     second->hdr.prev = NULL;
     wst_list_int_dump(&list);
     second->hdr.prev = saved_prev;
 
-    LOG_I("corruption: live node dropped from both chains");
+    LOG_I("live node dropped from both chains");
     WstListNodeHdr *saved_next = first->hdr.next;
     WstListNodeHdr *saved_third_prev = third->hdr.prev;
     first->hdr.next = &third->hdr;
@@ -94,13 +94,13 @@ static void pointer_corruption(void)
     first->hdr.next = saved_next;
     third->hdr.prev = saved_third_prev;
 
-    LOG_I("corruption: free head points at a live node");
+    LOG_I("free head points at a live node");
     WstListNodeHdr *saved_free = list.hdr.free;
     list.hdr.free = &first->hdr;
     wst_list_int_dump(&list);
     list.hdr.free = saved_free;
 
-    LOG_I("corruption: tail links back to head");
+    LOG_I("tail links back to head");
     WstListNodeHdr *saved_tail_next = last->hdr.next;
     last->hdr.next = &first->hdr;
     wst_list_int_dump(&list);
@@ -154,12 +154,12 @@ static void index_corruption(void)
     if (nodes == NULL)
         fail("corrupt nodes");
 
-    LOG_I("corruption: live prev link points nowhere");
+    LOG_I("live prev link points nowhere");
     nodes[3].hdr.prev = 0;
     wst_list_idx_int_dump(&list);
     nodes[3].hdr.prev = 1;
 
-    LOG_I("corruption: live node dropped from both chains");
+    LOG_I("live node dropped from both chains");
     uint32_t saved_next = nodes[3].hdr.next;
     uint32_t saved_prev = nodes[5].hdr.prev;
     nodes[3].hdr.next = 5;
@@ -168,13 +168,13 @@ static void index_corruption(void)
     nodes[3].hdr.next = saved_next;
     nodes[5].hdr.prev = saved_prev;
 
-    LOG_I("corruption: free head points at a live node");
+    LOG_I("free head points at a live node");
     uint32_t saved_free = list.hdr.free;
     list.hdr.free = 1;
     wst_list_idx_int_dump(&list);
     list.hdr.free = saved_free;
 
-    LOG_I("corruption: tail links back to head");
+    LOG_I("tail links back to head");
     uint32_t saved_tail_next = nodes[5].hdr.next;
     nodes[5].hdr.next = 1;
     wst_list_idx_int_dump(&list);
