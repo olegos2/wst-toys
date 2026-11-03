@@ -458,10 +458,62 @@ static void test_dump_html(void)
           "graph card nodes");
     CHECK(dot != NULL && strstr(dot, "fillcolor=\"#4a4458\"") != NULL,
           "live graph style");
+    CHECK(dot != NULL && strstr(dot, "\"n4\" [") != NULL,
+          "free node card shown");
+    CHECK(dot != NULL && strstr(dot, "fillcolor=\"#36343b\"") != NULL,
+          "free graph style");
     free(dot);
     free(dot_path);
 
     CHECK(wst_list_idx_int_free(&list) == WST_LIST_NO_ERR, "dump free");
+    free(data);
+    free(path);
+    test_rm_rf(dir);
+    free(dir);
+}
+
+static void test_corrupt_dump(void)
+{
+    char *dir = test_tmpdir("wst-list-idx-corrupt-html");
+    CHECK(dir != NULL, "corrupt dump dir");
+    if (dir == NULL)
+        return;
+
+    CHECK(wst_log_open(dir, WST_LOG_FORMAT_HTML), "open corrupt log");
+
+    WstListIdxInt list = { 0 };
+    CHECK(wst_list_idx_int_init(&list) == WST_LIST_NO_ERR,
+          "corrupt dump init");
+    for (int i = 0; i < 3; i++)
+        CHECK(wst_list_idx_int_append(&list, i) == WST_LIST_NO_ERR,
+              "corrupt dump append");
+
+    WstListIdxIntNode *nodes = int_nodes(&list);
+    nodes[2].hdr.prev = WST_LISTI_NIL;
+
+    wst_list_idx_int_dump(&list);
+
+    char *path = wst_log_path() != NULL ? strdup(wst_log_path()) : NULL;
+    wst_log_close();
+
+    char *data = path != NULL ? test_read_file(path) : NULL;
+    CHECK(data != NULL, "read corrupt log");
+    CHECK(data != NULL && strstr(data, "corruption (2)") != NULL,
+          "corruption headline");
+    CHECK(data != NULL &&
+          strstr(data, "live slot 2 prev=0 but is not head") != NULL,
+          "broken prev report");
+
+    char *dot_path = test_path_join(dir, "list.dot");
+    char *dot = dot_path != NULL ? test_read_file(dot_path) : NULL;
+    CHECK(dot != NULL && strstr(dot, "issues=2") != NULL,
+          "corrupt graph issue count");
+    free(dot);
+    free(dot_path);
+
+    nodes[2].hdr.prev = 1;
+    CHECK(wst_list_idx_int_free(&list) == WST_LIST_NO_ERR,
+          "corrupt dump free");
     free(data);
     free(path);
     test_rm_rf(dir);
@@ -480,5 +532,6 @@ int main(void)
     test_corrupt();
     test_big_ref();
     test_dump_html();
+    test_corrupt_dump();
     return tests_summary();
 }

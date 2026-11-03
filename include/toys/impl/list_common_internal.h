@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <sys/types.h>
 
 /** Token-pasting and stringifying helpers. */
@@ -98,6 +99,15 @@ const char *wst_list_slot_state_name(WstListSlotState state);
 /** Count live, pooled and orphan slots. */
 WstListSlotCounts wst_list_slot_counts(const WstListSlotState *state,
                                        size_t count);
+
+/** Formats one problem line and increments its count. */
+typedef struct {
+    FILE *stream;
+    size_t count;
+} WstListDiag;
+
+/** Add one formatted problem line to `diag`. */
+void wst_list_diag_add(WstListDiag *diag, const char *fmt, ...);
 
 #endif /* TOYS_LIST_COMMON_INTERNAL_H */
 

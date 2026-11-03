@@ -358,6 +358,8 @@ static void test_dump_html(void)
         CHECK(strstr(data, "  pooled   5") != NULL, "pooled count");
         CHECK(strstr(data, "  [  0] live") != NULL, "live row");
         CHECK(strstr(data, "  [  3] free") != NULL, "free row");
+        CHECK(strstr(data, "vector (WstVecListBlock_int)") != NULL,
+              "block vector dump");
 
         CHECK(strstr(data, "<span class=\"image-wrap\">") != NULL,
               "dump graph scroll wrapper");
@@ -381,10 +383,64 @@ static void test_dump_html(void)
           "graph card nodes");
     CHECK(dot != NULL && strstr(dot, "fillcolor=\"#4a4458\"") != NULL,
           "live graph style");
+    CHECK(dot != NULL && strstr(dot, "\"n3\" [") != NULL,
+          "free node card shown");
+    CHECK(dot != NULL && strstr(dot, "fillcolor=\"#36343b\"") != NULL,
+          "free graph style");
     free(dot);
     free(dot_path);
 
     CHECK(wst_list_int_free(&list) == WST_LIST_NO_ERR, "dump free");
+    free(data);
+    free(path);
+    test_rm_rf(dir);
+    free(dir);
+}
+
+static void test_corrupt_dump(void)
+{
+    char *dir = test_tmpdir("wst-list-corrupt-html");
+    CHECK(dir != NULL, "corrupt dump dir");
+    if (dir == NULL)
+        return;
+
+    CHECK(wst_log_open(dir, WST_LOG_FORMAT_HTML), "open corrupt log");
+
+    WstListInt list = { 0 };
+    CHECK(wst_list_int_init(&list) == WST_LIST_NO_ERR, "corrupt dump init");
+    for (int i = 0; i < 3; i++)
+        CHECK(wst_list_int_append(&list, i) == WST_LIST_NO_ERR,
+              "corrupt dump append");
+
+    WstListIntNode *mid = wst_list_int_get_node(&list, 1);
+    CHECK(mid != NULL, "corrupt dump node");
+    WstListNodeHdr *saved = mid != NULL ? mid->hdr.prev : NULL;
+    if (mid != NULL)
+        mid->hdr.prev = NULL;
+
+    wst_list_int_dump(&list);
+
+    char *path = wst_log_path() != NULL ? strdup(wst_log_path()) : NULL;
+    wst_log_close();
+
+    char *data = path != NULL ? test_read_file(path) : NULL;
+    CHECK(data != NULL, "read corrupt log");
+    CHECK(data != NULL && strstr(data, "corruption (2)") != NULL,
+          "corruption headline");
+    CHECK(data != NULL &&
+          strstr(data, "live slot 1 prev is NULL but is not head") != NULL,
+          "broken prev report");
+
+    char *dot_path = test_path_join(dir, "list.dot");
+    char *dot = dot_path != NULL ? test_read_file(dot_path) : NULL;
+    CHECK(dot != NULL && strstr(dot, "issues=2") != NULL,
+          "corrupt graph issue count");
+    free(dot);
+    free(dot_path);
+
+    if (mid != NULL)
+        mid->hdr.prev = saved;
+    CHECK(wst_list_int_free(&list) == WST_LIST_NO_ERR, "corrupt dump free");
     free(data);
     free(path);
     test_rm_rf(dir);
@@ -404,5 +460,6 @@ int main(void)
     test_verify_graceful();
     test_err_str();
     test_dump_html();
+    test_corrupt_dump();
     return tests_summary();
 }

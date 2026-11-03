@@ -104,10 +104,10 @@ the include.
 - `impl/list_internal.h` keeps nodes in heap blocks. Node addresses stay stable
   across insertions, which makes node handles safe to hold for a long time.
 - `impl/list_idx_internal.h` keeps nodes in one flat array. Links are 32-bit
-  indices, which makes nodes smaller and more cache friendly. Slot 0 is a
-  sentinel that links the head and tail, so insertion and removal don't need
-  head/tail special cases. Insertions may grow and move the array, so fetch a
-  node again after growth instead of holding on to its pointer.
+  indices, which makes nodes smaller and more cache friendly. Slot 0 is
+  fictional, and links the head and tail, so insertion and removal don't need
+  special cases. Insertions may grow and move the array, so fetch a node again
+  after growth instead of holding on to its pointer.
 
 Both backends share the typed API template in `impl/list_api_internal.h`.
 Only their storage primitives and lifecycle functions differ. Both accept a
@@ -160,15 +160,18 @@ wst_graph_free(graph);
 ```
 
 `list_dump` uses the same path to print aligned live, pooled and raw slot
-tables and to embed a graph of the live chain. The `.dot` and `.svg` files
-stay next to the log for later inspection.
+tables and to embed a graph of every slot, the live chain and the free chain.
+Broken links, lost slots, bad endpoints and chain cycles show up as diagnostics
+and as colored graph markers. The `.dot` and `.svg` files stay next to the log
+for later inspection.
 
 `examples/list_trace/list_trace.c` demonstrates this end to end. It dumps both
-list backends into one HTML log and performs an append, insert, remove and slot
-reuse after each dump so the graphs change visibly:
+list backends into one HTML log, performs append, insert, set, remove and slot
+reuse, then corrupts a link, orphans a node, points the free head at a live node
+and loops the tail back to the head:
 
 ```sh
-./builddir/examples/list_trace/list_trace logs
+./builddir/examples/list_trace/list_trace --logdir logs
 ```
 
 ## Tests

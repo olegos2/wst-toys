@@ -1,6 +1,8 @@
 #define LIST_IMPL
 #include "toys/list.h"
 
+#include <stdarg.h>
+#include <stdio.h>
 #include <string.h>
 
 /* Untyped list helpers shared by every typed list. */
@@ -185,6 +187,19 @@ WstListSlotCounts wst_list_slot_counts(const WstListSlotState *state,
     }
 
     return counts;
+}
+
+void wst_list_diag_add(WstListDiag *diag, const char *fmt, ...)
+{
+    if (diag == NULL || diag->stream == NULL || fmt == NULL)
+        return;
+
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(diag->stream, fmt, args);
+    va_end(args);
+    fputc('\n', diag->stream);
+    diag->count++;
 }
 
 const char *wst_list_err_str(WstListErr err)

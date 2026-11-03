@@ -50,8 +50,14 @@ WstListErr wst_list_err_from_vec(WstVecErr err);
 
 #define list_dump_total LIST_F(dump_total)
 #define list_dump_slot_of LIST_F(dump_slot_of)
+#define list_dump_node_at LIST_F(dump_node_at)
+#define list_dump_ref LIST_F(dump_ref)
 #define list_dump_mark_live LIST_F(dump_mark_live)
 #define list_dump_mark_free LIST_F(dump_mark_free)
+#define list_dump_check_chain LIST_F(dump_check_chain)
+#define list_dump_check_live LIST_F(dump_check_live)
+#define list_dump_check_free LIST_F(dump_check_free)
+#define list_dump_check LIST_F(dump_check)
 #define list_dump_graph LIST_F(dump_graph)
 
 #define LIST_BLOCK_T WST_LIST_CAT(LIST_T, Block)
@@ -354,18 +360,33 @@ void list_dump(const LIST_T *list)
         }
     }
 
+    char *issue_buf = NULL;
+    size_t issue_len = 0;
+    FILE *issues = open_memstream(&issue_buf, &issue_len);
+    WstListDiag diag = { issues, 0 };
+
+    if (!vector_ok)
+        wst_list_diag_add(&diag, "block vector check failed: %s",
+                          wst_list_err_str(verr));
+    else
+        list_dump_check(list, state, total, &diag);
+
+    if (issues != NULL)
+        fclose(issues);
+
     char *buf = NULL;
     size_t len = 0;
     FILE *out = open_memstream(&buf, &len);
     if (out == NULL) {
         LOG_E("list: cannot allocate dump buffer");
+        free(issue_buf);
         free(state);
         return;
     }
 
 #define P(...) fprintf(out, __VA_ARGS__)
     P("list %s @%p\n", WST_LIST_STR(LIST_T), (const void *)list);
-    P("  %-8s %s\n", "check",
+    P("  %-8s %s\n", "vector",
       vector_ok ? "ok" : wst_list_err_str(verr));
     P("  %-8s %p\n", "head", (const void *)list->hdr.head);
     P("  %-8s %p\n", "tail", (const void *)list->hdr.tail);
@@ -377,6 +398,11 @@ void list_dump(const LIST_T *list)
         P("  %-8s %zu\n", "live", counts.live);
         P("  %-8s %zu\n", "pooled", counts.pooled);
         P("  %-8s %zu\n", "orphan", counts.orphan);
+    }
+
+    if (diag.count > 0 && issue_buf != NULL) {
+        P("\ncorruption (%zu)\n", diag.count);
+        P("%s", issue_buf);
     }
 
     if (!vector_ok) {
@@ -424,12 +450,12 @@ void list_dump(const LIST_T *list)
     fclose(out);
     wst_log_print(WST_LOG_INFO, "%s", buf);
     free(buf);
+    free(issue_buf);
     free(state);
 
+    BLOCK_VEC_F(dump)(&list->blocks);
     if (vector_ok)
-        list_dump_graph(list);
-    else
-        BLOCK_VEC_F(dump)(&list->blocks);
+        list_dump_graph(list, diag.count);
 }
 
 bool list_remove_node(LIST_T *list, const LIST_NODE_T *node)
@@ -493,8 +519,14 @@ WstListErr list_pop(LIST_T *list, LIST_ELEM *out)
 #undef list_alloc_node
 #undef list_dump_total
 #undef list_dump_slot_of
+#undef list_dump_node_at
+#undef list_dump_ref
 #undef list_dump_mark_live
 #undef list_dump_mark_free
+#undef list_dump_check_chain
+#undef list_dump_check_live
+#undef list_dump_check_free
+#undef list_dump_check
 #undef list_dump_graph
 #undef list_node_at_raw
 #undef list_find_node_raw
