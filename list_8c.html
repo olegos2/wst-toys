@@ -96,6 +96,9 @@ $(document).ready(function(){initNavTree('list_8c.html',''); initResizable(); })
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="list_8h_source.html">toys/list.h</a>&quot;</code><br />
+<code>#include &lt;stdarg.h&gt;</code><br />
+<code>#include &lt;stdio.h&gt;</code><br />
+<code>#include &lt;<a class="el" href="string_8h_source.html">string.h</a>&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -120,9 +123,15 @@ Functions</h2></td></tr>
 <tr class="separator:ae0a1f137dae5de1180e06973a7e7c89c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e24bbc478e5ed1a3682c20edff2a21a" id="r_a6e24bbc478e5ed1a3682c20edff2a21a"><td class="memItemLeft" align="right" valign="top">ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="list_8c.html#a6e24bbc478e5ed1a3682c20edff2a21a">wst_list_hdr_find_index</a> (const <a class="el" href="structWstListHdr.html">WstListHdr</a> *list, size_t data_off, const void *value, size_t value_size)</td></tr>
 <tr class="separator:a6e24bbc478e5ed1a3682c20edff2a21a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a95bb8f57a55dc361c49fcaa83d416aed" id="r_a95bb8f57a55dc361c49fcaa83d416aed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="list__internal_8h.html#a05bd0164790af29ec50b5b380b5973bb">WstListErr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="list_8c.html#a95bb8f57a55dc361c49fcaa83d416aed">wst_list_err_from_vec</a> (<a class="el" href="vec__internal_8h.html#af29719862f56ac0c163afea9c281635d">WstVecErr</a> err)</td></tr>
+<tr class="memitem:a95bb8f57a55dc361c49fcaa83d416aed" id="r_a95bb8f57a55dc361c49fcaa83d416aed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="list__common__internal_8h.html#a05bd0164790af29ec50b5b380b5973bb">WstListErr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="list_8c.html#a95bb8f57a55dc361c49fcaa83d416aed">wst_list_err_from_vec</a> (<a class="el" href="vec__internal_8h.html#af29719862f56ac0c163afea9c281635d">WstVecErr</a> err)</td></tr>
 <tr class="separator:a95bb8f57a55dc361c49fcaa83d416aed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a57676cbcb2d831fd08ee29cab97e46c3" id="r_a57676cbcb2d831fd08ee29cab97e46c3"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="list_8c.html#a57676cbcb2d831fd08ee29cab97e46c3">wst_list_err_str</a> (<a class="el" href="list__internal_8h.html#a05bd0164790af29ec50b5b380b5973bb">WstListErr</a> err)</td></tr>
+<tr class="memitem:a3eac734157be765258f2a41e00fdb1ca" id="r_a3eac734157be765258f2a41e00fdb1ca"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="list_8c.html#a3eac734157be765258f2a41e00fdb1ca">wst_list_slot_state_name</a> (<a class="el" href="list__common__internal_8h.html#a83d6136bf09ae08b2713edbf5adc2e29">WstListSlotState</a> state)</td></tr>
+<tr class="separator:a3eac734157be765258f2a41e00fdb1ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c081a288f3b577e71a0776b3d18f878" id="r_a0c081a288f3b577e71a0776b3d18f878"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structWstListSlotCounts.html">WstListSlotCounts</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="list_8c.html#a0c081a288f3b577e71a0776b3d18f878">wst_list_slot_counts</a> (const <a class="el" href="list__common__internal_8h.html#a83d6136bf09ae08b2713edbf5adc2e29">WstListSlotState</a> *state, size_t count)</td></tr>
+<tr class="separator:a0c081a288f3b577e71a0776b3d18f878"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89761785ff7d6753730cd2f1cd0733f3" id="r_a89761785ff7d6753730cd2f1cd0733f3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="list_8c.html#a89761785ff7d6753730cd2f1cd0733f3">wst_list_diag_add</a> (<a class="el" href="structWstListDiag.html">WstListDiag</a> *diag, const char *fmt,...)</td></tr>
+<tr class="separator:a89761785ff7d6753730cd2f1cd0733f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57676cbcb2d831fd08ee29cab97e46c3" id="r_a57676cbcb2d831fd08ee29cab97e46c3"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="list_8c.html#a57676cbcb2d831fd08ee29cab97e46c3">wst_list_err_str</a> (<a class="el" href="list__common__internal_8h.html#a05bd0164790af29ec50b5b380b5973bb">WstListErr</a> err)</td></tr>
 <tr class="separator:a57676cbcb2d831fd08ee29cab97e46c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
@@ -141,6 +150,41 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="a89761785ff7d6753730cd2f1cd0733f3" name="a89761785ff7d6753730cd2f1cd0733f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a89761785ff7d6753730cd2f1cd0733f3">&#9670;&#160;</a></span>wst_list_diag_add()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void wst_list_diag_add </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structWstListDiag.html">WstListDiag</a> *&#160;</td>
+          <td class="paramname"><em>diag</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>fmt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Add one formatted problem line to <code>diag</code>. </p>
+
+</div>
+</div>
 <a id="a95bb8f57a55dc361c49fcaa83d416aed" name="a95bb8f57a55dc361c49fcaa83d416aed"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a95bb8f57a55dc361c49fcaa83d416aed">&#9670;&#160;</a></span>wst_list_err_from_vec()</h2>
 
@@ -148,7 +192,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="list__internal_8h.html#a05bd0164790af29ec50b5b380b5973bb">WstListErr</a> wst_list_err_from_vec </td>
+          <td class="memname"><a class="el" href="list__common__internal_8h.html#a05bd0164790af29ec50b5b380b5973bb">WstListErr</a> wst_list_err_from_vec </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="vec__internal_8h.html#af29719862f56ac0c163afea9c281635d">WstVecErr</a>&#160;</td>
           <td class="paramname"><em>err</em></td><td>)</td>
@@ -168,7 +212,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">const char * wst_list_err_str </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="list__internal_8h.html#a05bd0164790af29ec50b5b380b5973bb">WstListErr</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="list__common__internal_8h.html#a05bd0164790af29ec50b5b380b5973bb">WstListErr</a>&#160;</td>
           <td class="paramname"><em>err</em></td><td>)</td>
           <td></td>
         </tr>
@@ -421,6 +465,54 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0c081a288f3b577e71a0776b3d18f878" name="a0c081a288f3b577e71a0776b3d18f878"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c081a288f3b577e71a0776b3d18f878">&#9670;&#160;</a></span>wst_list_slot_counts()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structWstListSlotCounts.html">WstListSlotCounts</a> wst_list_slot_counts </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="list__common__internal_8h.html#a83d6136bf09ae08b2713edbf5adc2e29">WstListSlotState</a> *&#160;</td>
+          <td class="paramname"><em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Count live, pooled and orphan slots. </p>
+
+</div>
+</div>
+<a id="a3eac734157be765258f2a41e00fdb1ca" name="a3eac734157be765258f2a41e00fdb1ca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3eac734157be765258f2a41e00fdb1ca">&#9670;&#160;</a></span>wst_list_slot_state_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char * wst_list_slot_state_name </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="list__common__internal_8h.html#a83d6136bf09ae08b2713edbf5adc2e29">WstListSlotState</a>&#160;</td>
+          <td class="paramname"><em>state</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Short state name for dump tables. </p>
 
 </div>
 </div>

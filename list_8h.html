@@ -94,7 +94,7 @@ $(document).ready(function(){initNavTree('list_8h.html',''); initResizable(); })
   <div class="headertitle"><div class="title">list.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="list__internal_8h_source.html">list_internal.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="list__internal_8h_source.html">impl/list_internal.h</a>&quot;</code><br />
 </div>
 <p><a href="list_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -110,12 +110,8 @@ Macros</h2></td></tr>
 <tr class="separator:a6f7ebe2156d2068aeb13596ee3a98bc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Type-safe doubly linked lists backed by geometric node blocks.</p>
-<p>Live nodes are linked through <code>next</code>/<code>prev</code>; removed nodes form a singly linked free pool inside the node blocks. Blocks are allocated on demand and never resized, so node addresses stay stable across insertions. Public operations cover lifecycle, node-handle access and mutation, index/value access, and tail <code>append</code>/<code>pop</code>.</p>
-<p>Provided stamps:</p><ul>
-<li><code>int</code>: <code>WstListInt</code>, <code>wst_list_int_*</code></li>
-</ul>
-<p>Every operation verifies the block-pointer vector, reporting <code>WstListErr</code>. Node pointers are invalidated by <code>list_free</code> and become stale after <code>list_clear</code>. </p>
+<div class="textblock"><p>Public stamp for the pointer/block list backend.</p>
+<p>Provides <code>WstListInt</code> and <code>wst_list_int_*</code>. Every operation reports <code>WstListErr</code>. See <code><a class="el" href="list__internal_8h.html">impl/list_internal.h</a></code> for storage and lifetime details. </p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="adb231bfc44ec37423962ea7f563a458b" name="adb231bfc44ec37423962ea7f563a458b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adb231bfc44ec37423962ea7f563a458b">&#9670;&#160;</a></span>LIST_ELEM</h2>

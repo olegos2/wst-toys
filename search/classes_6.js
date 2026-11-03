@@ -1,12 +1,22 @@
 var searchData=
 [
   ['wstfile_0',['WstFile',['../structWstFile.html',1,'']]],
-  ['wstline_1',['WstLine',['../structWstLine.html',1,'']]],
-  ['wstlisthdr_2',['WstListHdr',['../structWstListHdr.html',1,'']]],
-  ['wstlistnodehdr_3',['WstListNodeHdr',['../structWstListNodeHdr.html',1,'']]],
-  ['wstmtx_4',['WstMtx',['../structWstMtx.html',1,'']]],
-  ['wstmtxsym_5',['WstMtxSym',['../structWstMtxSym.html',1,'']]],
-  ['wstpoly_6',['WstPoly',['../structWstPoly.html',1,'']]],
-  ['wstsolution_7',['WstSolution',['../structWstSolution.html',1,'']]],
-  ['wstvecvoid_8',['WstVecVoid',['../structWstVecVoid.html',1,'']]]
+  ['wstgraph_1',['WstGraph',['../structWstGraph.html',1,'']]],
+  ['wstgraphviz_2',['WstGraphviz',['../structWstGraphviz.html',1,'']]],
+  ['wstline_3',['WstLine',['../structWstLine.html',1,'']]],
+  ['wstlistdiag_4',['WstListDiag',['../structWstListDiag.html',1,'']]],
+  ['wstlistgraph_5',['WstListGraph',['../structWstListGraph.html',1,'']]],
+  ['wstlistgraphref_6',['WstListGraphRef',['../structWstListGraphRef.html',1,'']]],
+  ['wstlisthdr_7',['WstListHdr',['../structWstListHdr.html',1,'']]],
+  ['wstlistihdr_8',['WstListiHdr',['../structWstListiHdr.html',1,'']]],
+  ['wstlistinodehdr_9',['WstListiNodeHdr',['../structWstListiNodeHdr.html',1,'']]],
+  ['wstlistnodehdr_10',['WstListNodeHdr',['../structWstListNodeHdr.html',1,'']]],
+  ['wstlistslotcounts_11',['WstListSlotCounts',['../structWstListSlotCounts.html',1,'']]],
+  ['wstlogstate_12',['WstLogState',['../structWstLogState.html',1,'']]],
+  ['wstlogstyle_13',['WstLogStyle',['../structWstLogStyle.html',1,'']]],
+  ['wstmtx_14',['WstMtx',['../structWstMtx.html',1,'']]],
+  ['wstmtxsym_15',['WstMtxSym',['../structWstMtxSym.html',1,'']]],
+  ['wstpoly_16',['WstPoly',['../structWstPoly.html',1,'']]],
+  ['wstsolution_17',['WstSolution',['../structWstSolution.html',1,'']]],
+  ['wstvecvoid_18',['WstVecVoid',['../structWstVecVoid.html',1,'']]]
 ];

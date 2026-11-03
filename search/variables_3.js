@@ -4,5 +4,6 @@ var searchData=
   ['degree_1',['degree',['../structWstPoly.html#a6417411dbd183a836978f493d974016f',1,'WstPoly']]],
   ['description_2',['description',['../structArgOption.html#acd13953305b649b704c42f36fb897ee9',1,'ArgOption']]],
   ['dest_3',['dest',['../structArgOption.html#a5b932578c76a5f24fc3da3b667bc4e2b',1,'ArgOption']]],
-  ['draw_5fbackground_4',['draw_background',['../structPlotGridConfig.html#a84a97dc015bef2036d45251c0abe4136',1,'PlotGridConfig']]]
+  ['dir_4',['dir',['../structWstLogState.html#ac2092be93d799076a77155d73442826e',1,'WstLogState']]],
+  ['draw_5fbackground_5',['draw_background',['../structPlotGridConfig.html#a84a97dc015bef2036d45251c0abe4136',1,'PlotGridConfig']]]
 ];

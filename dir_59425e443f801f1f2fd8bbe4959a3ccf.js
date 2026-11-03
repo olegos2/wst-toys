@@ -1,8 +1,11 @@
 var dir_59425e443f801f1f2fd8bbe4959a3ccf =
 [
+    [ "log_util.h", "log__util_8h.html", null ],
     [ "test_argparse.c", "test__argparse_8c.html", "test__argparse_8c" ],
+    [ "test_debug.c", "test__debug_8c.html", "test__debug_8c" ],
     [ "test_expr.c", "test__expr_8c.html", "test__expr_8c" ],
     [ "test_list.c", "test__list_8c.html", "test__list_8c" ],
+    [ "test_list_idx.c", "test__list__idx_8c.html", "test__list__idx_8c" ],
     [ "test_mtx.c", "test__mtx_8c.html", "test__mtx_8c" ],
     [ "test_poly.c", "test__poly_8c.html", "test__poly_8c" ],
     [ "test_sort.c", "test__sort_8c.html", "test__sort_8c" ],

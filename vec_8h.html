@@ -95,7 +95,7 @@ $(document).ready(function(){initNavTree('vec_8h.html',''); initResizable(); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;stdint.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="vec__internal_8h_source.html">vec_internal.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="vec__internal_8h_source.html">impl/vec_internal.h</a>&quot;</code><br />
 </div>
 <p><a href="vec_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -136,11 +136,12 @@ Macros</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Type-safe vectors with integrity verification.</p>
-<p>Stamps the template in <code><a class="el" href="vec__internal_8h.html">vec_internal.h</a></code> once per element type. Each stamp produces a struct plus <code>init</code>/<code>free</code>/<code>reserve</code>/<code>push</code>/<code>pop</code>/<code>verify</code> and indexed <code>ensure</code>/<code>set</code>/<code>get</code>/<code>resize</code>/<code>clear</code>, plus <code>seal</code> to recompute the checksum after direct buffer work, under a per-type prefix. Provided stamps:</p><ul>
+<p>Stamps the template in <code><a class="el" href="vec__internal_8h.html">impl/vec_internal.h</a></code> once per element type. Each stamp produces a struct plus <code>init</code>/<code>free</code>/<code>reserve</code>/<code>push</code>/<code>pop</code>/<code>verify</code> and indexed <code>ensure</code>/<code>set</code>/<code>get</code>/<code>resize</code>/<code>clear</code>, plus <code>seal</code> to recompute the checksum after direct buffer work, under a per-type prefix.</p>
+<p>Provided stamps:</p><ul>
 <li><code>double</code>: <code>WstVecDouble</code>, <code>wst_vec_double_*</code></li>
 <li><code>int</code>: <code>WstVecInt</code>, <code>wst_vec_int_*</code></li>
 <li><code>uint8_t</code>: <code>WstVecU8</code>, <code>wst_vec_u8_*</code></li>
-<li><code>uint32_t</code>: <code>WstVecU32</code>, <code>wst_vec_u32_*</code>`</li>
+<li><code>uint32_t</code>: <code>WstVecU32</code>, <code>wst_vec_u32_*</code></li>
 </ul>
 <p>Every operation verifies length/capacity invariants, canary blocks on both sides of the buffer and a struct checksum, reporting <code>WstVecErr</code>. </p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>

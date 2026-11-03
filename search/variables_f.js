@@ -7,6 +7,8 @@ var searchData=
   ['sign_4',['sign',['../uniondouble__repr.html#ad1c3a2b0a2e2fdaf1ebe14a1238ecf36',1,'double_repr']]],
   ['significand_5',['significand',['../uniondouble__repr.html#ab319fa6482babcdeb052b71555e32af6',1,'double_repr']]],
   ['size_6',['size',['../structPlotGridConfig.html#ab31768f4853f0126e8ea420ff4b5103f',1,'PlotGridConfig::size'],['../structWstFile.html#a6c732d74771acb23435f6a7a82d5cb8c',1,'WstFile::size'],['../structWstMtxSym.html#ae1879191b248368ab29b9d6723fee5af',1,'WstMtxSym::size']]],
-  ['start_7',['start',['../structPlotRect.html#ad6f32ad9502fc1d6ed50552bd14bbbce',1,'PlotRect']]],
-  ['sz_8',['sz',['../structPlotFont.html#a1c2fd696cf3a4ffe537dd2eb1bbd96c0',1,'PlotFont']]]
+  ['slot_7',['slot',['../structWstListGraphRef.html#a333dbe45139cfba3e867fddc0d4e820d',1,'WstListGraphRef']]],
+  ['start_8',['start',['../structPlotRect.html#ad6f32ad9502fc1d6ed50552bd14bbbce',1,'PlotRect']]],
+  ['stream_9',['stream',['../structWstListDiag.html#a78ff3660e66f998bd8e03523702d9190',1,'WstListDiag::stream'],['../structWstLogState.html#abe1a86fa8384faf2179dceaf7b2f14bc',1,'WstLogState::stream'],['../structWstGraph.html#a173c657d5dbf0ec1e7a46fc8188ced51',1,'WstGraph::stream']]],
+  ['sz_10',['sz',['../structPlotFont.html#a1c2fd696cf3a4ffe537dd2eb1bbd96c0',1,'PlotFont']]]
 ];

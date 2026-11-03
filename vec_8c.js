@@ -1,5 +1,7 @@
 var vec_8c =
 [
+    [ "P", "vec_8c.html#afba9f40fe63e258302b2c472f9e9f386", null ],
+    [ "P", "vec_8c.html#afba9f40fe63e258302b2c472f9e9f386", null ],
     [ "VEC_IMPL", "vec_8c.html#a6052013f5346f7ae5e27a5af9c4a0c91", null ],
     [ "wst_vec_err_str", "vec_8c.html#a267ccfe6c9dcfb9c8a177210a1fba687", null ],
     [ "wst_vec_void_dump", "vec_8c.html#a816b2c1b31140f0bf475ae4697397a93", null ],

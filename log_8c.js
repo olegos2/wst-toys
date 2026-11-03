@@ -1,0 +1,26 @@
+var log_8c =
+[
+    [ "WST_COL_BLUE_B", "log_8c.html#abd3ed08d4cf8c487283408213e70e4cc", null ],
+    [ "WST_COL_CYAN", "log_8c.html#a20c9811ba7e1b54bc15504cd21d28f08", null ],
+    [ "WST_COL_DIM", "log_8c.html#a57b0a40cdb647c686d661f6b7adc1e1c", null ],
+    [ "WST_COL_GREEN_B", "log_8c.html#a0589827fd4cb44fe2f294067dba69631", null ],
+    [ "WST_COL_MAGENTA", "log_8c.html#a3d5d2276808a597fbec0473b69428e73", null ],
+    [ "WST_COL_RED_B", "log_8c.html#a459b2d5aa6faa5afeebfe46e28563f68", null ],
+    [ "WST_COL_RESET", "log_8c.html#a76c363a4f4a31a65ea9dce31678b994d", null ],
+    [ "WST_COL_YELLOW", "log_8c.html#a52e72798fdcc0c5ec0110973a7c642f6", null ],
+    [ "WST_COL_YELLOW_B", "log_8c.html#a21b42c5c5feb883008cfdded765fe28c", null ],
+    [ "wst_log_accepts_images", "log_8c.html#aa55185db11c149b9b57af08f78a43d66", null ],
+    [ "wst_log_close", "log_8c.html#a12a87380b3edb2935b63c9894e6ef7ad", null ],
+    [ "wst_log_enable_color", "log_8c.html#ab1d1f674cddfef4ea8c7ae36e3acc45e", null ],
+    [ "wst_log_flush", "log_8c.html#ab3709a8ff9912173b856fe5ffefb6466", null ],
+    [ "wst_log_format", "log_8c.html#a2b17f1f68128f29e9afc05bf81007d69", null ],
+    [ "wst_log_open", "log_8c.html#a41a3927e66df68813f396a8b5ef93ac0", null ],
+    [ "wst_log_path", "log_8c.html#a9b34679c653c5c1b2e7a6540eba7c115", null ],
+    [ "wst_log_print", "log_8c.html#a0dcc9def57e7f537b627141513cb5211", null ],
+    [ "wst_log_print_at", "log_8c.html#a7ef4e2a838308330ef02b007412cd7f8", null ],
+    [ "wst_log_set_max_prio", "log_8c.html#ad3f5789b894892d298d921254c9b98c5", null ],
+    [ "wst_log_state", "log_8c.html#a56c8c24481d61c5a8c6f43aef15e1d87", null ],
+    [ "wst_log_stream", "log_8c.html#a64604dc071ee10b9a54b3d2c459c0ee5", null ],
+    [ "wst_log_use_color", "log_8c.html#aed6ff949b915d8e7eba172870cc5d2d3", null ],
+    [ "wst_log_styles", "log_8c.html#a6173c18670ed791b6da3d5d17b8f92a1", null ]
+];

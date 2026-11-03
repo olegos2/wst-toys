@@ -15,6 +15,10 @@ var debug_8h =
       [ "WST_LOG_COLOR_ON", "debug_8h.html#a7aaebccee51255a00e2865bb399311cba24f6a9f21476f2d70e8a2a27f7963437", null ],
       [ "WST_LOG_COLOR_AUTO", "debug_8h.html#a7aaebccee51255a00e2865bb399311cba04de17af6a022395dc2677237ea6080f", null ]
     ] ],
+    [ "WstLogFormat", "debug_8h.html#a9a15619b01ea24c6b289edf1302bd6ba", [
+      [ "WST_LOG_FORMAT_TEXT", "debug_8h.html#a9a15619b01ea24c6b289edf1302bd6baa5edd49abe0b54bf23664bb1da602dd84", null ],
+      [ "WST_LOG_FORMAT_HTML", "debug_8h.html#a9a15619b01ea24c6b289edf1302bd6baa65a9e664c5aba8167267c907f261cd36", null ]
+    ] ],
     [ "WstLogPrio", "debug_8h.html#a594178a93a82f2700efff6d291a91fef", [
       [ "WST_LOG_ERROR", "debug_8h.html#a594178a93a82f2700efff6d291a91fefaa0f351c485ac8f1f11e5ec00be74c064", null ],
       [ "WST_LOG_WARN", "debug_8h.html#a594178a93a82f2700efff6d291a91fefa71cca32c9d7ea007e918bec171107f01", null ],
@@ -23,8 +27,14 @@ var debug_8h =
       [ "WST_LOG_VERBOSE", "debug_8h.html#a594178a93a82f2700efff6d291a91fefa8fd1a63fc4b4c638fb5c82a7476b56bc", null ]
     ] ],
     [ "wst_assert", "debug_8h.html#a465c909903f55d6ba5d423755af20393", null ],
+    [ "wst_log_accepts_images", "debug_8h.html#aa55185db11c149b9b57af08f78a43d66", null ],
+    [ "wst_log_close", "debug_8h.html#a12a87380b3edb2935b63c9894e6ef7ad", null ],
     [ "wst_log_enable_color", "debug_8h.html#ab1d1f674cddfef4ea8c7ae36e3acc45e", null ],
-    [ "wst_log_open", "debug_8h.html#a7abb01164a480a8a2d7f54c7b3ef5ac8", null ],
+    [ "wst_log_format", "debug_8h.html#a2b17f1f68128f29e9afc05bf81007d69", null ],
+    [ "wst_log_graphviz", "debug_8h.html#a800172963b1e85167874785cbdbb4ec1", null ],
+    [ "wst_log_image", "debug_8h.html#a9d993381fa4aa8e949d567de3a3c353e", null ],
+    [ "wst_log_open", "debug_8h.html#a41a3927e66df68813f396a8b5ef93ac0", null ],
+    [ "wst_log_path", "debug_8h.html#a9b34679c653c5c1b2e7a6540eba7c115", null ],
     [ "wst_log_print", "debug_8h.html#a0dcc9def57e7f537b627141513cb5211", null ],
     [ "wst_log_print_at", "debug_8h.html#a7ef4e2a838308330ef02b007412cd7f8", null ],
     [ "wst_log_set_max_prio", "debug_8h.html#ad3f5789b894892d298d921254c9b98c5", null ]
