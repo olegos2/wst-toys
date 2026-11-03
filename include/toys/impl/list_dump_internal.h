@@ -358,8 +358,26 @@ static void list_dump_graph(const LIST_T *list, size_t issues)
                                 "#%zu\nprev=%s\nnext=%s\ndata=%p", slot,
                                 prev_ref, next_ref, (const void *)&node->data);
 #endif
+        }
+        wst_list_graph_block_end(graph);
+        base += block->cap;
+    }
 
+    /* Define every node before its edges so cross-block links do not create
+       the target inside the previous block's cluster. */
+    base = 0;
+    for (size_t b = 0; b < list->blocks.length; b++) {
+        const LIST_BLOCK_T *block = list->blocks.data[b];
+        if (block == NULL)
+            continue;
+
+        wst_list_graph_block_begin(graph, b, block->cap, block);
+        for (size_t j = 0; j < block->cap; j++) {
+            size_t slot = base + j;
+            const LIST_NODE_T *node = &block->nodes[j];
+            WstListSlotState node_state = state[slot];
             size_t target;
+
             if (node->hdr.next != NULL) {
                 WstListGraphEdge kind = WST_LIST_GRAPH_EDGE_BAD;
                 if (list_dump_slot_of(list, node->hdr.next, &target) &&
