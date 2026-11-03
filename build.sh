@@ -119,6 +119,15 @@ build_exe examples/list_trace/list_trace \
     examples/list_trace/list_trace.c \
     -- "${graph_libs[@]}"
 
+build_exe examples/list_bench/list_bench_block \
+    examples/list_bench/list_bench.c \
+    -- "${graph_libs[@]}"
+
+CPPFLAGS="${CPPFLAGS:-$DEFAULT_CPPFLAGS} -DLIST_BENCH_INDEX" \
+build_exe examples/list_bench/list_bench_index \
+    examples/list_bench/list_bench.c \
+    -- "${graph_libs[@]}"
+
 build_exe tests/test_argparse tests/test_argparse.c \
     -- "${common_libs[@]}"
 build_exe tests/test_debug tests/test_debug.c \

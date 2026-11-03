@@ -174,6 +174,21 @@ and loops the tail back to the head:
 ./builddir/examples/list_trace/list_trace --logdir logs
 ```
 
+`examples/list_bench/list_bench.c` compiles into two binaries, one per backend.
+The workload appends 50k nodes, then runs 4k rounds of get, set, find, insert,
+remove, pop and append. Build it in release mode and compare:
+
+```sh
+meson setup builddir-release --buildtype=release -Dtests=false
+meson compile -C builddir-release
+hyperfine \
+  builddir-release/examples/list_bench/list_bench_block \
+  builddir-release/examples/list_bench/list_bench_index
+```
+
+Override `LIST_BENCH_SIZE` or `LIST_BENCH_ROUNDS` through `c_args` or
+`CPPFLAGS` when a shorter or longer run is useful.
+
 ## Tests
 
 ```sh
